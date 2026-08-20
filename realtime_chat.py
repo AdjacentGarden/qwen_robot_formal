@@ -454,6 +454,11 @@ class RealtimeConversation:
         # still pending.
         self.awaiting_input_transcript = False
         self.deferred_function_calls: list[dict[str, Any]] = []
+        # Function calls and final ASR transcripts are separate Realtime
+        # events and can arrive in either order.  Keep a small per-turn ledger
+        # so a background task never validates an action against the previous
+        # or a later utterance when those events race.
+        self.committed_user_turns: dict[int, dict[str, Any]] = {}
         self.function_call_tasks: set[asyncio.Task[Any]] = set()
         self.function_call_turns: dict[asyncio.Task[Any], int] = {}
         self.skill_dispatch_lock = asyncio.Lock()
@@ -940,40 +945,100 @@ class RealtimeConversation:
         assistant_context: str | None = None,
         received_at: float | None = None,
     ) -> dict[str, Any] | None:
+        target_turn_id = int(
+            self.user_turn_id + (1 if self.awaiting_input_transcript else 0)
+            if turn_id is None
+            else turn_id
+        )
         self.logger.write(
             "function_call_received",
             call_id=value.get("call_id"),
             skill=value.get("name"),
             awaiting_transcript=self.awaiting_input_transcript,
-            turn_id=self.user_turn_id + (1 if self.awaiting_input_transcript else 0),
+            turn_id=target_turn_id,
         )
-        if self.awaiting_input_transcript:
-            self.deferred_function_calls.append(dict(value))
+        # Do not decide this from the *current* awaiting flag alone.  The
+        # transcript may commit between schedule_function_call() and this
+        # coroutine getting its first timeslice.  The immutable target turn is
+        # what tells us whether its transcript is actually available.
+        if target_turn_id > self.user_turn_id:
+            self.deferred_function_calls.append(
+                {
+                    "value": dict(value),
+                    "turn_id": target_turn_id,
+                    "assistant_context": assistant_context,
+                    "received_at": received_at,
+                }
+            )
             self.logger.write(
                 "function_call_deferred_for_transcript",
                 call_id=value.get("call_id"),
                 skill=value.get("name"),
                 queued=len(self.deferred_function_calls),
+                turn_id=target_turn_id,
             )
             return None
+        committed = self.committed_user_turns.get(target_turn_id, {})
         return await self.handle_function_call(
             value,
-            turn_id=turn_id,
-            user_text=user_text,
-            assistant_context=assistant_context,
-            received_at=received_at,
+            turn_id=target_turn_id,
+            user_text=(
+                str(committed.get("text"))
+                if committed.get("text") is not None
+                else user_text
+            ),
+            assistant_context=(
+                str(committed.get("assistant_context"))
+                if committed.get("assistant_context") is not None
+                else assistant_context
+            ),
+            received_at=(
+                float(committed.get("received_at"))
+                if committed.get("received_at") is not None
+                else received_at
+            ),
         )
 
-    def schedule_function_call(self, value: dict[str, Any]) -> asyncio.Task[Any]:
+    def schedule_function_call(
+        self,
+        value: dict[str, Any],
+        *,
+        turn_id: int | None = None,
+        user_text: str | None = None,
+        assistant_context: str | None = None,
+        received_at: float | None = None,
+    ) -> asyncio.Task[Any]:
         """Run a potentially long tool call without blocking Realtime input."""
 
-        turn_id = int(self.user_turn_id)
-        user_text = str(self.last_user_text)
-        assistant_context = str(self.turn_assistant_context)
-        received_at = float(self.current_user_turn_received_at or time.time())
+        awaiting_at_schedule = bool(self.awaiting_input_transcript)
+        target_turn_id = int(
+            self.user_turn_id + (1 if awaiting_at_schedule else 0)
+            if turn_id is None
+            else turn_id
+        )
+        committed = self.committed_user_turns.get(target_turn_id, {})
+        if user_text is None and not awaiting_at_schedule:
+            user_text = str(committed.get("text", self.last_user_text))
+        if assistant_context is None:
+            assistant_context = str(
+                committed.get(
+                    "assistant_context",
+                    self.speech_turn_assistant_context
+                    if awaiting_at_schedule
+                    else self.turn_assistant_context,
+                )
+            )
+        if received_at is None and not awaiting_at_schedule:
+            received_at = float(
+                committed.get(
+                    "received_at",
+                    self.current_user_turn_received_at or time.time(),
+                )
+            )
         older = {
             task for task in self.function_call_tasks
-            if not task.done() and self.function_call_turns.get(task, turn_id) < turn_id
+            if not task.done()
+            and self.function_call_turns.get(task, target_turn_id) < target_turn_id
         }
 
         async def run() -> Any:
@@ -992,7 +1057,7 @@ class RealtimeConversation:
                 )
             return await self.handle_or_defer_function_call(
                 dict(value),
-                turn_id=turn_id,
+                turn_id=target_turn_id,
                 user_text=user_text,
                 assistant_context=assistant_context,
                 received_at=received_at,
@@ -1003,7 +1068,7 @@ class RealtimeConversation:
             name=f"function-call:{value.get('name') or 'unknown'}:{value.get('call_id') or ''}",
         )
         self.function_call_tasks.add(task)
-        self.function_call_turns[task] = turn_id
+        self.function_call_turns[task] = target_turn_id
 
         def finished(done: asyncio.Task[Any]) -> None:
             self.function_call_tasks.discard(done)
@@ -1068,6 +1133,15 @@ class RealtimeConversation:
         self.last_user_text = transcript
         self.user_turn_id += 1
         self.current_user_turn_received_at = time.time()
+        self.committed_user_turns[self.user_turn_id] = {
+            "text": transcript,
+            "assistant_context": self.turn_assistant_context,
+            "received_at": self.current_user_turn_received_at,
+        }
+        # This is only a race-proofing ledger, not conversational memory.
+        # Bound it so a long-running resident process cannot grow forever.
+        for stale_turn_id in sorted(self.committed_user_turns)[:-64]:
+            self.committed_user_turns.pop(stale_turn_id, None)
         self.turn_tool_results.clear()
         self.awaiting_input_transcript = False
         self.speech_turn_assistant_context = ""
@@ -1092,19 +1166,57 @@ class RealtimeConversation:
                 "function_call" if self.turn_had_function_call else "explicit_action_requires_tool"
             )
 
-        deferred = self.deferred_function_calls
-        self.deferred_function_calls = []
+        ready_deferred = [
+            item
+            for item in self.deferred_function_calls
+            if int(item.get("turn_id", self.user_turn_id)) <= self.user_turn_id
+        ]
+        self.deferred_function_calls = [
+            item
+            for item in self.deferred_function_calls
+            if int(item.get("turn_id", self.user_turn_id)) > self.user_turn_id
+        ]
         results: list[dict[str, Any]] = []
-        for value in deferred:
+        for deferred in ready_deferred:
+            value = dict(deferred.get("value") or {})
+            deferred_turn_id = int(deferred.get("turn_id", self.user_turn_id))
+            committed = self.committed_user_turns.get(deferred_turn_id, {})
+            deferred_user_text = str(committed.get("text", transcript))
+            deferred_assistant_context = str(
+                committed.get(
+                    "assistant_context",
+                    deferred.get("assistant_context") or self.turn_assistant_context,
+                )
+            )
+            deferred_received_at = float(
+                committed.get(
+                    "received_at",
+                    deferred.get("received_at") or self.current_user_turn_received_at,
+                )
+            )
             if schedule_deferred:
-                self.schedule_function_call(value)
+                self.schedule_function_call(
+                    value,
+                    turn_id=deferred_turn_id,
+                    user_text=deferred_user_text,
+                    assistant_context=deferred_assistant_context,
+                    received_at=deferred_received_at,
+                )
             else:
-                results.append(await self.handle_function_call(value))
-        if deferred:
+                results.append(
+                    await self.handle_function_call(
+                        value,
+                        turn_id=deferred_turn_id,
+                        user_text=deferred_user_text,
+                        assistant_context=deferred_assistant_context,
+                        received_at=deferred_received_at,
+                    )
+                )
+        if ready_deferred:
             self.logger.write(
                 "deferred_function_calls_released",
                 turn_id=self.user_turn_id,
-                count=len(deferred),
+                count=len(ready_deferred),
                 transcript=transcript,
             )
             # Usually response.done follows the transcript.  If it arrived

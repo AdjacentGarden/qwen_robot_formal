@@ -631,6 +631,108 @@ class ClientHandshakeTests(unittest.IsolatedAsyncioTestCase):
         output = json.loads(websocket.sent[0]["item"]["output"])
         self.assertEqual(output["scenario"], "homecoming_welcome")
 
+    async def test_scheduled_call_uses_target_turn_when_transcript_wins_race(self) -> None:
+        """Regression: a close-projection call must not reuse the open turn."""
+
+        args = SimpleNamespace()
+        with tempfile.TemporaryDirectory() as directory:
+            client = RealtimeConversation(
+                args,
+                "sk-test",
+                JsonLogger(Path(directory) / "events.jsonl"),
+            )
+            websocket = FakeWebSocket()
+            websocket.events = []
+            client.websocket = websocket
+            calls = []
+
+            def invoke(name, arguments, user_text, turn_id, *_context):
+                calls.append((name, arguments, user_text, turn_id))
+                return {
+                    "ok": True,
+                    "validation_ok": True,
+                    "executed": True,
+                    "mode": "execute",
+                    "scenario": arguments.get("scenario"),
+                    "spoken_summary": "会议投影已经关闭了。",
+                }
+
+            client.skill_bridge = SimpleNamespace(
+                invoke=invoke,
+                scenario_catalog=None,
+                current_turn_id="",
+            )
+            await client.accept_input_transcript("帮我投影会议内容")
+            client.mark_input_speech_started()
+            task = client.schedule_function_call(
+                {
+                    "call_id": "stop-race-1",
+                    "name": "run_robot_scenario",
+                    "arguments": '{"scenario":"meeting_projection_stop"}',
+                }
+            )
+            # Reproduce the production ordering: transcript commits before the
+            # newly-created background task receives its first event-loop turn.
+            await client.accept_input_transcript("停止投影")
+            await task
+
+        self.assertEqual(
+            calls,
+            [
+                (
+                    "run_robot_scenario",
+                    {"scenario": "meeting_projection_stop"},
+                    "停止投影",
+                    "2",
+                )
+            ],
+        )
+
+    async def test_deferred_call_keeps_its_transcript_after_a_later_turn(self) -> None:
+        """Per-turn binding remains stable even after global last_user_text changes."""
+
+        args = SimpleNamespace()
+        with tempfile.TemporaryDirectory() as directory:
+            client = RealtimeConversation(
+                args,
+                "sk-test",
+                JsonLogger(Path(directory) / "events.jsonl"),
+            )
+            client.websocket = FakeWebSocket()
+            client.websocket.events = []
+            observed = []
+
+            def invoke(name, arguments, user_text, turn_id, *_context):
+                observed.append((name, user_text, turn_id))
+                return {
+                    "ok": True,
+                    "validation_ok": True,
+                    "executed": True,
+                    "mode": "execute",
+                    "spoken_summary": "操作完成。",
+                }
+
+            client.skill_bridge = SimpleNamespace(
+                invoke=invoke,
+                scenario_catalog=None,
+                current_turn_id="",
+            )
+            await client.accept_input_transcript("打开会议投影")
+            client.mark_input_speech_started()
+            await client.handle_or_defer_function_call(
+                {
+                    "call_id": "stop-deferred-1",
+                    "name": "run_robot_scenario",
+                    "arguments": '{"scenario":"meeting_projection_stop"}',
+                },
+                turn_id=2,
+            )
+            await client.accept_input_transcript("关闭投影", schedule_deferred=True)
+            await client.accept_input_transcript("现在几点")
+            await asyncio.gather(*list(client.function_call_tasks))
+
+        self.assertEqual(observed[0], ("run_robot_scenario", "关闭投影", "2"))
+
     async def test_identical_tool_call_is_executed_only_once_per_user_turn(self) -> None:
         args = SimpleNamespace()
         with tempfile.TemporaryDirectory() as directory:
