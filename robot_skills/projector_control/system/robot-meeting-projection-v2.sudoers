@@ -1,0 +1,1 @@
+test ALL=(root) NOPASSWD: /usr/local/sbin/robot-meeting-projection-v2 *

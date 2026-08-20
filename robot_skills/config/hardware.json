@@ -1,0 +1,452 @@
+{
+  "paths": {
+    "project_root": "/home/test/new_project_optimized_v11_navsafe",
+    "runtime_dir": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime",
+    "self_program_dir": "/home/test/self_program",
+    "single_function_dir": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills",
+    "skill_spec_dir": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/config/skill_specs",
+    "pet_profiles": "/home/test/new_project_optimized_v11_navsafe/data/pet_profiles.json",
+    "self_program_audio_config": "/home/test/self_program/audio_config.json",
+    "ros_setup_files": [
+      "/opt/ros/humble/setup.bash",
+      "/home/test/car_real_copy_zhenghang/install/setup.bash"
+    ]
+  },
+  "audio": {
+    "record_command": "arecord",
+    "play_command": "aplay",
+    "quiet_arg": "-q",
+    "input_device": "plughw:rockchipi2sdm_1",
+    "output_device": "plughw:rockchiptas6424",
+    "sample_format": "S16_LE",
+    "record_sample_rate": 16000,
+    "play_sample_rate": 24000,
+    "echo_play_sample_rate": 16000,
+    "channels": 1,
+    "default_record_seconds": 6,
+    "command_pcm_path": "/home/test/new_project_optimized_v11_navsafe/runtime/audio/command.pcm",
+    "command_wav_path": "/home/test/new_project_optimized_v11_navsafe/runtime/audio/command.wav",
+    "tts_pcm_path": "/home/test/new_project_optimized_v11_navsafe/runtime/audio/tts.pcm",
+    "asr_backend": "local_zipformer",
+    "asr_module": "/home/test/self_program/self_program_asr.py",
+    "voice_io_backend": "doubao_realtime",
+    "wake_reply_text": "我在",
+    "wake_reply_pcm": "/home/test/self_program/runtime/wake_reply.pcm",
+    "wake_reply_timeout": 3.0,
+    "post_speech_listen_delay_seconds": 0.12,
+    "first_response_timeout": 8.0,
+    "tts_connect_timeout_seconds": 1.2,
+    "tts_first_audio_timeout_seconds": 2.0,
+    "tts_audio_idle_timeout_seconds": 2.5,
+    "tts_total_timeout_seconds": 14.0,
+    "tts_playback_grace_seconds": 2.0,
+    "tts_segment_max_chars": 240,
+    "tts_seconds_per_char": 0.44,
+    "tts_operation_base_seconds": 32.0,
+    "tts_operation_seconds_per_char": 0.72,
+    "tts_connection_idle_ttl_seconds": 15.0,
+    "tts_fallback_backend": "none",
+    "tts_cache_enabled": true,
+    "tts_cache_dir": "/home/test/new_project_optimized_v11_navsafe/data/tts_cache",
+    "speech_queue_enabled": true,
+    "speech_shutdown_drain_seconds": 20.0,
+    "listen_timeout": 8.0,
+    "chunk_ms": 100,
+    "silence_tail_sec": 0.25,
+    "asr_timeout": 25.0,
+    "asr_end_smooth_ms": 300,
+    "speaker": "zh_female_xiaohe_jupiter_bigtts",
+    "tts_system_role": "你是一个亲切自然的家庭机器人语音助手。只朗读给定内容，不添加额外说明。",
+    "tts_speaking_style": "使用自然口语语气，节奏轻松，停顿清楚，避免播音腔和逐字念稿感。",
+    "no_play": false,
+    "vad": {
+      "frame_ms": 20,
+      "aggressiveness": 2,
+      "min_rms": 120,
+      "start_speech_ms": 120,
+      "end_silence_ms": 400,
+      "min_speech_ms": 300,
+      "pre_roll_ms": 300
+    }
+  },
+  "wakeup": {
+    "topic": "/ros_robot_controller/wakeup",
+    "message_type": "std_msgs/msg/UInt8",
+    "listener_script": "/home/test/self_program/ros_wakeup_listener.py",
+    "ready_prefix": "READY:",
+    "event_prefix": "WAKEUP:",
+    "speak_reply": true
+  },
+  "daemon": {
+    "replace_existing_on_start": true,
+    "load_ros_environment_on_start": true
+  },
+  "model_preload": {
+    "enabled": false,
+    "strict": true,
+    "startup_timeout_seconds": 40.0,
+    "models": [
+      {
+        "name": "person_detector",
+        "backend": "rknn3lite",
+        "model": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/push_up/models/yolov8s_rknn3.rknn",
+        "weight": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/push_up/models/yolov8s_rknn3.weight",
+        "device_id": "0002:21:00.0",
+        "core_mask": 1,
+        "warmup_inference": true
+      },
+      {
+        "name": "pet_detector",
+        "backend": "rknn3lite",
+        "model": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/pet_tracking/assets/model/yolov8s_rknn3.rknn",
+        "weight": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/pet_tracking/assets/model/yolov8s_rknn3.weight",
+        "device_id": "0004:41:00.0",
+        "core_mask": 1,
+        "warmup_inference": true
+      },
+      {
+        "name": "face_embedding",
+        "backend": "rknnlite",
+        "model": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/face_recognition/assets/model/facenet_vggface2_160.rknn",
+        "npu_core": 1,
+        "warmup_kind": "face_embedding"
+      },
+      {
+        "name": "person_reid",
+        "backend": "rknnlite",
+        "model": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/push_up/models/reid_mmse.rknn",
+        "npu_core": 2,
+        "warmup_kind": "person_reid"
+      },
+      {
+        "name": "asr_encoder",
+        "backend": "rknnlite",
+        "model": "/home/test/refine_0508/model/encoder-epoch-99-avg-1.rknn",
+        "npu_core": 4,
+        "warmup_kind": "none"
+      },
+      {
+        "name": "asr_decoder",
+        "backend": "rknnlite",
+        "model": "/home/test/refine_0508/model/decoder-epoch-99-avg-1.rknn",
+        "npu_core": 4,
+        "warmup_kind": "none"
+      },
+      {
+        "name": "asr_joiner",
+        "backend": "rknnlite",
+        "model": "/home/test/refine_0508/model/joiner-epoch-99-avg-1.rknn",
+        "npu_core": 4,
+        "warmup_kind": "none"
+      }
+    ]
+  },
+  "voiceprint": {
+    "enabled": true,
+    "mode": "observe",
+    "model_path": "/home/test/new_project_optimized_v11_navsafe/models/voiceprint/3dspeaker_eres2net_zh_16k_t300_fp.rknn",
+    "profile_path": "/home/test/new_project_optimized_v11_navsafe/data/voiceprints/zhangsan.npz",
+    "display_name": "张三",
+    "sample_rate": 16000,
+    "frame_count": 300,
+    "npu_core": 2,
+    "accept_threshold": 0.62,
+    "reject_threshold": 0.45,
+    "minimum_audio_seconds": 1.2,
+    "minimum_active_frames": 40,
+    "vad_min_rms": 0.003,
+    "vad_noise_multiplier": 1.8,
+    "trim_padding_seconds": 0.2,
+    "probe_audio_seconds": 2.0,
+    "result_wait_timeout_seconds": 0.12,
+    "warmup_timeout_seconds": 8.0,
+    "persist_audio": false,
+    "fail_open": true
+  },
+  "reminders": {
+    "runtime_dir": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/agent_0625",
+    "poll_seconds": 0.2,
+    "self_echo_suppression_seconds": 2.5
+  },
+  "cameras": {
+    "front": {
+      "device": "/dev/video22",
+      "width": 640,
+      "height": 480,
+      "fps": 15,
+      "warmup_frames": 5,
+      "jpeg_quality": 90,
+      "image_path": "/home/test/new_project_optimized_v11_navsafe/runtime/media/front_camera.jpg",
+      "video_path": "/home/test/new_project_optimized_v11_navsafe/runtime/media/front_camera.mp4",
+      "record_seconds": 3,
+      "fourcc": "mp4v"
+    },
+    "back": {
+      "device": "/dev/video31",
+      "width": 640,
+      "height": 480,
+      "fps": 15,
+      "warmup_frames": 5,
+      "jpeg_quality": 90,
+      "image_path": "/home/test/new_project_optimized_v11_navsafe/runtime/media/back_camera.jpg",
+      "video_path": "/home/test/new_project_optimized_v11_navsafe/runtime/media/back_camera.mp4",
+      "record_seconds": 3,
+      "fourcc": "mp4v"
+    }
+  },
+  "home_scene": {
+    "enabled": true,
+    "semantic_routing": "llm_only",
+    "rooms": {
+      "study": {
+        "display_name": "书房",
+        "origin_point": "origin",
+        "pet_point": "study_pet_c",
+        "meeting_projection_point": "study_projection_d"
+      },
+      "living_room": {
+        "display_name": "客厅",
+        "light_service_point": "living_room_entry_a",
+        "fitness_point": "living_room_projection_b",
+        "light_device": "living_room_light"
+      }
+    },
+    "actors": {
+      "owner": {
+        "display_name": "主人",
+        "identity": "zhangsan"
+      },
+      "pet": {
+        "display_name": "豆豆",
+        "type": "dog",
+        "home_point": "study_pet_c"
+      }
+    },
+    "defaults": {
+      "exercise": "push_up",
+      "feed_grams": 10,
+      "pet_search_timeout_seconds": 30,
+      "pet_search_angular": 0.24,
+      "pet_acquire_frames": 3
+    }
+  },
+  "execution": {
+    "default_timeout_seconds": 120,
+    "long_running_timeout_seconds": 1800,
+    "completion_finalizer_timeout_seconds": 8,
+    "skill_entrypoints": {
+      "face_recognition": "/home/test/single_function/face_recognition/run.sh",
+      "face_registration": "/home/test/single_function/face_registration/run.sh",
+      "person_tracking": "/home/test/new_project_optimized_v11_navsafe/integrations/person_tracking/run.sh",
+      "pet_tracking": "/home/test/new_project_optimized_v11_navsafe/integrations/pet_tracking/run.sh",
+      "squat": "/home/test/new_project_optimized_v11_navsafe/integrations/squat/run.sh",
+      "push_up": "/home/test/new_project_optimized_v11_navsafe/integrations/push_up/run.sh",
+      "pull_up": "/home/test/new_project_optimized_v11_navsafe/integrations/pull_up/run.sh",
+      "navigation_goto": "/home/test/new_project_optimized_v11_navsafe/integrations/navigation_goto/run.sh",
+      "projector_control": "/home/test/new_project_optimized_v11_navsafe/integrations/projector_control/run.sh",
+      "environment_perception": "/home/test/new_project_optimized_v11_navsafe/integrations/environment_perception/run.sh",
+      "head_control": "/home/test/new_project_optimized_v11_navsafe/skills/head_control/run.sh"
+    },
+    "action_timeout_seconds": {
+      "projector_control.meeting_presentation_on": 1800
+    },
+    "pet_find_timeout_seconds": 22,
+    "pet_initial_find_timeout_seconds": 5,
+    "pet_track_duration_seconds": 15,
+    "pet_tracking": {
+      "base_speed": 1.0,
+      "max_linear": 0.55,
+      "max_angular": 1.2,
+      "steering_gain": 1.25,
+      "speed_ema_alpha": 0.32,
+      "max_speed_step": 0.08,
+      "search_spin_speed": 0.32,
+      "execute": true,
+      "linear_accel": 1.1,
+      "angular_accel": 2.8,
+      "full_speed_ratio": 0.56,
+      "stop_ratio": 0.7,
+      "reverse_enter_ratio": 0.84,
+      "reverse_exit_ratio": 0.74,
+      "reverse_scale": 0.42,
+      "curve_start": 0.15,
+      "curve_stop": 0.8,
+      "min_curve_scale": 0.4,
+      "search_angular": 0.32,
+      "near_navigation_point_threshold_m": 0.4
+    },
+    "person_tracking": {
+      "execute": true,
+      "base_speed": 0.78,
+      "max_linear": 0.55,
+      "max_angular": 1.3,
+      "steering_gain": 0.46,
+      "speed_ema_alpha": 0.32,
+      "max_speed_step": 0.08,
+      "search_spin_speed": 0.28
+    },
+    "fitness_identity": {
+      "enabled": true,
+      "fail_closed": true,
+      "person_detector_interval_frames": 4,
+      "face_verify_interval_seconds": 1.2,
+      "target_lost_grace_seconds": 0.8,
+      "ambiguity_hold_seconds": 0.6,
+      "appearance_update_alpha": 0.08,
+      "appearance_match_threshold": 0.72,
+      "min_person_iou": 0.12,
+      "max_center_shift": 0.24,
+      "face_match_threshold": 0.7,
+      "face_match_margin": 0.08,
+      "face_data_dir": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/face_data",
+      "face_database": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/face_data/faces.db",
+      "face_identity_event": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/face_data/identity_event.json",
+      "face_image_dir": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/face_data/face_images",
+      "face_model": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/face_recognition/assets/model/facenet_vggface2_160.rknn",
+      "person_model": "/home/test/single_function/person_tracking/assets/model/yolov8s_rknn3.rknn",
+      "person_weight": "/home/test/single_function/person_tracking/assets/model/yolov8s_rknn3.weight"
+    },
+    "interrupt_process_grace_seconds": 0.5,
+    "process_output_poll_seconds": 0.01,
+    "head_control_wait_seconds": 0.35,
+    "head_control_discovery_timeout_seconds": 3.0,
+    "movement_discovery_timeout_seconds": 0.8,
+    "ros_retry": {
+      "attempts": 3,
+      "delay_seconds": 0.3,
+      "backoff": 1.5,
+      "skills": [
+        "head_control",
+        "move_forward",
+        "move_backward",
+        "move_left",
+        "move_right",
+        "navigation_goto",
+        "projector_control"
+      ]
+    },
+    "stream_single_function_stdout": true,
+    "history_keep_latest": 200,
+    "disabled_skills": [
+      "fan_control"
+    ],
+    "parallel_steps_enabled": true,
+    "parallel_max_workers": 3
+  },
+  "speech": {
+    "single_function_stdout_events": true,
+    "max_event_chars": 120,
+    "suppress_restore_step_events": true,
+    "face_confident_score_threshold": 0.7,
+    "variation_enabled": true,
+    "recent_variant_window": 2,
+    "weather_repeat_window_seconds": 600,
+    "care_cooldown_seconds": 900,
+    "strict_chinese_output": true,
+    "count_speech_priority": true,
+    "recent_context_dedupe_seconds": 30,
+    "name_pronunciations": {
+      "zhangsan": "张三",
+      "living_room": "客厅",
+      "origin": "原点",
+      "zero_point": "原点",
+      "living_room_entry_a": "客厅A点",
+      "living_room_projection_b": "客厅B点",
+      "study_pet_c": "书房C点",
+      "study_projection_d": "书房D点"
+    }
+  },
+  "memory": {
+    "enabled": true,
+    "facts_file": "/home/test/new_project_optimized_v11_navsafe/data/user_facts.json",
+    "max_facts": 200,
+    "prompt_context_items": 30
+  },
+  "robot_state": {
+    "pose_distance_threshold_m": 0.35,
+    "yaw_threshold_rad": 0.45,
+    "head_angle_threshold": 3,
+    "pose_read_attempts": 2,
+    "pose_read_retry_delay_seconds": 0.1,
+    "pose_topic_timeout_seconds": 0.8,
+    "pose_command_timeout_seconds": 1.5,
+    "refresh_pose_after_base_motion": false,
+    "persistent_pose_reader": true,
+    "pose_reader_backend": "ros2_cli_stream",
+    "pose_max_age_seconds": 1.5,
+    "pose_interrupt_max_age_seconds": 2.5,
+    "pose_required_frame": "map",
+    "pose_allow_odom_for_diagnostics": true,
+    "pose_wait_for_fresh_seconds": 0.35,
+    "pose_snapshot_path": "/home/test/new_project_optimized_v11_navsafe/runtime/last_reliable_pose.json",
+    "resume_head_wait_seconds": 0.6,
+    "resume_parallel_hardware": true,
+    "navigation_points_path": "/home/test/new_project_optimized_v11_navsafe/data/navigation/named_points.json",
+    "head_angles": {
+      "up": 208,
+      "down": 163,
+      "level": 185
+    }
+  },
+  "voice_decision": {
+    "backend": "doubao_realtime",
+    "warmup_on_start": true,
+    "preconnect_next_turn": true,
+    "preconnect_during_wake_reply": true,
+    "preconnect_operation_timeout_seconds": 1.8,
+    "preconnect_observation_grace_seconds": 0.35,
+    "prepared_client_ttl_seconds": 15.0,
+    "prepared_client_ping_enabled": true,
+    "prepared_client_ping_timeout_seconds": 0.45,
+    "connect_timeout_seconds": 4.0,
+    "close_timeout_seconds": 1.2,
+    "connection_cleanup_timeout_seconds": 1.5,
+    "operation_cancel_grace_seconds": 0.35,
+    "event_loop_restart_join_seconds": 1.0,
+    "operation_timeout_seconds": 22.0,
+    "empty_asr_replay_enabled": true,
+    "empty_asr_replay_min_audio_ms": 500,
+    "empty_asr_replay_timeout_seconds": 8.0,
+    "reuse_tts_connection": false,
+    "fresh_tts_connection_per_answer": true,
+    "fast_local_asr_decision": false,
+    "fast_local_skills": [
+      "light_control",
+      "feeder_control",
+      "move_forward",
+      "move_backward",
+      "move_left",
+      "move_right",
+      "realtime_information",
+      "projector_control",
+      "head_control",
+      "navigation_goto",
+      "squat",
+      "push_up",
+      "pull_up",
+      "face_recognition",
+      "face_registration",
+      "reminder_schedule",
+      "reminder_query",
+      "reminder_cancel"
+    ],
+    "lean_skill_prompt": true,
+    "decision_timeout_after_input": 2.5,
+    "model_text_first_timeout_seconds": 4.0,
+    "asr_command_fallback_timeout_seconds": 6.0,
+    "semantic_adjudication_on_unresolved": false,
+    "semantic_action_confidence_threshold": 0.78,
+    "semantic_adjudication_timeout_after_input_seconds": 3.0,
+    "semantic_adjudication_asr_fallback_timeout_seconds": 6.0,
+    "followup_decision_timeout_after_input": 5.0,
+    "resume_decision_timeout_after_input": 4.0,
+    "fast_tool_json": true,
+    "compact_decision_json": true,
+    "compact_decision_version": 1,
+    "detailed_timing_log": true,
+    "stream_speech_after_chars": 24,
+    "play_model_speech_stream": false,
+    "system_prompt_max_chars": 24000,
+    "debug_timing": false
+  }
+}

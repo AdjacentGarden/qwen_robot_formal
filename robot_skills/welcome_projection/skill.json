@@ -1,0 +1,6 @@
+{
+  "name": "welcome_projection",
+  "description": "播放固定时长的回家欢迎视频并自动关闭投影。",
+  "actions": ["prepare", "play", "stop", "status"],
+  "default_duration_seconds": 3
+}

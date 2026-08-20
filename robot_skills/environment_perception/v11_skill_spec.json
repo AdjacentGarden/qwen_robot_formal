@@ -1,0 +1,204 @@
+{
+  "allowed_actions": [
+    "general",
+    "projection",
+    "fitness",
+    "fitness_projection",
+    "lighting"
+  ],
+  "certification_status": "unchecked",
+  "composition_affordances": [],
+  "config_defaults": {
+    "camera": null,
+    "dry_run": false,
+    "json_output": true,
+    "purpose": "general",
+    "timeout": null,
+    "use_env_proxy": false
+  },
+  "description_zh": "调用前摄/后摄图像和视觉模型进行环境、投影或健身空间感知。前摄使用 config.cameras.front.device 判断投影、会议、娱乐环境；后摄使用 config.cameras.back.device 判断运动空间和用户身体是否可入镜。",
+  "disabled_reason": null,
+  "domain_tags": [
+    "vision",
+    "environment",
+    "projection",
+    "fitness",
+    "meeting",
+    "entertainment",
+    "safety",
+    "front_camera",
+    "back_camera",
+    "body_view"
+  ],
+  "entrypoint": "/home/test/single_function/environment_perception/run.sh",
+  "example_function_call": {
+    "arguments": {
+      "purpose": "general"
+    },
+    "name": "environment_perception"
+  },
+  "llm_notes_zh": [
+    "优先只填用户明确给出的参数，未给出的参数使用 config_defaults。",
+    "涉及 moves_robot、moves_robot_long_running、opens_camera 的调用需要确认用户确实要求执行硬件动作。",
+    "side_effects 包含 disabled 的 skill 当前仅用于测试禁用返回，不应用于真实硬件控制。",
+    "该 skill 只通过 single_function stdout 输出语音事件，由 /home/test/new_project 统一接管 TTS 播报。"
+  ],
+  "module": "/home/test/self_program/new_self_test.py",
+  "name": "environment_perception",
+  "optional_enhancements": [
+    {
+      "applies_when_zh": "用户提到投影、会议、运动或娱乐，但环境是否适合投影不明确。",
+      "enhancement_id": "projection_readiness_check",
+      "if_yes_task": {
+        "arguments": {
+          "purpose": "projection"
+        },
+        "order": "before_projector",
+        "skill": "environment_perception"
+      },
+      "question_zh": "需要我先看一下环境是否适合投影吗？",
+      "related_skill": "projector_control"
+    }
+  ],
+  "optional_slots": [
+    "purpose",
+    "camera",
+    "exercise_type"
+  ],
+  "parameters": {
+    "properties": {
+      "camera": {
+        "type": "string|null",
+        "required": false,
+        "description": "front、back、both 或设备路径。projection 默认 front；fitness 默认 back；fitness_projection 默认 both。"
+      },
+      "dry_run": {
+        "default_source": "audio_config.json",
+        "description": "只校验参数，不真正执行硬件动作。",
+        "python_default": null,
+        "required": false,
+        "type": "boolean|null"
+      },
+      "json_output": {
+        "default_source": "audio_config.json",
+        "description": "是否要求底层 skill 输出 JSON。",
+        "python_default": null,
+        "required": false,
+        "type": "boolean|null"
+      },
+      "purpose": {
+        "default_source": "audio_config.json",
+        "description": "环境感知目的，例如 general、projection、fitness、lighting。",
+        "python_default": null,
+        "required": false,
+        "type": "string|null"
+      },
+      "timeout": {
+        "default_source": "audio_config.json",
+        "description": "底层 skill 超时时间。",
+        "python_default": null,
+        "required": false,
+        "type": "number|null"
+      },
+      "use_env_proxy": {
+        "default_source": "audio_config.json",
+        "description": "是否允许底层网络请求读取环境代理。",
+        "python_default": null,
+        "required": false,
+        "type": "boolean|null"
+      },
+      "exercise_type": {
+        "type": "string|null",
+        "required": false,
+        "description": "要判断的运动类型：squat、push_up、pull_up。"
+      }
+    },
+    "required": [],
+    "type": "object"
+  },
+  "planning_notes_zh": [
+    "purpose=projection 使用 config.cameras.front.device 指向的前摄判断前方墙面/幕布是否适合投影。",
+    "purpose=fitness 使用 config.cameras.back.device 指向的后摄判断运动空间、用户身体是否可入镜和是否安全。",
+    "purpose=fitness_projection 同时使用前摄和后摄：前摄判断投影，后摄判断运动。",
+    "摄像头画面是观察结果，不是可复原状态；恢复时重新拍摄并重新判断。"
+  ],
+  "recovery": {
+    "resumable": false,
+    "requires_scene_restore": false,
+    "resume_strategy": "rerun_perception",
+    "scene_restore_requirements": [],
+    "progress_schema": {}
+  },
+  "required_slots": [],
+  "resources": [
+    "camera",
+    "vlm"
+  ],
+  "returns": {
+    "description_zh": "底层 skill 封装通常返回 subprocess.CompletedProcess；摄像头拍照/录像返回输出文件 Path。",
+    "type": "subprocess.CompletedProcess or pathlib.Path"
+  },
+  "side_effects": [
+    "opens_camera",
+    "network_request"
+  ],
+  "single_function_contract": {
+    "actions": [
+      "general",
+      "projection",
+      "fitness",
+      "fitness_projection",
+      "lighting"
+    ],
+    "allow_direct_execution": true,
+    "category": "单功能",
+    "certification_notes": [],
+    "certification_status": "unchecked",
+    "demo_script": [],
+    "description": "Use cameras and optional VLM to judge projection, fitness space, and risks.",
+    "entrypoint": "/home/test/single_function/environment_perception/run.sh",
+    "examples": [],
+    "id": "environment_perception",
+    "intents": [],
+    "name": "environment_perception",
+    "parameters_schema": {},
+    "resources": [
+      "camera"
+    ],
+    "scene_id": "environment_projection",
+    "skill_name": "environment_perception",
+    "task_kind": "short",
+    "timeout_sec": 35.0
+  },
+  "single_function_skill": "environment_perception",
+  "slot_questions_zh": {
+    "purpose": "你想让我重点判断投影、运动空间，还是普通环境？"
+  },
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "examples": [
+      "识别结果是张三，置信度0.82",
+      "人脸注册完成"
+    ],
+    "group": "session",
+    "runtime_owner": "/home/test/new_project",
+    "speak": [
+      "final_summary"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "trigger_phrases_zh": [
+    "看一下环境",
+    "适不适合投影",
+    "运动空间够不够",
+    "周围安全吗"
+  ],
+  "type": "python_function",
+  "when_to_call_zh": [
+    "判断环境是否适合投影",
+    "检查运动空间或周围风险",
+    "询问机器人看到什么"
+  ]
+}

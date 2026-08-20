@@ -1,0 +1,124 @@
+{
+  "allowed_actions": [
+    "query",
+    "list",
+    "status"
+  ],
+  "certification_status": "checked",
+  "composition_affordances": [],
+  "config_defaults": {
+    "action": "query",
+    "dry_run": false
+  },
+  "description_zh": "查询当前提醒列表。",
+  "disabled_reason": null,
+  "domain_tags": [
+    "reminder",
+    "query"
+  ],
+  "entrypoint": "/home/test/single_function/reminder_query/run.sh",
+  "example_function_call": {
+    "arguments": {},
+    "name": "reminder_query"
+  },
+  "llm_notes_zh": [
+    "优先只填用户明确给出的参数，未给出的参数使用 config_defaults。",
+    "涉及 moves_robot、moves_robot_long_running、opens_camera 的调用需要确认用户确实要求执行硬件动作。",
+    "side_effects 包含 disabled 的 skill 当前仅用于测试禁用返回，不应用于真实硬件控制。",
+    "该 skill 只通过 single_function stdout 输出语音事件，由 /home/test/new_project 统一接管 TTS 播报。"
+  ],
+  "module": "/home/test/self_program/new_self_test.py",
+  "name": "reminder_query",
+  "optional_enhancements": [],
+  "optional_slots": [],
+  "parameters": {
+    "properties": {
+      "dry_run": {
+        "default_source": "audio_config.json",
+        "description": "只校验参数，不真正执行硬件动作。",
+        "python_default": null,
+        "required": false,
+        "type": "boolean|null"
+      }
+    },
+    "required": [],
+    "type": "object"
+  },
+  "planning_notes_zh": [
+    "查询型 skill，不需要追问。",
+    "恢复任务时必须参考 recovery 字段、TaskGroup.resume_context 和 RobotStateSnapshot，不能盲目从头重复已完成 step。"
+  ],
+  "recovery": {
+    "notes_zh": [
+      "提醒类任务以事务结果为准：已提交不重复，未提交可重试。"
+    ],
+    "progress_schema": {},
+    "requires_scene_restore": false,
+    "resumable": true,
+    "resume_argument_mapping": {},
+    "resume_strategy": "idempotent_transaction_retry",
+    "scene_restore_requirements": []
+  },
+  "required_slots": [],
+  "resources": [
+    "reminder_store"
+  ],
+  "returns": {
+    "description_zh": "底层 skill 封装通常返回 subprocess.CompletedProcess；摄像头拍照/录像返回输出文件 Path。",
+    "type": "subprocess.CompletedProcess or pathlib.Path"
+  },
+  "side_effects": [],
+  "single_function_contract": {
+    "actions": [
+      "query",
+      "list",
+      "status"
+    ],
+    "allow_direct_execution": true,
+    "category": "提醒",
+    "certification_notes": [],
+    "certification_status": "unchecked",
+    "demo_script": [],
+    "description": "List scheduled reminders.",
+    "entrypoint": "/home/test/single_function/reminder_query/run.sh",
+    "examples": [
+      "我还有什么提醒"
+    ],
+    "id": "reminder.query",
+    "intents": [
+      "reminder"
+    ],
+    "name": "查询提醒",
+    "parameters_schema": {},
+    "resources": [],
+    "scene_id": "reminder",
+    "skill_name": "reminder.query",
+    "task_kind": "short",
+    "timeout_sec": 10.0
+  },
+  "single_function_skill": "reminder_query",
+  "slot_questions_zh": {},
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "examples": [],
+    "group": "short",
+    "runtime_owner": "/home/test/new_project",
+    "speak": [
+      "final_summary",
+      "json_message"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "trigger_phrases_zh": [
+    "我有什么提醒",
+    "查询提醒",
+    "还有哪些提醒"
+  ],
+  "type": "python_function",
+  "when_to_call_zh": [
+    "用户询问还有什么提醒",
+    "用户查询提醒状态"
+  ]
+}

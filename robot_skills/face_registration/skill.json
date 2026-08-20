@@ -1,0 +1,46 @@
+{
+  "actions": [
+    "register"
+  ],
+  "allow_direct_execution": false,
+  "category": "单功能",
+  "certification_notes": [],
+  "certification_status": "unchecked",
+  "demo_script": [],
+  "description": "Register a face by name.",
+  "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/face_registration/run.sh",
+  "examples": [],
+  "id": "face_registration",
+  "intents": [],
+  "name": "face_registration",
+  "parameters_schema": {},
+  "resources": [
+    "camera",
+    "face_db"
+  ],
+  "scene_id": "identity",
+  "skill_name": "face_registration",
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "examples": [
+      "识别结果是张三，置信度0.82",
+      "人脸注册完成"
+    ],
+    "group": "session",
+    "runtime_owner": "/home/test/new_project",
+    "speak": [
+      "final_summary"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "task_kind": "session",
+  "timeout_sec": 60.0,
+  "resident_runtime": {
+    "enabled": true,
+    "launcher": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime.sh",
+    "socket": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/resident/skills.sock",
+    "legacy_entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/face_registration/run_legacy.sh"
+  }
+}

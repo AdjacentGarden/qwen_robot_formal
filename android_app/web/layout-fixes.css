@@ -1,0 +1,17 @@
+.view,
+.map-card,
+.map-stage {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.map-card {
+  width: 100%;
+}
+
+.map-stage canvas {
+  position: absolute;
+  inset: 0;
+  min-width: 0;
+  max-width: 100%;
+}

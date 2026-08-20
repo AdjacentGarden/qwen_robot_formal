@@ -1,0 +1,175 @@
+{
+  "name": "feeder_control",
+  "type": "python_function",
+  "module": "/home/test/self_program/new_self_test.py",
+  "entrypoint": "/home/test/single_function/feeder_control/run.sh",
+  "single_function_skill": "feeder_control",
+  "certification_status": "unchecked",
+  "description_zh": "通过米家云控制宠物投食机出粮，未指定数量时默认投食10克，也可查询设备在线状态。",
+  "domain_tags": [
+    "pet_care",
+    "feeding",
+    "mijia",
+    "home_control"
+  ],
+  "trigger_phrases_zh": [
+    "给小狗喂食",
+    "小狗有点饿了",
+    "小猫饿了",
+    "宠物还没吃饭",
+    "喂一下猫",
+    "投食",
+    "让投食机出粮",
+    "投食机在线吗"
+  ],
+  "allowed_actions": [
+    "feed",
+    "status",
+    "check"
+  ],
+  "required_slots": [],
+  "optional_slots": [
+    "grams",
+    "portions"
+  ],
+  "slot_questions_zh": {},
+  "config_defaults": {
+    "action": "feed",
+    "grams": 10
+  },
+  "parameters": {
+    "type": "object",
+    "required": [],
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": [
+          "feed",
+          "status",
+          "check"
+        ],
+        "default": "feed",
+        "description": "投食机操作。"
+      },
+      "grams": {
+        "type": "integer",
+        "minimum": 10,
+        "maximum": 100,
+        "multipleOf": 10,
+        "default": 10,
+        "description": "投食克数；未指定时使用10克。"
+      },
+      "portions": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "description": "投食份数，与 grams 二选一，每份10克。"
+      },
+      "dry_run": {
+        "type": "boolean",
+        "default": false,
+        "description": "只校验参数，不真实出粮。"
+      }
+    }
+  },
+  "example_function_call": {
+    "name": "feeder_control",
+    "arguments": {
+      "action": "feed"
+    }
+  },
+  "when_to_call_zh": [
+    "用户明确要求给宠物喂食或让投食机出粮",
+    "用户明确陈述宠物已经饿了、还没吃饭或到了饭点",
+    "用户询问投食机是否在线",
+    "宠物照护任务明确包含一次投食动作"
+  ],
+  "planning_notes_zh": [
+    "用户要求喂食但未说数量时直接使用默认10克，不要为数量追问。",
+    "小狗有点饿了、小猫饿了、宠物还没吃饭等陈述按默认10克投食；人的饥饿、否定句和不确定疑问不得触发。",
+    "用户明确数量时仅接受10到100克且为10的整数倍。",
+    "投食是不可逆动作，执行器和 Skill 都不能自动重试。",
+    "中断时结果可能不确定，再次执行前必须明确告诉用户并获得确认。"
+  ],
+  "llm_notes_zh": [
+    "不要把寻找或跟踪宠物误规划为投食。",
+    "不要同时传 grams 和 portions。",
+    "该 skill 通过 stdout JSON message 交由 new_project 统一播报。"
+  ],
+  "optional_enhancements": [],
+  "composition_affordances": [
+    {
+      "applies_to_domains": [
+        "pet_care",
+        "daily_routine"
+      ],
+      "suggest_when": "用户明确要求安排宠物喂食",
+      "effect": "执行一次定量出粮"
+    }
+  ],
+  "resources": [
+    "network",
+    "mijia_cloud",
+    "mijia_pet_feeder"
+  ],
+  "side_effects": [
+    "irreversible_dispense",
+    "network_request"
+  ],
+  "recovery": {
+    "captured_in_robot_state": false,
+    "resumable": true,
+    "resume_strategy": "repeat_with_explicit_confirmation",
+    "requires_scene_restore": false,
+    "scene_restore_requirements": [],
+    "repeat_safe": false,
+    "repeat_requires_confirmation": true,
+    "progress_schema": {},
+    "resume_argument_mapping": {},
+    "notes_zh": [
+      "只记录最后一次执行结果，不把 feed 当成可恢复硬件状态。"
+    ]
+  },
+  "returns": {
+    "type": "object",
+    "description_zh": "返回 ok、action、message、实际克数、份数及耗时。"
+  },
+  "result_contract": {
+    "success_field": "ok",
+    "message_field": "message",
+    "amount_path": "result.actual_grams",
+    "non_idempotent": true
+  },
+  "single_function_contract": {
+    "id": "feeder_control",
+    "name": "feeder_control",
+    "skill_name": "feeder_control",
+    "actions": [
+      "feed",
+      "status",
+      "check"
+    ],
+    "allow_direct_execution": true,
+    "category": "宠物照护",
+    "certification_status": "unchecked",
+    "entrypoint": "/home/test/single_function/feeder_control/run.sh",
+    "resources": [
+      "network",
+      "mijia_cloud",
+      "mijia_pet_feeder"
+    ],
+    "scene_id": "pet_care",
+    "task_kind": "short",
+    "timeout_sec": 15.0
+  },
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "runtime_owner": "/home/test/new_project",
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "speak": [
+      "json_message"
+    ],
+    "version": 1
+  }
+}

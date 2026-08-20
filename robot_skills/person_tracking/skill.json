@@ -1,0 +1,57 @@
+{
+  "actions": [
+    "find",
+    "track",
+    "stop"
+  ],
+  "allow_direct_execution": false,
+  "category": "单功能",
+  "certification_notes": [],
+  "certification_status": "unchecked",
+  "demo_script": [],
+  "description": "Lock the registered face identity, maintain that identity with continuous ReID in multi-person scenes, and follow only that person.",
+  "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/person_tracking/run.sh",
+  "examples": [],
+  "id": "person_tracking",
+  "intents": [],
+  "name": "person_tracking",
+  "parameters_schema": {
+    "name": "registered identity; defaults to zhangsan",
+    "camera": "default config.cameras.back.device",
+    "duration": "tracking duration in seconds",
+    "execute": "publish motion only when explicitly enabled"
+  },
+  "resources": [
+    "camera",
+    "base"
+  ],
+  "scene_id": "person_follow",
+  "skill_name": "person_tracking",
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "examples": [
+      "找到目标行人，开始跟随",
+      "暂时没有找到要跟随的人",
+      "行人跟随已经结束"
+    ],
+    "group": "tracking",
+    "runtime_owner": "/home/test/new_project_optimized_v11_navsafe",
+    "speak": [
+      "found",
+      "not_found",
+      "lost",
+      "complete"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "task_kind": "long",
+  "timeout_sec": 120.0,
+  "resident_runtime": {
+    "enabled": true,
+    "launcher": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime.sh",
+    "socket": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/resident/skills.sock",
+    "legacy_entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/person_tracking/run_legacy.sh"
+  }
+}

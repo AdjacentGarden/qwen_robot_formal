@@ -1,0 +1,229 @@
+{
+  "allowed_actions": [
+    "fitness_video_on",
+    "meeting_presentation_on",
+    "meeting_pause",
+    "meeting_resume",
+    "internal_on",
+    "on",
+    "off",
+    "status"
+  ],
+  "certification_status": "unchecked",
+  "composition_affordances": [
+    {
+      "affordance_id": "external_video_projection_for_fitness",
+      "applies_to_domains": [
+        "fitness"
+      ],
+      "if_yes_task": {
+        "arguments": {
+          "action": "fitness_video_on"
+        },
+        "order": "before_primary_task",
+        "skill": "projector_control"
+      },
+      "question_zh": "需要我播放运动视频辅助训练吗？"
+    },
+    {
+      "affordance_id": "projection_for_meeting_entertainment",
+      "applies_to_domains": [
+        "meeting",
+        "entertainment"
+      ],
+      "if_yes_task": {
+        "arguments": {
+          "action": "meeting_presentation_on",
+          "hold": false
+        },
+        "order": "before_primary_task",
+        "skill": "projector_control"
+      },
+      "question_zh": "需要我打开投影吗？"
+    }
+  ],
+  "config_defaults": {
+    "action": "status",
+    "dry_run": false,
+    "json_output": true,
+    "timeout": null
+  },
+  "description_zh": "控制投影仪开关、运动视频和会议图片循环。会议开始时先打开光源再执行启动脚本；meeting_pause 停止循环并保留当前画面，meeting_resume 恢复循环。",
+  "disabled_reason": null,
+  "domain_tags": [
+    "projection",
+    "fitness",
+    "meeting",
+    "entertainment",
+    "display",
+    "long_running"
+  ],
+  "entrypoint": "/home/test/new_project_optimized_v11_navsafe/integrations/projector_control/run.sh",
+  "example_function_call": {
+    "arguments": {
+      "action": "status"
+    },
+    "name": "projector_control"
+  },
+  "llm_notes_zh": [
+    "优先只填用户明确给出的参数，未给出的参数使用 config_defaults。",
+    "涉及 moves_robot、moves_robot_long_running、opens_camera 的调用需要确认用户确实要求执行硬件动作。",
+    "side_effects 包含 disabled 的 skill 当前仅用于测试禁用返回，不应用于真实硬件控制。",
+    "该 skill 只通过 single_function stdout 输出语音事件，由 /home/test/new_project 统一接管 TTS 播报。"
+  ],
+  "module": "/home/test/self_program/new_self_test.py",
+  "name": "projector_control",
+  "optional_enhancements": [],
+  "optional_slots": [
+    "action"
+  ],
+  "parameters": {
+    "properties": {
+      "action": {
+        "default_source": "audio_config.json",
+        "description": "要执行的动作，优先使用 allowed_actions 中的值。",
+        "python_default": null,
+        "required": false,
+        "type": "string"
+      },
+      "dry_run": {
+        "default_source": "audio_config.json",
+        "description": "只校验参数，不真正执行硬件动作。",
+        "python_default": null,
+        "required": false,
+        "type": "boolean|null"
+      },
+      "json_output": {
+        "default_source": "audio_config.json",
+        "description": "是否要求底层 skill 输出 JSON。",
+        "python_default": null,
+        "required": false,
+        "type": "boolean|null"
+      },
+      "timeout": {
+        "default_source": "audio_config.json",
+        "description": "底层 skill 超时时间。",
+        "python_default": null,
+        "required": false,
+        "type": "number|null"
+      }
+    },
+    "required": [],
+    "type": "object"
+  },
+  "planning_notes_zh": [
+    "用户提到运动、会议或娱乐但未提投影时，不要自动打开投影；应主动询问是否需要投影辅助。",
+    "用户明确要求开始会议投影或查看会议内容时，必须使用 meeting_projection 复合过程，由 autonomous_projection 从实时地图按一墙一个、墙中心法线外2米的策略自主选位；不得先导航到预设白墙点，也不得直接调用 meeting_presentation_on 跳过墙面搜索。",
+    "meeting_presentation_on 启动独立持久会话：先调用 light_on，再执行 /home/test/start_projection_ppt.sh。普通唤醒或对话不得关闭投影。",
+    "用户要求暂停滚动时调用 meeting_pause，执行 /home/test/stop_projection_ppt.sh 并停在当前画面；用户要求继续滚动时调用 meeting_resume，再执行启动脚本。",
+    "会议投影不支持上一页和下一页，绝对不能生成手动翻页动作。只有明确关闭会议投影时才停止循环并调用 light_off。",
+    "恢复任务时必须参考 recovery 字段、TaskGroup.resume_context 和 RobotStateSnapshot，不能盲目从头重复已完成 step。"
+  ],
+  "recovery": {
+    "captured_in_robot_state": true,
+    "notes_zh": [
+      "状态型硬件不作为长任务恢复，但执行后的状态会进入 RobotStateSnapshot，供其他任务恢复现场。"
+    ],
+    "progress_schema": {},
+    "requires_scene_restore": true,
+    "resumable": true,
+    "resume_argument_mapping": {
+      "hold": false
+    },
+    "resume_strategy": "restore_scene_then_restart_action",
+    "scene_restore_requirements": [
+      "pose",
+      "head",
+      "projector"
+    ]
+  },
+  "required_slots": [],
+  "resources": [
+    "projector"
+  ],
+  "returns": {
+    "description_zh": "底层 skill 封装通常返回 subprocess.CompletedProcess；摄像头拍照/录像返回输出文件 Path。",
+    "type": "subprocess.CompletedProcess or pathlib.Path"
+  },
+  "side_effects": [
+    "controls_projector"
+  ],
+  "single_function_contract": {
+    "actions": [
+      "fitness_video_on",
+      "meeting_presentation_on",
+      "meeting_pause",
+      "meeting_resume",
+      "internal_on",
+      "on",
+      "off",
+      "status"
+    ],
+    "allow_direct_execution": true,
+    "category": "单功能",
+    "certification_notes": [],
+    "certification_status": "unchecked",
+    "demo_script": [],
+    "description": "Control projector power, meeting slide loop pause/resume, or external exercise video.",
+    "entrypoint": "/home/test/new_project_optimized_v11_navsafe/integrations/projector_control/run.sh",
+    "examples": [],
+    "id": "projector_control",
+    "intents": [],
+    "name": "projector_control",
+    "parameters_schema": {},
+    "resources": [
+      "projector"
+    ],
+    "scene_id": "environment_projection",
+    "skill_name": "projector_control",
+    "task_kind": "short",
+    "timeout_sec": 15.0
+  },
+  "single_function_skill": "projector_control",
+  "slot_questions_zh": {
+    "action": "你想打开投影、关闭投影，还是查看投影状态？"
+  },
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "examples": [],
+    "group": "short",
+    "runtime_owner": "/home/test/new_project_optimized_v11_navsafe",
+    "speak": [
+      "final_summary",
+      "json_message"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "trigger_phrases_zh": [
+    "打开投影",
+    "关闭投影",
+    "会议投屏",
+    "投影会议内容",
+    "我想看会议内容",
+    "暂停滚动",
+    "继续滚动",
+    "运动投影",
+    "播放运动视频",
+    "娱乐投影",
+    "投影状态"
+  ],
+  "terminal_actions": [
+    "off"
+  ],
+  "terminal_utterance_markers_zh": [
+    "关闭会议投影",
+    "结束会议投影",
+    "停止会议投影",
+    "关闭投影",
+    "结束投影"
+  ],
+  "terminal_reply_zh": "会议投影已经关闭。",
+  "type": "python_function",
+  "when_to_call_zh": [
+    "用户要求打开/关闭投影",
+    "用户要求投影会议内容、暂停循环或继续循环",
+    "用户询问投影状态"
+  ]
+}

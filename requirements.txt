@@ -1,0 +1,4 @@
+pyaudio==0.2.14
+websockets==13.1
+pypinyin==0.54.0
+rapidfuzz==3.14.1

@@ -1,0 +1,80 @@
+{
+  "actions": [
+    "on",
+    "off",
+    "status",
+    "check"
+  ],
+  "allow_direct_execution": true,
+  "category": "家居控制",
+  "certification_notes": [
+    "Reimplemented with Mijia cloud control; hardware on/off requires on-device acceptance testing."
+  ],
+  "certification_status": "unchecked",
+  "demo_script": [
+    "check",
+    "status",
+    "on --dry-run",
+    "off --dry-run"
+  ],
+  "description": "通过米家云控制已配置的落地灯开关，并可查询设备和电源状态；房间有点暗、屋里太黑或光线不足等环境照明暗示表示开灯。",
+  "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/light_control/run.sh",
+  "examples": [
+    "light_control on",
+    "light_control off",
+    "light_control status"
+  ],
+  "id": "light_control",
+  "intents": [
+    "打开落地灯",
+    "房间有点暗",
+    "屋里太黑了",
+    "光线不足",
+    "关闭落地灯",
+    "查询落地灯状态"
+  ],
+  "name": "light_control",
+  "parameters_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": [
+          "on",
+          "off",
+          "status",
+          "check"
+        ]
+      }
+    },
+    "required": [
+      "action"
+    ],
+    "additionalProperties": false
+  },
+  "resources": [
+    "network",
+    "mijia_cloud",
+    "mijia_floor_lamp"
+  ],
+  "scene_id": "home_control",
+  "skill_name": "light_control",
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "runtime_owner": "/home/test/new_project",
+    "speak": [
+      "json_message"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "task_kind": "short",
+  "timeout_sec": 15.0,
+  "resident_runtime": {
+    "enabled": true,
+    "launcher": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime.sh",
+    "socket": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/resident/skills.sock",
+    "legacy_entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/light_control/run_legacy.sh"
+  }
+}

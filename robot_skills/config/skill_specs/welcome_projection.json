@@ -1,0 +1,19 @@
+{
+  "name": "welcome_projection",
+  "description_zh": "播放三秒欢迎回家专用视频。只能由受保护的 homecoming_welcome 场景调用。",
+  "allowed_actions": ["prepare", "play", "stop", "status"],
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "action": {"type": "string", "enum": ["prepare", "play", "stop", "status"]},
+      "duration": {"type": "number", "minimum": 0.2, "maximum": 10.0}
+    },
+    "required": []
+  },
+  "resources": ["projector"],
+  "example_function_call": {
+    "name": "welcome_projection",
+    "arguments": {"action": "play", "duration": 3}
+  },
+  "disabled_reason": null
+}

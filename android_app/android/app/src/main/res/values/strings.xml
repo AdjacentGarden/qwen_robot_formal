@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">理想同学</string>
+    <string name="title_activity_main">理想同学</string>
+    <string name="package_name">com.lixiang.robot.companion.fixed</string>
+    <string name="custom_url_scheme">com.lixiang.robot.companion.fixed</string>
+</resources>

@@ -1,0 +1,89 @@
+{
+  "actions": [
+    "feed",
+    "status",
+    "check"
+  ],
+  "allow_direct_execution": true,
+  "category": "宠物照护",
+  "certification_notes": [
+    "Reimplemented with a non-retrying Mijia dispense action; real dispensing requires on-device acceptance testing."
+  ],
+  "certification_status": "unchecked",
+  "demo_script": [
+    "check",
+    "status",
+    "feed --grams 10 --dry-run"
+  ],
+  "description": "通过米家云控制已配置的宠物投食机；支持按克数或份数投食，并查询设备在线状态。小狗有点饿了、小猫饿了或宠物还没吃饭等陈述表示按默认量投食。",
+  "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/feeder_control/run.sh",
+  "examples": [
+    "feeder_control",
+    "feeder_control feed --grams 10",
+    "feeder_control feed --portions 2",
+    "feeder_control status"
+  ],
+  "id": "feeder_control",
+  "intents": [
+    "给宠物投食",
+    "小狗有点饿了",
+    "小猫饿了",
+    "宠物还没吃饭",
+    "让投食机出粮",
+    "查询投食机状态"
+  ],
+  "name": "feeder_control",
+  "parameters_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": [
+          "feed",
+          "status",
+          "check"
+        ],
+        "default": "feed"
+      },
+      "grams": {
+        "type": "integer",
+        "minimum": 10,
+        "maximum": 100,
+        "multipleOf": 10,
+        "default": 10
+      },
+      "portions": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10
+      }
+    },
+    "required": [],
+    "additionalProperties": false
+  },
+  "resources": [
+    "network",
+    "mijia_cloud",
+    "mijia_pet_feeder"
+  ],
+  "scene_id": "pet_care",
+  "skill_name": "feeder_control",
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "runtime_owner": "/home/test/new_project",
+    "speak": [
+      "json_message"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "task_kind": "short",
+  "timeout_sec": 15.0,
+  "resident_runtime": {
+    "enabled": true,
+    "launcher": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime.sh",
+    "socket": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/resident/skills.sock",
+    "legacy_entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/feeder_control/run_legacy.sh"
+  }
+}

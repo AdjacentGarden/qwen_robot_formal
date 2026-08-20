@@ -1,0 +1,478 @@
+{
+  "version": 1,
+  "scene": {
+    "rooms": ["书房", "客厅"],
+    "people": [{"display_name": "主人", "identity": "zhangsan"}],
+    "pets": [{"display_name": "豆豆", "detector_class": "dog"}],
+    "points": {
+      "origin": "书房原点",
+      "living_room_entry_a": "客厅入口服务位置",
+      "living_room_projection_b": "客厅运动投影位置",
+      "study_pet_c": "书房豆豆固定位置前方",
+      "study_projection_d": "书房会议投影位置"
+    },
+    "room_defaults": {
+      "study": {
+        "display_name": "书房",
+        "navigation_point": "origin"
+      },
+      "living_room": {
+        "display_name": "客厅",
+        "navigation_point": "living_room_entry_a"
+      }
+    }
+  },
+  "skill_resources": {
+    "move_forward": ["base"],
+    "move_backward": ["base"],
+    "move_left": ["base"],
+    "move_right": ["base"],
+    "navigation_goto": ["base"],
+    "pet_tracking": ["base", "front_camera"],
+    "person_tracking": ["base", "front_camera"],
+    "environment_perception": ["front_camera"],
+    "face_recognition": ["front_camera"],
+    "face_registration": ["front_camera"],
+    "push_up": ["back_camera", "fitness_runtime"],
+    "pull_up": ["back_camera", "fitness_runtime"],
+    "squat": ["back_camera", "fitness_runtime"],
+    "head_control": ["head"],
+    "projector_control": ["projector"],
+    "autonomous_projection": ["base", "head", "front_camera", "projector"],
+    "pet_map_search": ["base", "front_camera", "pet_npu"],
+    "light_control": ["living_room_light"],
+    "feeder_control": ["feeder"]
+  },
+  "procedures": {
+    "living_room_light_service": {
+      "description": "客厅灯光服务。普通表达打开客厅灯时，开灯与导航到客厅A点并行；到达后使用前摄观察灯光是否亮起。Token过期、设备离线、网络或接口失败只影响灯控结果，不得阻断导航与现场观察。只有用户明确要求只远程开灯或不用过去时，才改用原子 light_control.on。",
+      "semantic_examples": [
+        "天黑了，帮我打开客厅的灯",
+        "客厅太暗了",
+        "去客厅帮我开灯",
+        "把客厅照亮"
+      ],
+      "parameters": {},
+      "effects": ["living_room_light=on", "robot_room=living_room", "living_room_lighting_observed=true"],
+      "composition_rules": [
+        "本能力可作为多指令中的一个节点。",
+        "开灯和导航没有资源冲突，必须并行。",
+        "若前面有明确任务，则两项根步骤都依赖前一个任务。",
+        "灯控失败不得取消或跳过导航；导航成功后仍必须继续观察现场灯光。",
+        "灯控失败原因必须来自技能结构化结果，区分凭证过期或无效、设备离线、服务超时、网络不可达和其他控制失败。",
+        "不要分别播报开灯、导航和观察结果，只播报一次真实组合结果。"
+      ],
+      "steps": [
+        {
+          "id": "light",
+          "skill": "light_control",
+          "action": "on",
+          "arguments": {},
+          "depends_on": [],
+          "silent_result": true
+        },
+        {
+          "id": "navigate",
+          "skill": "navigation_goto",
+          "action": "goto",
+          "arguments": {"point": "living_room_entry_a"},
+          "arrival": {
+            "scope": "room",
+            "room": "living_room",
+            "display_name": "客厅",
+            "skip_if_satisfied": true
+          },
+          "depends_on": [],
+          "silent_result": true
+        },
+        {
+          "id": "inspect_light",
+          "skill": "environment_perception",
+          "action": "inspect",
+          "arguments": {"purpose": "lighting", "camera": "front", "timeout": 12},
+          "depends_on": ["navigate"],
+          "silent_result": true
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "already_in_room_success",
+          "when": {
+            "all_ok": ["light", "navigate", "inspect_light"],
+            "field": {
+              "step": "navigate",
+              "path": "already_satisfied",
+              "equals": true
+            }
+          },
+          "text": "我已经在客厅了，客厅的灯也已经打开了。"
+        },
+        {
+          "name": "auth_failed_navigation_completed",
+          "when": {
+            "all_ok": ["navigate"],
+            "any_failed": ["light"],
+            "field": {"step": "light", "path": "failure_reason", "equals": "auth_expired_or_invalid"}
+          },
+          "text": "我已经到客厅了，不过灯光控制凭证已经过期或无效，所以没有成功打开灯。"
+        },
+        {
+          "name": "device_offline_navigation_completed",
+          "when": {
+            "all_ok": ["navigate"],
+            "any_failed": ["light"],
+            "field": {"step": "light", "path": "failure_reason", "equals": "device_offline"}
+          },
+          "text": "我已经到客厅了，不过灯具当前离线，所以没有成功打开灯。"
+        },
+        {
+          "name": "service_timeout_navigation_completed",
+          "when": {
+            "all_ok": ["navigate"],
+            "any_failed": ["light"],
+            "field": {"step": "light", "path": "failure_reason", "equals": "service_timeout"}
+          },
+          "text": "我已经到客厅了，不过连接灯光服务超时，所以没有成功打开灯。"
+        },
+        {
+          "name": "network_unavailable_navigation_completed",
+          "when": {
+            "all_ok": ["navigate"],
+            "any_failed": ["light"],
+            "field": {"step": "light", "path": "failure_reason", "equals": "network_unavailable"}
+          },
+          "text": "我已经到客厅了，不过当前网络无法连接灯光服务，所以没有成功打开灯。"
+        },
+        {
+          "name": "already_in_room_light_failed",
+          "when": {
+            "any_failed": ["light"],
+            "field": {
+              "step": "navigate",
+              "path": "already_satisfied",
+              "equals": true
+            }
+          },
+          "text": "我已经在客厅了，不过客厅的灯刚才没有成功打开。"
+        },
+        {
+          "name": "all_success",
+          "when": {"all_ok": ["light", "navigate", "inspect_light"]},
+          "text": "已经为你打开客厅的灯了。"
+        },
+        {
+          "name": "light_on_observation_failed",
+          "when": {"all_ok": ["light", "navigate"], "any_failed": ["inspect_light"]},
+          "text": "客厅灯控制已经成功，我也到客厅了，不过刚才没有看清现场灯光。"
+        },
+        {
+          "name": "light_only",
+          "when": {"all_ok": ["light"], "any_failed": ["navigate"]},
+          "text": "客厅的灯已经打开了，不过我刚才没能顺利到达客厅。"
+        },
+        {
+          "name": "navigation_only",
+          "when": {"all_ok": ["navigate"], "any_failed": ["light"]},
+          "text": "我已经到客厅并检查了现场，不过客厅灯刚才没有成功打开。"
+        },
+        {
+          "name": "all_failed",
+          "when": {"any_failed": ["light", "navigate"]},
+          "text": "刚才开灯和前往客厅都没有顺利完成。"
+        }
+      ]
+    },
+    "push_up_companion": {
+      "description": "陪主人做俯卧撑。先导航到客厅B点，再启动现有的张三人脸确认、持续ReID和俯卧撑计数流程。",
+      "semantic_examples": [
+        "来陪我一起做运动吧",
+        "陪我做俯卧撑",
+        "帮我数俯卧撑",
+        "我们开始锻炼吧"
+      ],
+      "parameters": {
+        "name": {"type": "str", "default": "zhangsan"},
+        "duration": {"type": "float", "optional": true}
+      },
+      "effects": ["robot_at=living_room_projection_b", "push_up_session=completed"],
+      "composition_rules": [
+        "当前演示中只说做运动而未指定类型时，默认俯卧撑。",
+        "导航失败不得启动计数。",
+        "运动中的身份、ReID、数量和总结由 push_up 真实结果负责。"
+      ],
+      "steps": [
+        {
+          "id": "navigate",
+          "skill": "navigation_goto",
+          "action": "goto",
+          "arguments": {"point": "living_room_projection_b"},
+          "arrival": {
+            "scope": "pose",
+            "display_name": "客厅运动位置",
+            "position_tolerance_m": 0.35,
+            "yaw_tolerance_rad": 0.35,
+            "skip_if_satisfied": true
+          },
+          "depends_on": [],
+          "silent_result": true
+        },
+        {
+          "id": "count",
+          "skill": "push_up",
+          "action": "run",
+          "arguments": {
+            "name": {"$arg": "name", "default": "zhangsan"}
+          },
+          "depends_on": ["navigate"],
+          "silent_result": false
+        },
+        {
+          "id": "level",
+          "skill": "head_control",
+          "action": "level",
+          "arguments": {},
+          "depends_on": ["count"],
+          "silent_result": true
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "navigation_failed",
+          "when": {"any_failed": ["navigate"]},
+          "text": "我刚才没能到达运动位置，所以还没有开始计数。"
+        }
+      ]
+    },
+    "find_pet": {
+      "description": "只寻找豆豆，不追踪、不跟随、不投喂。根据实时地图把可达空间自动划分为少量矩形区域；较大的房间继续拆分，使每个中心到区域最远处不超过可靠识别距离。按当前位置就近排序，依次导航到安全中心并完整旋转扫描。找到后机器人保持静止并继续录制5秒视频，视频交给手机端后再结束；全部中心都扫描完成仍未找到才报告失败。",
+      "semantic_examples": [
+        "找狗",
+        "找一下豆豆",
+        "看看豆豆在哪里",
+        "豆豆不见了"
+      ],
+      "parameters": {},
+      "effects": ["pet_location_checked=true"],
+      "composition_rules": [
+        "普通找狗、找豆豆、看看豆豆在哪里都使用本能力。",
+        "搜索路线由 pet_map_search 根据实时地图动态划分矩形，不得预设书房C点或任何固定点。",
+        "每次检测必须在一个矩形区域的安全中心进行；当前所在区域也先前往其中心再旋转。",
+        "不得调用 pet_tracking.track；找到后停止底盘、不持续跟随，但要保持静止录制5秒视频并交给手机端后再结束。"
+      ],
+      "steps": [
+        {
+          "id": "search",
+          "skill": "pet_map_search",
+          "action": "search",
+          "arguments": {"pet": "dog"},
+          "depends_on": [],
+          "silent_result": true
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "found",
+          "when": {
+            "all_ok": ["search"],
+            "field": {"step": "search", "path": "found", "equals": true}
+          },
+          "text": "豆豆找到了，我也拍下了一小段视频，你可以在手机上查看。"
+        },
+        {
+          "name": "not_found",
+          "when": {
+            "all_ok": ["search"],
+            "field": {"step": "search", "path": "found", "equals": false}
+          },
+           "text": "我把地图上能够到达并观察的区域都找过了，暂时没有看到豆豆。"
+        },
+        {
+          "name": "search_failed",
+          "when": {"any_failed": ["search"]},
+          "text": "刚才寻找豆豆的过程没有正常完成。"
+        }
+      ]
+    },
+    "find_and_feed_doudou": {
+      "description": "寻找并投喂豆豆。使用与 find_pet 相同的矩形分区搜索：依次导航到少量矩形区域的安全中心并旋转检测；只有 found=true 才投喂10克，找到后不追踪。",
+      "semantic_examples": [
+        "看下豆豆在干嘛，它该吃饭了",
+        "找到豆豆以后给它喂饭",
+        "看看狗在哪里然后喂一下",
+        "豆豆该吃东西了，去看看它"
+      ],
+      "parameters": {
+        "grams": {"type": "int", "default": 10}
+      },
+      "effects": ["pet_location_checked=true", "pet_fed_if_found=true"],
+      "composition_rules": [
+        "同时包含寻找和吃饭语义时使用。",
+        "只说找狗时使用 find_pet。",
+        "只说喂豆豆时使用原子 feeder_control.feed。",
+        "寻找阶段不得导航到固定C点，必须复用 pet_map_search 的矩形分区搜索。",
+        "found=false 时绝对不能投喂。"
+      ],
+      "steps": [
+        {
+          "id": "search",
+          "skill": "pet_map_search",
+          "action": "search",
+          "arguments": {"pet": "dog"},
+          "depends_on": [],
+          "silent_result": true
+        },
+        {
+          "id": "feed",
+          "skill": "feeder_control",
+          "action": "feed",
+          "arguments": {
+            "grams": {"$arg": "grams", "default": 10}
+          },
+          "depends_on": ["search"],
+          "run_if": {
+            "field": {"step": "search", "path": "found", "equals": true}
+          },
+          "silent_result": true
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "found_and_fed",
+          "when": {
+            "all_ok": ["search", "feed"],
+            "field": {"step": "search", "path": "found", "equals": true}
+          },
+          "text": "豆豆找到了，已经开始给它喂食了。"
+        },
+        {
+          "name": "feed_auth_failed_after_video",
+          "when": {"any_failed": ["feed"], "field": {"step": "feed", "path": "failure_reason", "equals": "auth_expired_or_invalid"}},
+          "text": "豆豆找到了，前面的寻找和录像已经完成，不过投食机控制凭证已经过期或无效，所以没有投喂。"
+        },
+        {
+          "name": "feed_device_offline_after_video",
+          "when": {"any_failed": ["feed"], "field": {"step": "feed", "path": "failure_reason", "equals": "device_offline"}},
+          "text": "豆豆找到了，前面的寻找和录像已经完成，不过投食机当前离线，所以没有投喂。"
+        },
+        {
+          "name": "feed_timeout_after_video",
+          "when": {"any_failed": ["feed"], "field": {"step": "feed", "path": "failure_reason", "equals": "service_timeout"}},
+          "text": "豆豆找到了，前面的寻找和录像已经完成，不过连接投食机服务超时，所以没有投喂。"
+        },
+        {
+          "name": "feed_network_failed_after_video",
+          "when": {"any_failed": ["feed"], "field": {"step": "feed", "path": "failure_reason", "equals": "network_unavailable"}},
+          "text": "豆豆找到了，前面的寻找和录像已经完成，不过当前网络无法连接投食机服务，所以没有投喂。"
+        },
+        {
+          "name": "found_feed_failed",
+          "when": {
+            "any_failed": ["feed"],
+            "field": {"step": "search", "path": "found", "equals": true}
+          },
+          "text": "豆豆找到了，不过刚才没有投喂成功。"
+        },
+        {
+          "name": "not_found",
+          "when": {
+            "all_ok": ["search"],
+            "field": {"step": "search", "path": "found", "equals": false}
+          },
+          "text": "我把地图上能够到达并观察的区域都找过了，暂时没有看到豆豆，所以没有启动投喂。"
+        },
+        {
+          "name": "search_failed",
+          "when": {"any_failed": ["search"]},
+          "text": "刚才寻找豆豆的过程没有正常完成，所以没有启动投喂。"
+        }
+      ]
+    },
+    "meeting_projection": {
+      "description": "自主会议投影。机器人从实时地图中寻找物理墙；每面墙只生成一个主候选位，优先取墙面几何中心沿法线向外2米并朝向墙中心的位置。中心不可达时仅允许沿墙方向小幅退让；按当前位置路径由近到远逐墙验证。到点后扫描头部角度，并只判断预计投影区域；找到合格墙面才启动会议投影。",
+      "semantic_examples": [
+        "投影下会议内容",
+        "开始会议投影",
+        "播放会议内容",
+        "帮我把会议内容投出来"
+      ],
+      "parameters": {},
+      "effects": ["projection_surface=autonomously_selected", "meeting_projection=on"],
+      "composition_rules": [
+        "不得导航到预设白墙点或书房D点，候选位必须由 autonomous_projection 根据实时地图生成。",
+        "一面物理墙只使用一个主候选点，避免同一面墙重复检查。",
+        "主候选点必须优先采用墙面几何中心沿法线向外2米的位置并朝向墙中心；只有中心不可达时才允许沿墙方向退让不超过0.60米。",
+        "前摄整幅画面不等于光机投影范围，必须使用配置中的投影光斑多边形进行局部判断。",
+        "几何检查或视觉检查失败都不得启动投影；应继续检查下一面可达墙。",
+        "中间步骤不逐项播报，只播报最终结果。",
+        "暂停不恢复平视；关闭投影后必须恢复平视。"
+      ],
+      "steps": [
+        {
+          "id": "explore",
+          "skill": "autonomous_projection",
+          "action": "search_and_project",
+          "arguments": {"judge": "auto"},
+          "depends_on": [],
+          "silent_result": true
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "all_success",
+          "when": {
+            "all_ok": ["explore"],
+            "field": {"step": "explore", "path": "status", "equals": "projecting"}
+          },
+          "text": "会议内容已经投出来了。"
+        },
+        {
+          "name": "search_failed",
+          "when": {"any_failed": ["explore"]},
+          "text": "我检查了地图上可达的墙面，但这次没有找到合适的投影位置，所以没有开始投影。"
+        }
+      ]
+    },
+    "meeting_projection_stop": {
+      "description": "关闭会议投影并恢复平视。用户说关闭投影、结束投影或不投了时使用。",
+      "semantic_examples": [
+        "关闭投影",
+        "结束会议投影",
+        "不投了",
+        "把会议投影关掉"
+      ],
+      "parameters": {},
+      "effects": ["meeting_projection=off", "head=level"],
+      "composition_rules": ["先关闭投影，再恢复平视。"],
+      "steps": [
+        {
+          "id": "off",
+          "skill": "projector_control",
+          "action": "off",
+          "arguments": {},
+          "depends_on": [],
+          "silent_result": true
+        },
+        {
+          "id": "level",
+          "skill": "head_control",
+          "action": "level",
+          "arguments": {},
+          "depends_on": ["off"],
+          "silent_result": true
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "all_success",
+          "when": {"all_ok": ["off", "level"]},
+          "text": "会议投影已经关闭了。"
+        },
+        {
+          "name": "failed",
+          "when": {"any_failed": ["off", "level"]},
+          "text": "刚才没有完整关闭会议投影。"
+        }
+      ]
+    }
+  }
+}

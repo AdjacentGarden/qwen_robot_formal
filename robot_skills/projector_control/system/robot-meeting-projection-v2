@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+readonly ACTION="${1:-check}"
+readonly START_SCRIPT="/home/test/start_projection_ppt.sh"
+readonly STOP_SCRIPT="/home/test/stop_projection_ppt.sh"
+readonly IMAGE1="/sdcard/Pictures/test-1.jpg"
+readonly IMAGE2="/sdcard/Pictures/test-2.jpg"
+readonly IMAGE1_SHA256="88837f09935aa7579958d9b9a217a05473cc530886906a81f675246fca1d6123"
+readonly IMAGE2_SHA256="9b6748f23f2e9ccede2a7c24d79b0a5d0c11b041b4c2ad0a2eb15cfb9a9dc618"
+
+verify_meeting_media() {
+  local actual1 actual2
+  actual1="$(/usr/bin/docker exec android_0 sha256sum "$IMAGE1" | /usr/bin/awk '{print $1}')"
+  actual2="$(/usr/bin/docker exec android_0 sha256sum "$IMAGE2" | /usr/bin/awk '{print $1}')"
+  [[ "$actual1" == "$IMAGE1_SHA256" ]] || { echo "meeting slide 1 checksum mismatch" >&2; return 1; }
+  [[ "$actual2" == "$IMAGE2_SHA256" ]] || { echo "meeting slide 2 checksum mismatch" >&2; return 1; }
+}
+
+loop_running() {
+  /usr/bin/docker exec android_0 sh -c "pgrep -f '/data/local/tmp/[p]pt_projection_loop.sh' >/dev/null 2>&1"
+}
+
+wait_for_loop_state() {
+  local -r EXPECTED="$1"
+  for _attempt in $(seq 1 40); do
+    if loop_running; then
+      [[ "$EXPECTED" == "running" ]] && return 0
+    else
+      [[ "$EXPECTED" == "stopped" ]] && return 0
+    fi
+    sleep 0.05
+  done
+  return 1
+}
+
+case "$ACTION" in
+  check)
+    [[ -r "$START_SCRIPT" ]] || { echo "meeting start script is unavailable" >&2; exit 1; }
+    [[ -r "$STOP_SCRIPT" ]] || { echo "meeting stop script is unavailable" >&2; exit 1; }
+    /usr/bin/docker inspect android_0 >/dev/null
+    verify_meeting_media
+    echo "V2 meeting loop control is ready"
+    ;;
+  loop-start)
+    verify_meeting_media
+    /usr/bin/bash "$START_SCRIPT"
+    wait_for_loop_state running || { echo "meeting loop did not start" >&2; exit 1; }
+    ;;
+  loop-stop)
+    /usr/bin/bash "$STOP_SCRIPT"
+    if ! wait_for_loop_state stopped; then
+      /usr/bin/docker exec android_0 sh -c "pkill -9 -f '/data/local/tmp/[p]pt_projection_loop.sh' 2>/dev/null || true"
+      wait_for_loop_state stopped || { echo "meeting loop did not stop" >&2; exit 1; }
+    fi
+    ;;
+  loop-status)
+    if loop_running; then
+      echo "running"
+    else
+      echo "stopped"
+    fi
+    ;;
+  *)
+    echo "usage: $0 {check|loop-start|loop-stop|loop-status}" >&2
+    exit 2
+    ;;
+esac

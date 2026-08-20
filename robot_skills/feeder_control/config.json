@@ -1,0 +1,14 @@
+{
+  "auth_path": "/home/test/Mijia/auth.json",
+  "did": "REPLACE_FEEDER_DEVICE_ID",
+  "siid": 2,
+  "aiid": 1,
+  "piid": 8,
+  "portion_grams": 10,
+  "default_grams": 10,
+  "min_portions": 1,
+  "max_portions": 10,
+  "request_timeout_sec": 8.0,
+  "lock_timeout_sec": 2.0,
+  "refresh_token": false
+}

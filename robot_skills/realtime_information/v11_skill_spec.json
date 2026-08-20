@@ -1,0 +1,122 @@
+{
+  "name": "realtime_information",
+  "description_zh": "通过实时数据源查询当前时间、天气、机器人当前粗略位置、附近地点和交通状态。回答必须来自本次查询结果，不能凭模型常识猜测实时信息。",
+  "domain_tags": [
+    "live_information",
+    "time",
+    "weather",
+    "location",
+    "nearby",
+    "traffic"
+  ],
+  "trigger_phrases_zh": [
+    "现在几点",
+    "今天天气怎么样",
+    "我现在在哪里",
+    "附近有什么好玩的",
+    "现在堵不堵车"
+  ],
+  "allowed_actions": [
+    "current_time",
+    "weather",
+    "location",
+    "nearby",
+    "traffic"
+  ],
+  "resources": [
+    "network"
+  ],
+  "required_slots": [],
+  "optional_slots": [
+    "location",
+    "latitude",
+    "longitude",
+    "radius",
+    "limit"
+  ],
+  "query_intents": [
+    {
+      "action": "traffic",
+      "patterns_zh": [
+        "(?:交通|路况|堵车|拥堵|堵不堵|堵吗|车多不多)"
+      ],
+      "query_argument": "query",
+      "title_zh": "查询实时交通",
+      "reason_zh": "用户询问会随时间变化的交通状态，必须调用实时数据源"
+    },
+    {
+      "action": "weather",
+      "patterns_zh": [
+        "(?:天气|气温|温度|下雨|降雨|风力)"
+      ],
+      "exclude_patterns_zh": [
+        "运动.*温度",
+        "投影.*温度"
+      ],
+      "query_argument": "query",
+      "title_zh": "查询实时天气",
+      "reason_zh": "用户询问实时天气，必须调用天气数据源"
+    },
+    {
+      "action": "nearby",
+      "patterns_zh": [
+        "(?:附近|周边).*(?:好玩|景点|公园|吃|餐厅|咖啡|医院|诊所|药店|商场|购物|电影院|有什么|哪里|哪儿)"
+      ],
+      "query_argument": "query",
+      "title_zh": "查询附近地点",
+      "reason_zh": "用户询问当前位置周边地点，必须调用实时地图数据源"
+    },
+    {
+      "action": "location",
+      "patterns_zh": [
+        "(?:我|机器人)?(?:现在|当前)?(?:在什么地方|在哪里|在哪儿|在哪|位置在哪)"
+      ],
+      "exclude_patterns_zh": [
+        "(?:小狗|宠物|人|他|她|它).*(?:在哪里|在哪儿|在哪)"
+      ],
+      "query_argument": "query",
+      "title_zh": "查询当前位置",
+      "reason_zh": "用户询问机器人当前所在位置"
+    },
+    {
+      "action": "current_time",
+      "patterns_zh": [
+        "(?:几点|现在时间|当前时间|今天几号|今天日期|星期几)"
+      ],
+      "query_argument": "query",
+      "title_zh": "查询当前时间",
+      "reason_zh": "用户询问当前日期或时间"
+    }
+  ],
+  "planning_notes_zh": [
+    "实时问题必须调用本 skill，不得直接用语言模型常识回答。",
+    "用户未给地点时，skill 统一使用 realtime_information/config.json 中的位置配置；只有配置缺失时才允许网络粗略定位。",
+    "当前默认位置配置为北京市顺义区；时间使用配置时区，天气、附近地点和交通使用配置坐标。",
+    "网络粗略定位不是 GPS，回答中必须保留精度说明。",
+    "实时交通只有在已配置授权交通数据提供方时可用；未配置时必须如实说明。"
+  ],
+  "result_contract": {
+    "success_field": "ok",
+    "success_values": [
+      true
+    ],
+    "message_field": "message",
+    "required_fields": [
+      "ok",
+      "skill",
+      "action",
+      "message",
+      "source",
+      "fetched_at"
+    ]
+  },
+  "speech_contract": {
+    "speak_start_ack": false,
+    "speak_progress": false,
+    "speak_final_summary": true,
+    "summary_field": "message",
+    "speak_failure_summary": true,
+    "failure_summary_field": "message",
+    "failure_fallback_zh": "实时信息查询暂时失败，请稍后再试。"
+  }
+}

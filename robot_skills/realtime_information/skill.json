@@ -1,0 +1,46 @@
+{
+  "name": "realtime_information",
+  "description_zh": "查询当前时间、实时天气、当前粗略位置、附近地点和实时交通信息。",
+  "allowed_actions": [
+    "current_time",
+    "weather",
+    "location",
+    "nearby",
+    "traffic"
+  ],
+  "resources": [
+    "network"
+  ],
+  "configuration_file": "config.json",
+  "location_priority": [
+    "explicit_coordinates",
+    "explicit_query_location",
+    "configured_location",
+    "ip_geolocation"
+  ],
+  "timeout_seconds": 20,
+  "speech_contract": {
+    "speak_start_ack": false,
+    "speak_progress": false,
+    "speak_final_summary": true,
+    "summary_field": "message",
+    "speak_failure_summary": true,
+    "failure_summary_field": "message",
+    "failure_fallback_zh": "实时信息查询暂时失败，请稍后再试。"
+  },
+  "result_contract": {
+    "success_field": "ok",
+    "success_values": [
+      true
+    ],
+    "summary_fields": [
+      "message"
+    ]
+  },
+  "resident_runtime": {
+    "enabled": true,
+    "launcher": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime.sh",
+    "socket": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/resident/skills.sock",
+    "legacy_entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/realtime_information/run_legacy.sh"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "autonomous_projection",
+  "name": "自主寻找投影墙",
+  "description": "从实时占据地图自主提取物理墙；每面物理墙只生成一个主候选位姿，优先取墙面几何中心沿法线向外2米并朝向墙中心的位置。中心不可达时仅允许在墙面方向退让不超过0.60米。逐墙导航并检查真实投影区域，找到合格墙面后才启动会议投影。",
+  "actions": ["search_and_project", "plan", "stop"],
+  "resources": ["base", "head", "front_camera", "projector"],
+  "resident_runtime": {"enabled": true},
+  "safety": {
+    "never_assume_full_camera_frame_equals_projection": true,
+    "one_primary_candidate_per_physical_wall": true,
+    "prefer_wall_geometric_center": true,
+    "fixed_normal_distance_m": 2.0,
+    "maximum_center_fallback_m": 0.6,
+    "restore_head_when_no_surface_found": true,
+    "project_only_after_geometry_and_visual_checks": true
+  }
+}

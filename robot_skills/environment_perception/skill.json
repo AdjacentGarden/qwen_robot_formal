@@ -1,0 +1,58 @@
+{
+  "actions": [
+    "general",
+    "projection",
+    "fitness",
+    "fitness_projection",
+    "lighting"
+  ],
+  "allow_direct_execution": true,
+  "category": "单功能",
+  "certification_notes": [
+    "2026-08-13 switched from unavailable ModelScope endpoints to the existing PuCoding vision channel"
+  ],
+  "certification_status": "checked",
+  "demo_script": [],
+  "description": "Environment perception with front/back camera roles from /home/test/new_project/config/hardware.json: front camera for projection, lighting and front environment, back camera for fitness/body-in-frame safety.",
+  "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/environment_perception/run.sh",
+  "examples": [],
+  "id": "environment_perception",
+  "intents": [],
+  "name": "environment_perception",
+  "parameters_schema": {
+    "camera": "front|back|both|device path",
+    "purpose": "general|projection|fitness|fitness_projection|lighting",
+    "exercise_type": "squat|push_up|pull_up"
+  },
+  "resources": [
+    "camera",
+    "front_camera",
+    "back_camera",
+    "network"
+  ],
+  "scene_id": "environment_projection",
+  "skill_name": "environment_perception",
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "examples": [
+      "识别结果是张三，置信度0.82",
+      "人脸注册完成"
+    ],
+    "group": "session",
+    "runtime_owner": "/home/test/new_project",
+    "speak": [
+      "final_summary"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "task_kind": "short",
+  "timeout_sec": 35.0,
+  "resident_runtime": {
+    "enabled": true,
+    "launcher": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime.sh",
+    "socket": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/resident/skills.sock",
+    "legacy_entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/environment_perception/run_legacy.sh"
+  }
+}

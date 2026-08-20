@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1826">
+  <title>理想同学</title>
+  <link rel="stylesheet" href="vendor/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="layout-fixes.css">
+  <link rel="stylesheet" href="robot-showcase.css">
+  <link rel="stylesheet" href="app-refinement.css?v=20260820-microphone-v10">
+  <link rel="stylesheet" href="connection-states.css">
+</head>
+<body data-robot-online="false">
+  <main class="shell">
+    <header class="topbar">
+      <div class="identity">
+        <span class="app-mark"><i class="fa-solid fa-route" aria-hidden="true"></i></span>
+        <div><p class="brand">理想同学</p><p class="edition">智能空间管家</p></div>
+      </div>
+      <div id="connectionBadge" class="status offline" role="status" aria-live="polite">
+        <i class="fa-solid fa-circle" aria-hidden="true"></i><span>连接中</span>
+      </div>
+    </header>
+
+    <section id="homeView" class="view active" aria-label="首页">
+      <div class="welcome-row"><div><p class="eyebrow">HOME CONTROL</p><h1 id="greeting">下午好</h1></div><span class="mode-badge"><i class="fa-solid fa-robot" aria-hidden="true"></i> 智能管家</span></div>
+      <article class="robot-showcase" aria-label="理想同学机器人形象">
+        <div class="robot-showcase-copy">
+          <p class="eyebrow">IDEAL COMPANION</p>
+          <h2>理想同学，随时待命</h2>
+          <p>家居控制、地图导航与宠物动态，都可以在这里轻松完成。</p>
+          <span class="robot-ready"><i class="fa-solid fa-bolt" aria-hidden="true"></i> 智能管家已就绪</span>
+        </div>
+        <img src="assets/robot-mascot.png" alt="戴着棕色宠物帽的理想同学机器人" decoding="async">
+      </article>
+
+      <article class="program-card home-program-card" aria-labelledby="programTitle">
+        <div class="program-card-head">
+          <span class="program-icon"><i class="fa-solid fa-power-off" aria-hidden="true"></i></span>
+          <div><small>机器人程序</small><strong id="programTitle">运行控制</strong></div>
+          <span id="programBadge" class="program-badge unknown"><i class="fa-solid fa-circle" aria-hidden="true"></i><span>检测中</span></span>
+        </div>
+        <p id="programHint">控制机器人核心、导航、模型与语音程序；App 控制通道会保持在线。</p>
+        <div class="program-actions">
+          <button type="button" id="programStart" class="program-button start"><i class="fa-solid fa-play" aria-hidden="true"></i><span><b>启动机器人程序</b><small>启动核心与语音服务</small></span></button>
+          <button type="button" id="programStop" class="program-button stop"><i class="fa-solid fa-power-off" aria-hidden="true"></i><span><b>关闭机器人程序</b><small>保留 App 控制连接</small></span></button>
+        </div>
+      </article>
+      <article class="voice-control-card" aria-labelledby="voiceControlTitle">
+        <div class="voice-copy">
+          <p class="eyebrow">VOICE CONTROL</p>
+          <h2 id="voiceControlTitle">按住说话，松开发送</h2>
+          <p id="voiceHint">语音会直接进入千问端到端实时会话，与现场对话共享记忆和技能。</p>
+          <div id="taskStatus" class="task-status ready" role="status" aria-live="polite"><i class="fa-solid fa-shield-halved"></i><span>任务调度器空闲</span></div>
+        </div>
+        <button type="button" id="voiceHoldButton" class="voice-hold" aria-label="按住说话">
+          <span class="voice-rings" aria-hidden="true"></span>
+          <i class="fa-solid fa-microphone" aria-hidden="true"></i>
+          <b>按住说话</b>
+        </button>
+      </article>
+
+    </section>
+
+    <section id="mapView" class="view" aria-label="地图">
+      <div class="view-heading"><div><p class="eyebrow">LIVE POSITION</p><h1>地图导航</h1></div><div id="poseText" class="pose-pill"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>位置未知</span></div></div>
+      <article id="mapOffline" class="map-offline-state" role="status" aria-live="polite">
+        <span class="map-offline-icon"><i class="fa-solid fa-robot" aria-hidden="true"></i></span>
+        <div><strong>机器人当前离线</strong><p>连接恢复后会自动同步真实地图和当前位置</p></div>
+      </article>
+      <div id="mapOnlineContent" class="map-online-content">
+        <div class="map-status-row"><div class="map-legend"><span><i class="legend-dot robot-dot"></i>机器人</span><span><i class="legend-dot target-dot"></i>目标点</span></div><span id="mapSourceText" class="map-source"><i class="fa-solid fa-satellite-dish" aria-hidden="true"></i> 等待真实地图</span></div>
+        <article class="map-card"><div id="mapStage" class="map-stage"><canvas id="mapCanvas" role="img" aria-label="机器人导航地图，可点按选择导航目标"></canvas><div id="mapEmpty" class="map-empty"><i class="fa-regular fa-map" aria-hidden="true"></i><strong>地图同步中</strong><p>正在读取机器人地图</p></div></div></article>
+        <div class="map-helper"><i class="fa-solid fa-hand-pointer" aria-hidden="true"></i><p>轻触地图选择目的地。目标确认前不会下发导航指令。</p></div>
+        <div id="targetPanel" class="target-panel hidden"><div><small>导航目标</small><strong id="targetText">x 0.00 · y 0.00</strong></div><div class="target-actions"><button type="button" id="cancelTarget" class="secondary">取消</button><button type="button" id="confirmTarget" class="primary"><i class="fa-solid fa-location-arrow" aria-hidden="true"></i> 前往</button></div></div>
+      </div>
+    </section>
+
+    <section id="petView" class="view" aria-label="宠物">
+      <div class="view-heading"><div><p class="eyebrow">PET MOMENTS</p><h1>宠物动态</h1></div><span class="pet-view-badge"><i class="fa-solid fa-paw" aria-hidden="true"></i> 5 秒记录</span></div>
+      <article class="hero-card">
+        <div id="videoSurface" class="video-surface empty">
+          <video id="petVideo" playsinline preload="metadata" poster="assets/doudou-hero.png"></video>
+          <img class="empty-hero" src="assets/doudou-hero.png" alt="宠物在温暖的客厅里">
+          <div class="hero-shade" aria-hidden="true"></div>
+          <button id="petHeroPlay" class="media-play" type="button" aria-label="播放宠物视频"><i class="fa-solid fa-play" aria-hidden="true"></i></button>
+          <div class="hero-copy"><span class="pet-chip"><i class="fa-solid fa-paw" aria-hidden="true"></i> 宠物动态</span><h2 id="videoTitle">等待新的发现</h2><p id="videoMeta"></p></div>
+        </div>
+      </article>
+      <div class="section-title recent-title"><div><p class="eyebrow">RECENT MOMENTS</p><h2>最近动态</h2></div><button type="button" id="refreshVideos" class="text-button"><i class="fa-solid fa-rotate" aria-hidden="true"></i> 刷新</button></div>
+      <div id="videoList" class="video-list"><div class="skeleton" role="status" aria-label="正在读取最近视频"></div></div>
+    </section>
+
+    <section id="fitnessView" class="view" aria-label="运动">
+      <div class="view-heading"><div><p class="eyebrow">FITNESS RECORDS</p><h1>运动记录</h1></div><span class="fitness-view-badge"><i class="fa-solid fa-person-running" aria-hidden="true"></i> 原始视频与计数</span></div>
+      <article class="hero-card fitness-hero-card">
+        <div id="fitnessVideoSurface" class="video-surface fitness-video-surface empty">
+          <video id="fitnessVideo" playsinline preload="metadata"></video>
+          <div class="empty-hero fitness-video-empty"><span><i class="fa-solid fa-person-running" aria-hidden="true"></i></span><strong>等待新的运动记录</strong><small>运动完成后，原始视频和计数会自动显示在这里</small></div>
+          <div class="hero-shade" aria-hidden="true"></div>
+          <button id="fitnessHeroPlay" class="media-play" type="button" aria-label="播放运动视频"><i class="fa-solid fa-play" aria-hidden="true"></i></button>
+          <div class="hero-copy fitness-hero-copy"><span class="fitness-chip"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> 运动回顾</span><h2 id="fitnessVideoTitle">等待新的运动记录</h2><p id="fitnessVideoMeta"></p></div>
+          <div id="fitnessHeroCount" class="fitness-hero-count"><strong>0</strong><small>个</small></div>
+        </div>
+      </article>
+      <div class="section-title fitness-title"><div><p class="eyebrow">HISTORY</p><h2>全部记录</h2></div><button type="button" id="refreshFitness" class="text-button"><i class="fa-solid fa-rotate" aria-hidden="true"></i> 刷新</button></div>
+      <div id="fitnessList" class="fitness-list"><div class="skeleton" role="status" aria-label="正在读取运动记录"></div></div>
+    </section>
+
+    <section id="controlView" class="view" aria-label="控制">
+      <div class="view-heading"><div><p class="eyebrow">REMOTE CONTROL</p><h1>安全点控</h1></div><span class="tap-note">短按微调</span></div>
+      <div id="activityBar" class="activity-bar"><span class="activity-icon"><i class="fa-solid fa-wave-square" aria-hidden="true"></i></span><div><small>当前状态</small><strong id="activityText">等待操作</strong></div></div>
+      <article class="control-card">
+        <div class="dpad" role="group" aria-label="移动方向控制"><button type="button" class="move up" data-direction="forward" aria-label="前进"><i class="fa-solid fa-arrow-up"></i><small>前进</small></button><button type="button" class="move left" data-direction="left" aria-label="左转"><i class="fa-solid fa-rotate-left"></i><small>左转</small></button><button type="button" class="move center-stop" data-direction="stop" aria-label="停止"><i class="fa-solid fa-stop"></i></button><button type="button" class="move right" data-direction="right" aria-label="右转"><i class="fa-solid fa-rotate-right"></i><small>右转</small></button><button type="button" class="move down" data-direction="backward" aria-label="后退"><i class="fa-solid fa-arrow-down"></i><small>后退</small></button></div>
+        <div class="safety-note"><i class="fa-solid fa-shield-halved"></i><p><b>仅在机器人处于视线内时操作</b><br>每次点按都是短距离微调，中央按钮可立即停止。</p></div>
+      </article>
+      <div class="section-title microphone-title"><div><p class="eyebrow">VOICE INPUT</p><h2>现场麦克风</h2></div><span>App 语音不受影响</span></div>
+      <article class="microphone-card" aria-labelledby="microphoneTitle">
+        <div class="microphone-card-head">
+          <span id="microphoneIcon" class="microphone-icon"><i class="fa-solid fa-microphone" aria-hidden="true"></i></span>
+          <div class="microphone-copy"><strong id="microphoneTitle">机器人现场收音</strong><p id="microphoneHint">正在读取麦克风状态……</p></div>
+          <span id="microphoneBadge" class="microphone-badge unknown" role="status" aria-live="polite"><i class="fa-solid fa-circle" aria-hidden="true"></i><span>检测中</span></span>
+        </div>
+        <p class="microphone-note"><i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i> 关闭后只屏蔽机器人本机收音，App 的按住说话、地图、家居和按键控制仍可正常使用。</p>
+        <div class="microphone-actions" role="group" aria-label="现场麦克风控制">
+          <button type="button" id="microphoneDisable" class="microphone-button disable"><i class="fa-solid fa-microphone-slash" aria-hidden="true"></i><span><b>关闭麦克风</b><small>暂停现场语音指令</small></span></button>
+          <button type="button" id="microphoneEnable" class="microphone-button enable"><i class="fa-solid fa-microphone" aria-hidden="true"></i><span><b>打开麦克风</b><small>恢复现场语音交互</small></span></button>
+        </div>
+      </article>
+      <div class="section-title"><div><p class="eyebrow">SMART HOME</p><h2>家居设备</h2></div><span>远程控制</span></div>
+      <article class="device-list"><div class="device-row"><div class="device-info"><span class="device-icon amber"><i class="fa-solid fa-lightbulb"></i></span><span><b>客厅灯</b><small>米家设备</small></span></div><div class="segmented"><button type="button" data-command='{"action":"light","state":"off"}' data-label="关闭客厅灯">关</button><button type="button" data-command='{"action":"light","state":"on"}' data-label="打开客厅灯">开</button></div></div><div class="device-row"><div class="device-info"><span class="device-icon mint"><i class="fa-solid fa-bowl-food"></i></span><span><b>投食机</b><small>按份量投喂</small></span></div><button type="button" id="feedButton" class="feed-button">选择份量</button></div></article>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="主导航"><button type="button" class="nav-item active" data-view="homeView"><i class="fa-solid fa-house"></i><b>首页</b></button><button type="button" class="nav-item" data-view="mapView"><i class="fa-solid fa-map-location-dot"></i><b>地图</b></button><button type="button" class="nav-item" data-view="petView"><i class="fa-solid fa-paw"></i><b>宠物</b></button><button type="button" class="nav-item" data-view="fitnessView"><i class="fa-solid fa-person-running"></i><b>运动</b></button><button type="button" class="nav-item" data-view="controlView"><i class="fa-solid fa-gamepad"></i><b>控制</b></button></nav>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <dialog id="feedDialog"><form method="dialog"><button type="submit" value="cancel" class="dialog-close" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button><div class="dialog-icon"><i class="fa-solid fa-bowl-food"></i></div><p class="eyebrow">PET MEAL</p><h2>选择投食份量</h2><p>确认食盆已经放好，再发送投食指令。</p><div class="feed-options"><button type="button" value="10">10g<small>少量</small></button><button type="button" value="20" class="selected">20g<small>标准</small></button><button type="button" value="30">30g<small>加餐</small></button></div><div class="dialog-actions"><button type="submit" value="cancel" class="secondary">取消</button><button type="submit" id="confirmFeed" value="confirm" class="primary">确认投食</button></div></form></dialog>
+  <dialog id="programStopDialog"><form method="dialog"><button type="submit" value="cancel" class="dialog-close" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button><div class="dialog-icon program-dialog-icon"><i class="fa-solid fa-power-off"></i></div><p class="eyebrow">SYSTEM CONTROL</p><h2>关闭机器人程序？</h2><p>当前任务、导航、模型和语音服务都会停止。App 控制通道仍会在线，可随时重新启动。</p><div class="dialog-actions"><button type="submit" value="cancel" class="secondary">暂不关闭</button><button type="submit" id="confirmProgramStop" value="confirm" class="danger-confirm">确认关闭</button></div></form></dialog>
+  <script src="config.js?v=20260816-connection-v7"></script><script src="app.js?v=20260820-microphone-v10"></script>
+</body>
+</html>

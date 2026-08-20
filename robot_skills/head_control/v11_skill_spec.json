@@ -1,0 +1,222 @@
+{
+  "allowed_actions": [
+    "up",
+    "down",
+    "level",
+    "angle"
+  ],
+  "certification_status": "unchecked",
+  "composition_affordances": [],
+  "config_defaults": {
+    "action": "level",
+    "angle": null,
+    "call_services": false,
+    "discovery_timeout": null,
+    "interval": null,
+    "json_output": true,
+    "repeat": null,
+    "service_timeout": null,
+    "topic": null,
+    "wait": null
+  },
+  "description_zh": "控制机器人头部/云台向上、向下、水平或指定角度。",
+  "disabled_reason": null,
+  "domain_tags": [
+    "head",
+    "camera_view",
+    "stepper"
+  ],
+  "entrypoint": "/home/test/new_project_optimized_v11_navsafe/skills/head_control/run.sh",
+  "example_function_call": {
+    "arguments": {
+      "action": "up"
+    },
+    "name": "head_control"
+  },
+  "llm_notes_zh": [
+    "优先只填用户明确给出的参数，未给出的参数使用 config_defaults。",
+    "涉及 moves_robot、moves_robot_long_running、opens_camera 的调用需要确认用户确实要求执行硬件动作。",
+    "side_effects 包含 disabled 的 skill 当前仅用于测试禁用返回，不应用于真实硬件控制。",
+    "该 skill 只通过 single_function stdout 输出语音事件，由 /home/test/new_project 统一接管 TTS 播报。"
+  ],
+  "module": "/home/test/self_program/new_self_test.py",
+  "name": "head_control",
+  "optional_enhancements": [],
+  "optional_slots": [
+    "action",
+    "angle"
+  ],
+  "parameters": {
+    "properties": {
+      "action": {
+        "default_source": "audio_config.json",
+        "description": "要执行的动作，优先使用 allowed_actions 中的值。",
+        "python_default": null,
+        "required": false,
+        "type": "string"
+      },
+      "angle": {
+        "default_source": "audio_config.json",
+        "description": "云台/头部目标角度。",
+        "python_default": null,
+        "required": false,
+        "type": "integer|null"
+      },
+      "call_services": {
+        "default_source": "audio_config.json",
+        "description": "是否额外调用 ROS service。",
+        "python_default": null,
+        "required": false,
+        "type": "boolean|null"
+      },
+      "discovery_timeout": {
+        "default_source": "audio_config.json",
+        "description": "ROS 节点/订阅发现超时时间。",
+        "python_default": null,
+        "required": false,
+        "type": "number|null"
+      },
+      "interval": {
+        "default_source": "audio_config.json",
+        "description": "重复发布命令的间隔秒数。",
+        "python_default": null,
+        "required": false,
+        "type": "number|null"
+      },
+      "json_output": {
+        "default_source": "audio_config.json",
+        "description": "是否要求底层 skill 输出 JSON。",
+        "python_default": null,
+        "required": false,
+        "type": "boolean|null"
+      },
+      "repeat": {
+        "default_source": "audio_config.json",
+        "description": "命令重复发布次数。",
+        "python_default": null,
+        "required": false,
+        "type": "integer|null"
+      },
+      "service_timeout": {
+        "default_source": "audio_config.json",
+        "description": "ROS service 调用超时时间。",
+        "python_default": null,
+        "required": false,
+        "type": "number|null"
+      },
+      "topic": {
+        "default_source": "audio_config.json",
+        "description": "ROS2 话题名称。",
+        "python_default": null,
+        "required": false,
+        "type": "string|null"
+      },
+      "wait": {
+        "default_source": "audio_config.json",
+        "description": "执行后等待秒数。",
+        "python_default": null,
+        "required": false,
+        "type": "number|null"
+      }
+    },
+    "required": [],
+    "type": "object"
+  },
+  "planning_notes_zh": [
+    "up/down/level 可直接执行；action=angle 且缺 angle 时需要追问。",
+    "恢复任务时必须参考 recovery 字段、TaskGroup.resume_context 和 RobotStateSnapshot，不能盲目从头重复已完成 step。"
+  ],
+  "recovery": {
+    "captured_in_robot_state": true,
+    "notes_zh": [
+      "状态型硬件不作为长任务恢复，但执行后的状态会进入 RobotStateSnapshot，供其他任务恢复现场。"
+    ],
+    "progress_schema": {},
+    "requires_scene_restore": false,
+    "resumable": false,
+    "resume_argument_mapping": {},
+    "resume_strategy": "state_snapshot_restore",
+    "scene_restore_requirements": []
+  },
+  "required_slots": [],
+  "resources": [
+    "stepper",
+    "ros2"
+  ],
+  "returns": {
+    "description_zh": "底层 skill 封装通常返回 subprocess.CompletedProcess；摄像头拍照/录像返回输出文件 Path。",
+    "type": "subprocess.CompletedProcess or pathlib.Path"
+  },
+  "side_effects": [
+    "moves_head"
+  ],
+  "single_function_contract": {
+    "actions": [
+      "up",
+      "down",
+      "level",
+      "angle"
+    ],
+    "allow_direct_execution": false,
+    "category": "hardware_control",
+    "certification_notes": [
+      "Implemented from /home/test/refine_0508/ros2_hw_adapter.py Ros2HeadMotorAdapter.",
+      "Publishes std_msgs/msg/UInt16 target angle to /step_motor_angle. Defaults: up=205, down=163, level=185.",
+      "refine_0508 service calls are available through --call-services, but default control uses the angle topic only."
+    ],
+    "certification_status": "unchecked",
+    "demo_script": [],
+    "description": "Control the head stepper motor: look up, look down, or restore level view.",
+    "entrypoint": "/home/test/new_project_optimized_v11_navsafe/skills/head_control/run.sh",
+    "examples": [
+      "bash run.sh up",
+      "bash run.sh down",
+      "bash run.sh level",
+      "bash run.sh angle --angle 185",
+      "bash run.sh --json level"
+    ],
+    "id": "head_control",
+    "intents": [],
+    "name": "head_control",
+    "parameters_schema": {
+      "action": "up|down|level|angle",
+      "angle": "optional direct target angle; required when action=angle",
+      "topic": "optional ROS2 UInt16 topic, default /step_motor_angle"
+    },
+    "resources": [
+      "stepper"
+    ],
+    "scene_id": "head_control",
+    "skill_name": "head_control",
+    "task_kind": "short",
+    "timeout_sec": 20.0
+  },
+  "single_function_skill": "head_control",
+  "slot_questions_zh": {
+    "angle": "你想把头部转到多少度？"
+  },
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "examples": [],
+    "group": "short",
+    "runtime_owner": "/home/test/new_project",
+    "speak": [
+      "final_summary",
+      "json_message"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "trigger_phrases_zh": [
+    "抬头",
+    "低头",
+    "看平",
+    "转到某个角度"
+  ],
+  "type": "python_function",
+  "when_to_call_zh": [
+    "用户要求抬头、低头、看平",
+    "需要调整摄像头视角"
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "actions": [
+    "start",
+    "query",
+    "stop",
+    "run"
+  ],
+  "allow_direct_execution": false,
+  "category": "单功能",
+  "certification_notes": [
+    "2026-07-17 migrated to registered-face anchored continuous ReID and side-view push-up state machine"
+  ],
+  "certification_status": "validated",
+  "description": "Lock zhangsan from the shared /home/test/single_function face database, track continuously with adaptive ReID, and count side-view push-ups.",
+  "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/push_up/run.sh",
+  "id": "push_up",
+  "name": "push_up",
+  "parameters_schema": {
+    "camera": "exercise counting camera; defaults to config.cameras.back.device",
+    "identity_camera": "face identity camera; defaults to config.cameras.back.device",
+    "identity_policy": "face_and_reid by default; anonymous only when the user explicitly opts out of face recognition and ReID",
+    "duration": "counting duration in seconds",
+    "initial_count": "resume count",
+    "name": "registered face name; defaults to zhangsan",
+    "projector_after_identity": "start the fitness projection only after identity lock",
+    "preparation_delay": "seconds reserved for the spoken preparation transition"
+  },
+  "resources": [
+    "back_camera",
+    "npu",
+    "projector"
+  ],
+  "scene_id": "fitness",
+  "skill_name": "push_up",
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "examples": [
+      "请准备好，1，2，3，开始",
+      "第一个",
+      "本次俯卧撑计数结束，共做了三个。"
+    ],
+    "group": "fitness",
+    "runtime_owner": "/home/test/new_project_optimized_v11_navsafe",
+    "speak": [
+      "identity",
+      "ready",
+      "count",
+      "complete",
+      "query",
+      "stop"
+    ],
+    "transport": "stdout_jsonl",
+    "unbuffered_required": true,
+    "version": 2
+  },
+  "task_kind": "long",
+  "timeout_sec": 1800.0,
+  "resident_runtime": {
+    "enabled": true,
+    "launcher": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime.sh",
+    "socket": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/resident/skills.sock",
+    "legacy_entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/push_up/run_legacy.sh"
+  }
+}

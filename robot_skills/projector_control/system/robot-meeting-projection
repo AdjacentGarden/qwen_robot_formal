@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+readonly ACTION="${1:-start}"
+readonly CONTAINER_NAME="android_0"
+readonly IMAGE_PATH="/sdcard/Pictures/test-1.jpg"
+readonly LOOP_PATTERN="[p]pt_projection_loop.sh"
+readonly PREP="/usr/local/libexec/robot-projection-prep"
+
+if [[ "$ACTION" == "check" ]]; then
+  /usr/bin/docker exec "$CONTAINER_NAME" sh -c "test -f '$IMAGE_PATH'"
+  pid="$(/usr/bin/pidof surfaceflinger | /usr/bin/awk '{print $1}')"
+  [[ -n "$pid" ]] || { echo "surfaceflinger pid not found" >&2; exit 1; }
+  [[ -x "$PREP" ]] || { echo "projection prep is missing" >&2; exit 1; }
+  echo "Meeting projection dependencies are ready"
+  exit 0
+fi
+
+/usr/bin/docker exec "$CONTAINER_NAME" sh -c "pkill -f '$LOOP_PATTERN' 2>/dev/null || true"
+
+if [[ "$ACTION" == "stop" ]]; then
+  /usr/bin/docker exec "$CONTAINER_NAME" sh -c "am force-stop com.android.gallery3d 2>/dev/null || true"
+  echo "Stopped meeting projection content"
+  exit 0
+fi
+[[ "$ACTION" == "start" ]] || { echo "usage: $0 [start|stop|check]" >&2; exit 2; }
+
+/usr/bin/docker exec "$CONTAINER_NAME" sh -c "test -f '$IMAGE_PATH'"
+pid="$(/usr/bin/pidof surfaceflinger | /usr/bin/awk '{print $1}')"
+[[ -n "$pid" ]] || { echo "surfaceflinger pid not found" >&2; exit 1; }
+
+/usr/bin/nsenter -t "$pid" -m -p -- /system/bin/settings put system accelerometer_rotation 0
+/usr/bin/nsenter -t "$pid" -m -p -- /system/bin/settings put system user_rotation 2
+/usr/bin/nsenter -t "$pid" -m -p -- /system/bin/cmd window user-rotation lock 2
+/usr/bin/nsenter -t "$pid" -m -p -- /system/bin/cmd window fixed-to-user-rotation enabled
+/usr/bin/nsenter -t "$pid" -m -p -- /system/bin/cmd window set-ignore-orientation-request true
+"$PREP"
+
+/usr/bin/docker exec "$CONTAINER_NAME" sh -c "settings put global policy_control immersive.full=*; pm grant com.android.gallery3d android.permission.READ_MEDIA_IMAGES 2>/dev/null || true; pm grant com.android.gallery3d android.permission.READ_EXTERNAL_STORAGE 2>/dev/null || true; am force-stop com.android.gallery3d; am start -n com.android.gallery3d/.app.GalleryActivity -a android.intent.action.VIEW -d file://$IMAGE_PATH -t image/jpeg"
+echo "Started single-image meeting projection"

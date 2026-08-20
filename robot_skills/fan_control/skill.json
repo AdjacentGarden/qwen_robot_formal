@@ -1,0 +1,38 @@
+{
+  "actions": [],
+  "allow_direct_execution": false,
+  "category": "单功能",
+  "certification_notes": [
+    "Disabled on 2026-07-01 because the previous appliance-control implementation was known incorrect."
+  ],
+  "certification_status": "disabled",
+  "demo_script": [],
+  "description": "fan_control is disabled: old appliance control implementation was removed and awaits reimplementation.",
+  "disabled_reason": "Old fan/feeder/light control implementation removed; do not execute hardware control until reimplemented.",
+  "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/fan_control/run.sh",
+  "examples": [],
+  "id": "fan_control",
+  "intents": [],
+  "name": "fan_control",
+  "parameters_schema": {},
+  "resources": [
+    "infrared"
+  ],
+  "scene_id": "home_control",
+  "skill_name": "fan_control",
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "runtime_owner": "/home/test/new_project",
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "task_kind": "short",
+  "timeout_sec": 15.0,
+  "resident_runtime": {
+    "enabled": true,
+    "launcher": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime.sh",
+    "socket": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/resident/skills.sock",
+    "legacy_entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/fan_control/run_legacy.sh"
+  }
+}

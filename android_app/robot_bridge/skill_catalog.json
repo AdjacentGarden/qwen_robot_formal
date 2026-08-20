@@ -1,0 +1,542 @@
+{
+  "version": 1,
+  "skills": {
+    "autonomous_projection": {
+      "description": "自主寻找适合会议投影的墙面。它从实时地图提取物理墙，每面墙仅保留一个主候选点；优先取墙面几何中心沿法线向外2米并朝向墙中心的位置，中心不可达时才允许沿墙方向退让不超过0.60米。逐墙导航、调整头部并检查预计投影区域；全部检查通过后才开启投影。普通的开始会议投影必须使用 meeting_projection 过程，不得直接调用 projector_control 开启。",
+      "actions": {
+        "search_and_project": {
+          "argv": ["search_and_project"],
+          "success_speech": "已经找到合适的位置并开始投影了。",
+          "failure_speech": "我检查了可达的墙面，但这次没有找到合适的投影位置。",
+          "completion_mode": "background",
+          "completion_timeout_sec": 900
+        },
+        "plan": {"argv": ["plan"], "success_speech": "投影搜索路线已经规划好了。", "failure_speech": "暂时没有规划出可用的投影搜索路线。"},
+        "stop": {"argv": ["stop"], "success_speech": "已经停止寻找投影位置。", "failure_speech": "没有成功停止投影搜索。"}
+      },
+      "arguments": {
+        "map_yaml": {"flag": "--map-yaml", "type": "str"},
+        "start_x": {"flag": "--start-x", "type": "float"},
+        "start_y": {"flag": "--start-y", "type": "float"},
+        "max_candidates": {"flag": "--max-candidates", "type": "int"},
+        "judge": {"flag": "--judge", "type": "str", "choices": ["auto", "local", "vlm"]},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"],
+      "stop_action": "stop"
+    },
+    "pet_map_search": {
+      "description": "矩形分区寻找豆豆：把可达地图自动划分为不超过6个的少量矩形区域；大房间继续拆分，确保中心到最远角点不超过约2.4米的可靠检测距离。按当前位置就近排序，依次导航到每个安全中心并完整旋转检测。找到后立即停止底盘、不跟随，使用常驻前摄像头录制5秒视频并生成手机上传任务，之后才返回完成；只有所有矩形中心均成功扫描后才报告没找到。普通找狗或找豆豆必须选择 find_pet 过程，不得用固定导航点代替。",
+      "actions": {
+        "search": {
+          "argv": ["search"],
+          "success_speech": "地图搜索已经完成。",
+          "failure_speech": "这次地图搜索没有完整完成。",
+          "completion_mode": "background",
+          "completion_timeout_sec": 1200
+        },
+        "plan": {"argv": ["plan"], "success_speech": "找豆豆的矩形分区路线已经规划好了。", "failure_speech": "暂时没有规划出完整的搜索路线。"},
+        "stop": {"argv": ["stop"], "success_speech": "已经停止寻找豆豆。", "failure_speech": "没有成功停止搜索。"}
+      },
+      "arguments": {
+        "pet": {"flag": "--pet", "type": "str", "choices": ["dog", "cat"]},
+        "map_yaml": {"flag": "--map-yaml", "type": "str"},
+        "start_x": {"flag": "--start-x", "type": "float"},
+        "start_y": {"flag": "--start-y", "type": "float"},
+        "max_regions": {"flag": "--max-regions", "type": "int"},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"],
+      "stop_action": "stop"
+    },
+    "back_camera_capture": {
+      "description": "使用后置摄像头拍摄一张照片。",
+      "actions": {
+        "capture": {
+          "argv": ["capture"],
+          "success_speech": "照片已经拍好了。",
+          "failure_speech": "刚才没有拍摄成功。"
+        }
+      },
+      "arguments": {
+        "output": {"flag": "--output", "type": "str"},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"]
+    },
+    "back_camera_record": {
+      "description": "使用后置摄像头录制视频。",
+      "actions": {
+        "record": {
+          "argv": ["record"],
+          "success_speech": "视频已经录好了。",
+          "failure_speech": "刚才没有录制成功。"
+        }
+      },
+      "arguments": {
+        "duration": {"flag": "--duration", "type": "float", "required": true},
+        "output": {"flag": "--output", "type": "str"},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"]
+    },
+    "camera_capture": {
+      "description": "使用指定的前置或后置摄像头拍照。",
+      "actions": {
+        "capture": {
+          "argv": ["capture"],
+          "success_speech": "照片已经拍好了。",
+          "failure_speech": "刚才没有拍摄成功。"
+        }
+      },
+      "arguments": {
+        "camera": {"flag": "--camera", "type": "str", "choices": ["front", "back"]},
+        "output": {"flag": "--output", "type": "str"},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"]
+    },
+    "camera_record": {
+      "description": "使用指定的前置或后置摄像头录像。",
+      "actions": {
+        "record": {
+          "argv": ["record"],
+          "success_speech": "视频已经录好了。",
+          "failure_speech": "刚才没有录制成功。"
+        }
+      },
+      "arguments": {
+        "camera": {"flag": "--camera", "type": "str", "choices": ["front", "back"]},
+        "duration": {"flag": "--duration", "type": "float", "required": true},
+        "output": {"flag": "--output", "type": "str"},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"]
+    },
+    "environment_perception": {
+      "description": "观察当前环境，可用于普通观察、判断投影环境或运动环境。",
+      "actions": {
+        "inspect": {
+          "argv": [],
+          "success_speech": "环境已经观察好了。",
+          "failure_speech": "刚才没有看清周围环境。"
+        }
+      },
+      "arguments": {
+        "purpose": {"flag": "--purpose", "type": "str", "choices": ["general", "projection", "fitness", "lighting"]},
+        "camera": {"flag": "--camera", "type": "str", "choices": ["front", "back"]},
+        "exercise_type": {"flag": "--exercise-type", "type": "str", "choices": ["push_up", "pull_up", "squat"]},
+        "timeout": {"flag": "--timeout", "type": "float"},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"]
+    },
+    "face_recognition": {
+      "description": "观察指定摄像头画面，判断是否拍到完整且可识别的人脸，并在可能时识别身份。选择本技能后必须按照 planning_guidance 安排观察视角、识别和清理动作。",
+      "planning_guidance": {
+        "selection_semantics": "用户询问面前、眼前、前方或镜头中的人是谁，要求看看、认一下或确认人物身份，以及语义相同或近似的表达，都应选择本技能。",
+        "required_sequence_when_selected": [
+          {
+            "id_hint": "raise_view",
+            "skill": "head_control",
+            "action": "up",
+            "arguments": {},
+            "silent_result": true,
+            "reason": "识别人脸前先把头部调整到更容易拍到完整人脸的观察角度。"
+          },
+          {
+            "id_hint": "recognize_face",
+            "skill": "face_recognition",
+            "action": "recognize",
+            "arguments": {"camera": "front"},
+            "depends_on_previous": true,
+            "reason": "头部到位后再使用前置摄像头识别人脸。"
+          },
+          {
+            "id_hint": "restore_view",
+            "skill": "head_control",
+            "action": "level",
+            "arguments": {},
+            "depends_on_previous": true,
+            "dependency_policy": "completion",
+            "silent_result": true,
+            "reason": "无论识别成功、没有拍到完整人脸还是识别失败，最后都恢复平视。"
+          }
+        ],
+        "planning_rules": [
+          "把上述三个步骤作为原子 skill goals 输出，并用 depends_on 保持顺序。",
+          "最后的恢复平视步骤必须设置 dependency_policy=completion，使前一步失败时仍能执行。",
+          "除非用户明确要求保持当前头部角度，否则不得省略恢复平视。"
+        ],
+        "result_semantics": {
+          "matched": "明确播报识别出的中文姓名。",
+          "unknown": "说明拍到了人脸，但暂时不认识这个人。",
+          "uncertain": "说明可能的身份，但明确表达不能确定。",
+          "no_face": "只说明没有拍到可识别的完整人脸，不能据此断言画面里没有人。",
+          "insufficient_face_samples": "说明拍到了人脸，但画面还不够清晰完整。",
+          "error": "说明本次人脸识别没有成功完成。"
+        }
+      },
+      "actions": {
+        "recognize": {
+          "argv": [],
+          "success_speech": "人脸识别已经完成。",
+          "failure_speech": "刚才没有成功完成人脸识别。",
+          "completion_mode": "foreground",
+          "completion_timeout_sec": 25,
+          "outcome_speech": [
+            {
+              "when": {"path": "status", "equals": "matched"},
+              "text": "面前的是{name}。",
+              "value_maps": {"name": {"zhangsan": "张三"}}
+            },
+            {
+              "when": {"path": "status", "equals": "unknown"},
+              "text": "我拍到了人脸，但暂时不认识这个人。"
+            },
+            {
+              "when": {"path": "status", "equals": "uncertain"},
+              "text": "看起来可能是{name}，但我还不能确定。",
+              "value_maps": {"name": {"zhangsan": "张三"}},
+              "defaults": {"name": "这个人"}
+            },
+            {
+              "when": {"path": "status", "equals": "no_face"},
+              "text": "我没有拍到可以识别的完整人脸。"
+            },
+            {
+              "when": {"path": "status", "equals": "insufficient_face_samples"},
+              "text": "我拍到了人脸，但画面还不够清晰完整。"
+            },
+            {
+              "when": {"path": "status", "equals": "error"},
+              "text": "刚才没有成功完成人脸识别。"
+            }
+          ]
+        }
+      },
+      "arguments": {
+        "camera": {"flag": "--camera", "type": "str"}
+      }
+    },
+    "face_registration": {
+      "description": "为指定姓名注册人脸数据，必须在用户明确要求注册时使用。",
+      "actions": {
+        "register": {
+          "argv": [],
+          "success_speech": "人脸信息已经登记好了。",
+          "failure_speech": "刚才没有登记成功。"
+        }
+      },
+      "arguments": {
+        "name": {"flag": "--name", "type": "str", "required": true},
+        "camera": {"flag": "--camera", "type": "str"}
+      }
+    },
+    "fan_control": {
+      "description": "查询风扇状态；当前设备可能处于禁用状态。",
+      "actions": {
+        "status": {
+          "argv": ["status"],
+          "success_speech": "",
+          "failure_speech": "没有查到风扇状态。"
+        }
+      },
+      "arguments": {}
+    },
+    "feeder_control": {
+      "description": "查询喂食器状态或投喂宠物。",
+      "actions": {
+        "status": {
+          "argv": ["status"],
+          "success_speech": "",
+          "failure_speech": "没有查到喂食器状态。"
+        },
+        "feed": {
+          "argv": ["feed"],
+          "success_speech": "已经开始给豆豆喂食了。",
+          "failure_speech": "刚才没有投喂成功。"
+        }
+      },
+      "arguments": {
+        "grams": {"flag": "--grams", "type": "int"},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      }
+    },
+    "front_camera_capture": {
+      "description": "使用前置摄像头拍摄一张照片。",
+      "actions": {
+        "capture": {
+          "argv": ["capture"],
+          "success_speech": "照片已经拍好了。",
+          "failure_speech": "刚才没有拍摄成功。"
+        }
+      },
+      "arguments": {
+        "output": {"flag": "--output", "type": "str"},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"]
+    },
+    "front_camera_record": {
+      "description": "使用前置摄像头录制视频。",
+      "actions": {
+        "record": {
+          "argv": ["record"],
+          "success_speech": "视频已经录好了。",
+          "failure_speech": "刚才没有录制成功。"
+        }
+      },
+      "arguments": {
+        "duration": {"flag": "--duration", "type": "float", "required": true},
+        "output": {"flag": "--output", "type": "str"},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"]
+    },
+    "head_control": {
+      "description": "控制机器人抬头、低头、恢复平视或转到指定头部角度。",
+      "actions": {
+        "up": {"argv": ["up"], "success_speech": "", "failure_speech": "刚才没有成功抬头。"},
+        "down": {"argv": ["down"], "success_speech": "", "failure_speech": "刚才没有成功低头。"},
+        "level": {"argv": ["level"], "success_speech": "", "failure_speech": "刚才没有成功恢复平视。"},
+        "angle": {"argv": ["angle"], "success_speech": "", "failure_speech": "刚才没有成功调整头部角度。"}
+      },
+      "arguments": {
+        "angle": {"flag": "--angle", "type": "float"},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"]
+    },
+    "light_control": {
+      "description": "控制机器人连接的灯开关，或查询灯的状态。",
+      "actions": {
+        "on": {"argv": ["on"], "success_speech": "灯已经打开了。", "failure_speech": "刚才没有成功打开灯。"},
+        "off": {"argv": ["off"], "success_speech": "灯已经关好了。", "failure_speech": "刚才没有成功关灯。"},
+        "status": {"argv": ["status"], "success_speech": "", "failure_speech": "没有查到灯的状态。"}
+      },
+      "arguments": {
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      }
+    },
+    "move_backward": {
+      "description": "让机器人底盘向后移动指定时间。",
+      "actions": {
+        "move": {"argv": [], "success_speech": "已经向后移动完成。", "failure_speech": "刚才没有完成向后移动。"}
+      },
+      "arguments": {
+        "speed": {"flag": "--speed", "type": "float"},
+        "duration": {"flag": "--duration", "type": "float", "required": true},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"]
+    },
+    "move_forward": {
+      "description": "让机器人底盘向前移动指定时间。",
+      "actions": {
+        "move": {"argv": [], "success_speech": "已经向前移动完成。", "failure_speech": "刚才没有完成向前移动。"}
+      },
+      "arguments": {
+        "speed": {"flag": "--speed", "type": "float"},
+        "duration": {"flag": "--duration", "type": "float", "required": true},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"]
+    },
+    "move_left": {
+      "description": "让机器人底盘向左原地转动指定时间。",
+      "actions": {
+        "turn": {"argv": [], "success_speech": "已经向左转好了。", "failure_speech": "刚才没有完成向左转动。"}
+      },
+      "arguments": {
+        "angular_speed": {"flag": "--angular-speed", "type": "float"},
+        "duration": {"flag": "--duration", "type": "float", "required": true},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"]
+    },
+    "move_right": {
+      "description": "让机器人底盘向右原地转动指定时间。",
+      "actions": {
+        "turn": {"argv": [], "success_speech": "已经向右转好了。", "failure_speech": "刚才没有完成向右转动。"}
+      },
+      "arguments": {
+        "angular_speed": {"flag": "--angular-speed", "type": "float"},
+        "duration": {"flag": "--duration", "type": "float", "required": true},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"]
+    },
+    "navigation_goto": {
+      "description": "导航到命名地点或明确的地图坐标。只有用户确实要求机器人前往地点时才使用。",
+      "actions": {
+        "goto": {"argv": ["goto"], "success_speech": "已经到达目的地。", "failure_speech": "这次没有顺利到达目的地。"}
+      },
+      "arguments": {
+        "point": {"flag": "--point", "type": "str"},
+        "x": {"flag": "--x", "type": "float"},
+        "y": {"flag": "--y", "type": "float"},
+        "yaw": {"flag": "--yaw", "type": "float"},
+        "frame_id": {"flag": "--frame-id", "type": "str"},
+        "timeout": {"flag": "--timeout", "type": "float"},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"]
+    },
+    "navigation_list": {
+      "description": "列出机器人已经配置的导航点，不会移动底盘。",
+      "actions": {
+        "list": {"argv": ["list"], "success_speech": "", "failure_speech": "没有读取到导航点。"}
+      },
+      "arguments": {},
+      "auto_argv": ["--json"]
+    },
+    "person_tracking": {
+      "description": "查找或持续追踪指定人物，可选择是否控制底盘跟随。",
+      "actions": {
+        "check": {"argv": ["check"], "success_speech": "", "failure_speech": "行人追踪当前不可用。"},
+        "find": {"argv": ["find"], "success_speech": "已经找到这个人了。", "failure_speech": "这次没有找到这个人。"},
+        "track": {"argv": ["track"], "success_speech": "人物追踪已经结束。", "failure_speech": "人物追踪没有正常完成。"},
+        "stop": {"argv": ["stop"], "success_speech": "已经停止人物追踪。", "failure_speech": "没有成功停止人物追踪。"}
+      },
+      "arguments": {
+        "name": {"flag": "--name", "type": "str"},
+        "source": {"flag": "--source", "type": "str"},
+        "duration": {"flag": "--duration", "type": "float"},
+        "execute": {"flag": "--execute", "type": "bool"},
+        "raise_head": {"flag": "--raise-head", "type": "bool"},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"],
+      "stop_action": "stop"
+    },
+    "pet_tracking": {
+      "description": "底层宠物检测与持续跟随执行器。pet_tracking.find 只供复合能力在单个观察位内部调用；用户说找狗或找豆豆时必须使用 find_pet 过程和 pet_map_search，不能直接把本技能当作完整地图搜索。只有用户明确要求持续跟随宠物时才调用 track。",
+      "actions": {
+        "smoke": {"argv": ["smoke"], "success_speech": "", "failure_speech": "宠物追踪当前不可用。"},
+        "find": {"argv": ["find"], "success_speech": "豆豆找到了。", "failure_speech": "这次没有找到豆豆。"},
+        "track": {"argv": ["track"], "success_speech": "宠物追踪已经结束。", "failure_speech": "宠物追踪没有正常完成。"},
+        "stop": {"argv": ["stop"], "success_speech": "已经停止寻找豆豆。", "failure_speech": "没有成功停止宠物追踪。"}
+      },
+      "arguments": {
+        "source": {"flag": "--source", "type": "str"},
+        "pet": {"flag": "--pet", "type": "str", "choices": ["dog", "cat"]},
+        "duration": {"flag": "--duration", "type": "float"},
+        "search_timeout": {"flag": "--search-timeout", "type": "float"},
+        "backend": {"flag": "--backend", "type": "str", "choices": ["ros2", "dummy"]},
+        "max_linear": {"flag": "--max-linear", "type": "float"},
+        "max_angular": {"flag": "--max-angular", "type": "float"},
+        "steering_gain": {"flag": "--steering-gain", "type": "float"},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"],
+      "stop_action": "stop"
+    },
+    "projector_control": {
+      "description": "投影仪播放执行器，只负责开始、暂停、继续、关闭会议内容或播放运动视频。用户要求开始会议投影时必须使用 meeting_projection 过程，由 autonomous_projection 先自主寻找并验证墙面；不得直接调用 meeting_presentation_on 跳过搜索。暂停、继续、关闭可以直接调用。",
+      "actions": {
+        "status": {"argv": ["status"], "success_speech": "", "failure_speech": "没有查到投影状态。"},
+        "meeting_presentation_on": {"argv": ["meeting_presentation_on"], "success_speech": "会议内容已经投出来了。", "failure_speech": "刚才没有成功开始会议投影。"},
+        "meeting_pause": {"argv": ["meeting_pause"], "success_speech": "投影已经暂停。", "failure_speech": "刚才没有成功暂停投影。"},
+        "meeting_resume": {"argv": ["meeting_resume"], "success_speech": "投影已经继续播放。", "failure_speech": "刚才没有成功继续投影。"},
+        "fitness_video_on": {"argv": ["fitness_video_on"], "success_speech": "运动视频已经开始播放。", "failure_speech": "刚才没有成功播放运动视频。"},
+        "off": {"argv": ["off"], "success_speech": "投影已经关闭。", "failure_speech": "刚才没有成功关闭投影。"}
+      },
+      "arguments": {
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"]
+    },
+    "pull_up": {
+      "description": "为指定人物进行引体向上计数，或查询和停止计数。",
+      "actions": {
+        "run": {"argv": ["run"], "success_speech": "引体向上计数已经结束。", "failure_speech": "引体向上计数没有正常完成。"},
+        "query": {"argv": ["query"], "success_speech": "", "failure_speech": "没有查到当前计数。"},
+        "stop": {"argv": ["stop"], "success_speech": "已经停止引体向上计数。", "failure_speech": "没有成功停止计数。"}
+      },
+      "arguments": {
+        "camera": {"flag": "--camera", "type": "str"},
+        "duration": {"flag": "--duration", "type": "float"},
+        "name": {"flag": "--name", "type": "str"},
+        "output": {"flag": "--output", "type": "str"},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "stop_action": "stop"
+    },
+    "push_up": {
+      "description": "为指定人物进行俯卧撑计数，或查询和停止计数。",
+      "actions": {
+        "check": {"argv": ["check"], "success_speech": "", "failure_speech": "俯卧撑计数当前不可用。"},
+        "run": {"argv": ["run"], "success_speech": "俯卧撑计数已经结束。", "failure_speech": "俯卧撑计数没有正常完成。"},
+        "query": {"argv": ["query"], "success_speech": "", "failure_speech": "没有查到当前计数。"},
+        "stop": {"argv": ["stop"], "success_speech": "已经停止俯卧撑计数。", "failure_speech": "没有成功停止计数。"}
+      },
+      "arguments": {
+        "camera": {"flag": "--camera", "type": "str"},
+        "duration": {"flag": "--duration", "type": "float"},
+        "name": {"flag": "--name", "type": "str"},
+        "output": {"flag": "--output", "type": "str"},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "auto_argv": ["--json"],
+      "stop_action": "stop"
+    },
+    "realtime_information": {
+      "description": "查询时间、机器人所在地区、天气、附近美食或交通状况。",
+      "actions": {
+        "current_time": {"argv": ["--action", "current_time"], "success_speech": "", "failure_speech": "刚才没有查到时间。"},
+        "location": {"argv": ["--action", "location"], "success_speech": "", "failure_speech": "刚才没有查到位置信息。"},
+        "weather": {"argv": ["--action", "weather"], "success_speech": "", "failure_speech": "刚才没有查到天气。"},
+        "nearby": {"argv": ["--action", "nearby"], "success_speech": "", "failure_speech": "刚才没有查到附近的信息。"},
+        "traffic": {"argv": ["--action", "traffic"], "success_speech": "", "failure_speech": "刚才没有查到交通信息。"}
+      },
+      "arguments": {
+        "location": {"flag": "--location", "type": "str"},
+        "query": {"flag": "--query", "type": "str"},
+        "radius": {"flag": "--radius", "type": "int"},
+        "limit": {"flag": "--limit", "type": "int"}
+      }
+    },
+    "reminder_cancel": {
+      "description": "取消已经创建的提醒。",
+      "actions": {
+        "cancel": {"argv": ["cancel"], "success_speech": "这个提醒已经取消了。", "failure_speech": "刚才没有找到可以取消的提醒。"}
+      },
+      "arguments": {
+        "json_params": {"flag": "--json-params", "type": "json", "required": true}
+      }
+    },
+    "reminder_query": {
+      "description": "查询当前已经创建、尚未触发的提醒。",
+      "actions": {
+        "query": {"argv": ["query"], "success_speech": "", "failure_speech": "刚才没有查到提醒。"}
+      },
+      "arguments": {}
+    },
+    "reminder_schedule": {
+      "description": "根据提醒内容和触发条件创建提醒。",
+      "actions": {
+        "schedule": {"argv": ["schedule"], "success_speech": "提醒已经设置好了。", "failure_speech": "刚才没有成功设置提醒。"}
+      },
+      "arguments": {
+        "json_params": {"flag": "--json-params", "type": "json", "required": true}
+      }
+    },
+    "squat": {
+      "description": "为指定人物进行深蹲计数，或查询和停止计数。",
+      "actions": {
+        "run": {"argv": ["run"], "success_speech": "深蹲计数已经结束。", "failure_speech": "深蹲计数没有正常完成。"},
+        "query": {"argv": ["query"], "success_speech": "", "failure_speech": "没有查到当前计数。"},
+        "stop": {"argv": ["stop"], "success_speech": "已经停止深蹲计数。", "failure_speech": "没有成功停止计数。"}
+      },
+      "arguments": {
+        "camera": {"flag": "--camera", "type": "str"},
+        "duration": {"flag": "--duration", "type": "float"},
+        "name": {"flag": "--name", "type": "str"},
+        "output": {"flag": "--output", "type": "str"},
+        "dry_run": {"flag": "--dry-run", "type": "bool"}
+      },
+      "stop_action": "stop"
+    }
+  }
+}

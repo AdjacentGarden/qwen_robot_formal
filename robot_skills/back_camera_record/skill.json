@@ -1,0 +1,103 @@
+{
+  "allowed_actions": [],
+  "certification_status": null,
+  "composition_affordances": [],
+  "config_defaults": {
+    "device": "config.cameras.back.device",
+    "fourcc": "mp4v",
+    "fps": 15,
+    "height": 640,
+    "image_path": "/home/test/self_program/back_camera.jpg",
+    "jpeg_quality": 90,
+    "record_seconds": 3,
+    "video_path": "/home/test/self_program/back_camera.mp4",
+    "warmup_frames": 5,
+    "width": 640
+  },
+  "description_zh": "调用后摄像头录制一段视频。",
+  "disabled_reason": null,
+  "domain_tags": [
+    "camera",
+    "rear_view",
+    "video",
+    "perception"
+  ],
+  "entrypoint": null,
+  "example_function_call": {
+    "arguments": {},
+    "name": "back_camera_record"
+  },
+  "llm_notes_zh": [
+    "优先只填用户明确给出的参数，未给出的参数使用 config_defaults。",
+    "涉及 moves_robot、moves_robot_long_running、opens_camera 的调用需要确认用户确实要求执行硬件动作。",
+    "side_effects 包含 disabled 的 skill 当前仅用于测试禁用返回，不应用于真实硬件控制。"
+  ],
+  "module": "/home/test/self_program/new_self_test.py",
+  "name": "back_camera_record",
+  "optional_enhancements": [],
+  "optional_slots": [
+    "output_path",
+    "seconds"
+  ],
+  "parameters": {
+    "properties": {
+      "output_path": {
+        "default_source": "audio_config.json",
+        "description": "图片或视频输出路径。",
+        "python_default": null,
+        "required": false,
+        "type": "string|null"
+      }
+    },
+    "required": [],
+    "type": "object"
+  },
+  "planning_notes_zh": [
+    "默认录像时长来自 config；用户明确说时长时覆盖 seconds。",
+    "恢复任务时必须参考 recovery 字段、TaskGroup.resume_context 和 RobotStateSnapshot，不能盲目从头重复已完成 step。"
+  ],
+  "recovery": {
+    "notes_zh": [
+      "感知/拍摄类任务中断后通常重新执行当前 step。"
+    ],
+    "progress_schema": {},
+    "requires_scene_restore": true,
+    "resumable": false,
+    "resume_argument_mapping": {},
+    "resume_strategy": "restart_step",
+    "scene_restore_requirements": [
+      "head",
+      "camera"
+    ]
+  },
+  "required_slots": [],
+  "resources": [
+    "back_camera"
+  ],
+  "returns": {
+    "description_zh": "底层 skill 封装通常返回 subprocess.CompletedProcess；摄像头拍照/录像返回输出文件 Path。",
+    "type": "subprocess.CompletedProcess or pathlib.Path"
+  },
+  "side_effects": [
+    "writes_video_file"
+  ],
+  "single_function_contract": null,
+  "single_function_skill": null,
+  "slot_questions_zh": {},
+  "trigger_phrases_zh": [
+    "录后面",
+    "后摄录像",
+    "录制后方视频"
+  ],
+  "type": "python_function",
+  "when_to_call_zh": [
+    "需要录制机器人后方视频",
+    "需要测试后摄像头视频流"
+  ],
+  "resident_runtime": {
+    "enabled": true,
+    "launcher": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime.sh",
+    "socket": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/resident/skills.sock",
+    "legacy_entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/back_camera_record/run_legacy.sh"
+  }
+}

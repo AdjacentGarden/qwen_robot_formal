@@ -1,0 +1,110 @@
+{
+  "allowed_actions": [],
+  "certification_status": "disabled",
+  "composition_affordances": [],
+  "config_defaults": {
+    "args": []
+  },
+  "description_zh": "风扇控制占位 skill，当前底层标记为 disabled。",
+  "disabled_reason": "Old fan/feeder/light control implementation removed; do not execute hardware control until reimplemented.",
+  "domain_tags": [
+    "home_control",
+    "disabled"
+  ],
+  "entrypoint": "/home/test/single_function/fan_control/run.sh",
+  "example_function_call": {
+    "arguments": {},
+    "name": "fan_control"
+  },
+  "llm_notes_zh": [
+    "优先只填用户明确给出的参数，未给出的参数使用 config_defaults。",
+    "涉及 moves_robot、moves_robot_long_running、opens_camera 的调用需要确认用户确实要求执行硬件动作。",
+    "side_effects 包含 disabled 的 skill 当前仅用于测试禁用返回，不应用于真实硬件控制。",
+    "该 skill 只通过 single_function stdout 输出语音事件，由 /home/test/new_project 统一接管 TTS 播报。"
+  ],
+  "module": "/home/test/self_program/new_self_test.py",
+  "name": "fan_control",
+  "optional_enhancements": [],
+  "optional_slots": [],
+  "parameters": {
+    "properties": {
+      "args": {
+        "default": [],
+        "description": "透传给底层 run.sh 的额外参数。",
+        "required": false,
+        "type": "array"
+      }
+    },
+    "required": [],
+    "type": "object"
+  },
+  "planning_notes_zh": [
+    "底层已禁用，不应作为真实硬件控制执行。",
+    "恢复任务时必须参考 recovery 字段、TaskGroup.resume_context 和 RobotStateSnapshot，不能盲目从头重复已完成 step。"
+  ],
+  "recovery": {
+    "captured_in_robot_state": true,
+    "notes_zh": [
+      "状态型硬件不作为长任务恢复，但执行后的状态会进入 RobotStateSnapshot，供其他任务恢复现场。"
+    ],
+    "progress_schema": {},
+    "requires_scene_restore": false,
+    "resumable": false,
+    "resume_argument_mapping": {},
+    "resume_strategy": "state_snapshot_restore",
+    "scene_restore_requirements": []
+  },
+  "required_slots": [],
+  "resources": [
+    "infrared"
+  ],
+  "returns": {
+    "description_zh": "底层 skill 封装通常返回 subprocess.CompletedProcess；摄像头拍照/录像返回输出文件 Path。",
+    "type": "subprocess.CompletedProcess or pathlib.Path"
+  },
+  "side_effects": [
+    "disabled"
+  ],
+  "single_function_contract": {
+    "actions": [],
+    "allow_direct_execution": false,
+    "category": "单功能",
+    "certification_notes": [
+      "Disabled on 2026-07-01 because the previous appliance-control implementation was known incorrect."
+    ],
+    "certification_status": "disabled",
+    "demo_script": [],
+    "description": "fan_control is disabled: old appliance control implementation was removed and awaits reimplementation.",
+    "disabled_reason": "Old fan/feeder/light control implementation removed; do not execute hardware control until reimplemented.",
+    "entrypoint": "/home/test/single_function/fan_control/run.sh",
+    "examples": [],
+    "id": "fan_control",
+    "intents": [],
+    "name": "fan_control",
+    "parameters_schema": {},
+    "resources": [
+      "infrared"
+    ],
+    "scene_id": "home_control",
+    "skill_name": "fan_control",
+    "task_kind": "short",
+    "timeout_sec": 15.0
+  },
+  "single_function_skill": "fan_control",
+  "slot_questions_zh": {},
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "runtime_owner": "/home/test/new_project",
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "trigger_phrases_zh": [
+    "开风扇",
+    "关风扇"
+  ],
+  "type": "python_function",
+  "when_to_call_zh": [
+    "仅在明确需要测试禁用状态时调用"
+  ]
+}

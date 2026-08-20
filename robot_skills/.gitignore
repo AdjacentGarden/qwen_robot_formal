@@ -1,0 +1,49 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Runtime output
+runtime/
+*/runtime/
+log/
+logs/
+*.log
+
+# Local secrets and environment
+.env
+.env.*
+*.secret
+*.token
+
+# Generated backups and temporary files
+backups/
+*.bak
+*.bak_*
+*.tmp
+*.swp
+*~
+
+# Sensitive biometric/user data
+face_data/
+**/identity_event.json
+**/faces.db
+**/face_vectors.db
+**/pet_tracking_record.mp4
+**/*_record.mp4
+
+# Test/capture media generated at runtime
+*.jpg
+*.jpeg
+*.png
+*.mp4
+*.avi
+*.wav
+*.pcm
+
+# Keep source-controlled assets explicitly even when extensions are broad.
+!**/assets/**/*.jpg
+!**/assets/**/*.jpeg
+!**/assets/**/*.png
+!**/assets/**/*.wav
+!**/assets/**/*.pcm

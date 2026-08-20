@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "owner": "/home/test/new_project",
+  "transport": "stdout",
+  "environment": {
+    "PYTHONUNBUFFERED": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "SINGLE_FUNCTION_JSON": "1",
+    "SINGLE_FUNCTION_SPEECH_EVENTS": "1"
+  },
+  "rules": {
+    "fitness": {
+      "skills": ["squat", "push_up", "pull_up"],
+      "speak": ["start", "count", "idle_timeout", "complete", "query", "stop"],
+      "examples": ["深蹲计数已开始，时长三十秒。", "第一个", "本次深蹲计数结束，共做了三个。"]
+    },
+    "tracking": {
+      "skills": ["pet_tracking", "person_tracking"],
+      "speak": ["found", "not_found", "lost", "complete"],
+      "examples": ["这里有一只小狗", "抱歉，我没有发现小狗", "对不起，我没找到宠物"]
+    },
+    "session": {
+      "skills": ["face_recognition", "face_registration", "environment_perception"],
+      "speak": ["final_summary"],
+      "examples": ["识别结果是张三，置信度0.82", "人脸注册完成"]
+    },
+    "short": {
+      "skills": ["move_forward", "move_backward", "move_left", "move_right", "head_control", "projector_control", "reminder_schedule", "reminder_query", "reminder_cancel"],
+      "speak": ["final_summary", "json_message"]
+    }
+  }
+}

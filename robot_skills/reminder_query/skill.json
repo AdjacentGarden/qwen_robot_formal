@@ -1,0 +1,58 @@
+{
+  "actions": [
+    "query",
+    "list",
+    "status"
+  ],
+  "allow_direct_execution": true,
+  "category": "提醒",
+  "certification_notes": [],
+  "certification_status": "checked",
+  "demo_script": [],
+  "description": "查询并自然语言播报所有待执行提醒。",
+  "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/reminder_query/run.sh",
+  "examples": [
+    "我还有什么提醒"
+  ],
+  "id": "reminder.query",
+  "intents": [
+    "reminder"
+  ],
+  "name": "查询提醒",
+  "parameters_schema": {
+    "type": "object",
+    "properties": {
+      "include_terminal": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "additionalProperties": false
+  },
+  "resources": [
+    "reminder_store"
+  ],
+  "scene_id": "reminder",
+  "skill_name": "reminder.query",
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "examples": [],
+    "group": "short",
+    "runtime_owner": "/home/test/new_project",
+    "speak": [
+      "final_summary",
+      "json_message"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "task_kind": "short",
+  "timeout_sec": 10.0,
+  "resident_runtime": {
+    "enabled": true,
+    "launcher": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime.sh",
+    "socket": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/resident/skills.sock",
+    "legacy_entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/reminder_query/run_legacy.sh"
+  }
+}

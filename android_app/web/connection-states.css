@@ -1,0 +1,50 @@
+.map-offline-state {
+  min-height: min(55vh, 500px);
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  padding: 34px 24px;
+  border: 1px solid var(--line);
+  border-radius: 23px;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(11, 118, 107, .12), transparent 42%),
+    var(--surface);
+  color: var(--muted);
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.map-offline-icon {
+  width: 70px;
+  height: 70px;
+  display: grid;
+  place-items: center;
+  border-radius: 24px;
+  background: var(--teal-soft);
+  color: var(--teal);
+  font-size: 28px;
+}
+
+.map-offline-state strong {
+  display: block;
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.map-offline-state p {
+  max-width: 260px;
+  margin: 8px 0 0;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+body[data-robot-online="false"] .map-online-content,
+body[data-robot-online="true"] .map-offline-state {
+  display: none;
+}
+
+body[data-robot-online="false"] .pose-pill {
+  background: #e5eaec;
+  color: var(--muted);
+}

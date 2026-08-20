@@ -1,0 +1,9 @@
+{
+  "appId": "com.lixiang.robot.companion.fixed",
+  "appName": "理想同学",
+  "webDir": "web",
+  "android": {
+    "allowMixedContent": true,
+    "backgroundColor": "#eef3f4"
+  }
+}

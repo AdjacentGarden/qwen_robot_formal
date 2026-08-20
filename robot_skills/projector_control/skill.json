@@ -1,0 +1,62 @@
+{
+  "actions": [
+    "fitness_video_on",
+    "meeting_presentation_on",
+    "meeting_pause",
+    "meeting_resume",
+    "internal_on",
+    "on",
+    "off",
+    "status"
+  ],
+  "allow_direct_execution": true,
+  "category": "单功能",
+  "certification_notes": [],
+  "certification_status": "unchecked",
+  "demo_script": [],
+  "description": "Control projector power, external exercise video, or a meeting presentation loop with pause and resume.",
+  "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/projector_control/run.sh",
+  "examples": [],
+  "id": "projector_control",
+  "intents": [],
+  "name": "projector_control",
+  "parameters_schema": {},
+  "resources": [
+    "projector",
+    "android_container"
+  ],
+  "scene_id": "environment_projection",
+  "skill_name": "projector_control",
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "examples": [],
+    "group": "short",
+    "runtime_owner": "/home/test/new_project_optimized_v11_navsafe",
+    "speak": [
+      "final_summary",
+      "json_message"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "task_kind": "short",
+  "terminal_actions": [
+    "off"
+  ],
+  "terminal_utterance_markers_zh": [
+    "关闭会议投影",
+    "结束会议投影",
+    "停止会议投影",
+    "关闭投影",
+    "结束投影"
+  ],
+  "terminal_reply_zh": "会议投影已经关闭。",
+  "timeout_sec": 15.0,
+  "resident_runtime": {
+    "enabled": true,
+    "launcher": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime.sh",
+    "socket": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/resident/skills.sock",
+    "legacy_entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/projector_control/run_legacy.sh"
+  }
+}

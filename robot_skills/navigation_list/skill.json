@@ -1,0 +1,131 @@
+{
+  "allowed_actions": [
+    "goto",
+    "list"
+  ],
+  "certification_status": "unchecked",
+  "composition_affordances": [],
+  "config_defaults": {
+    "action": "list"
+  },
+  "description_zh": "查询可用导航点位列表。",
+  "disabled_reason": null,
+  "domain_tags": [
+    "navigation",
+    "location",
+    "query"
+  ],
+  "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/navigation_list/run.sh",
+  "example_function_call": {
+    "arguments": {},
+    "name": "navigation_list"
+  },
+  "llm_notes_zh": [
+    "优先只填用户明确给出的参数，未给出的参数使用 config_defaults。",
+    "涉及 moves_robot、moves_robot_long_running、opens_camera 的调用需要确认用户确实要求执行硬件动作。",
+    "side_effects 包含 disabled 的 skill 当前仅用于测试禁用返回，不应用于真实硬件控制。",
+    "该 skill 只通过 single_function stdout 输出语音事件，由 /home/test/new_project 统一接管 TTS 播报。"
+  ],
+  "module": "/home/test/self_program/new_self_test.py",
+  "name": "navigation_list",
+  "optional_enhancements": [],
+  "optional_slots": [],
+  "parameters": {
+    "properties": {},
+    "required": [],
+    "type": "object"
+  },
+  "planning_notes_zh": [
+    "这是查询型 skill，不移动机器人。",
+    "恢复任务时必须参考 recovery 字段、TaskGroup.resume_context 和 RobotStateSnapshot，不能盲目从头重复已完成 step。"
+  ],
+  "recovery": {
+    "notes_zh": [],
+    "progress_schema": {},
+    "requires_scene_restore": false,
+    "resumable": false,
+    "resume_argument_mapping": {},
+    "resume_strategy": "restart_step",
+    "scene_restore_requirements": []
+  },
+  "required_slots": [],
+  "resources": [
+    "nav_points"
+  ],
+  "returns": {
+    "description_zh": "底层 skill 封装通常返回 subprocess.CompletedProcess；摄像头拍照/录像返回输出文件 Path。",
+    "type": "subprocess.CompletedProcess or pathlib.Path"
+  },
+  "side_effects": [],
+  "single_function_contract": {
+    "actions": [
+      "goto",
+      "list"
+    ],
+    "allow_direct_execution": false,
+    "category": "navigation",
+    "certification_notes": [
+      "Unified on 2026-07-01: navigation_goto is the only active navigation skill.",
+      "Accepts point aliases from /home/test/new_project_optimized_v11_navsafe/data/navigation/named_points.json or direct map coordinates."
+    ],
+    "certification_status": "unchecked",
+    "demo_script": [],
+    "description": "Single navigation skill. Use action=list to list known points, or action=goto with either a point name alias or direct map coordinates.",
+    "entrypoint": "/home/test/new_project_optimized_v11_navsafe/integrations/navigation_goto/run.sh",
+    "examples": [
+      "bash run.sh list",
+      "bash run.sh a",
+      "bash run.sh goto a",
+      "bash run.sh --point a",
+      "bash run.sh 0.1 0.1",
+      "bash run.sh --x 0.1 --y 0.1 --yaw 0",
+      "bash run.sh --json-params '{\"point\":\"a\"}'",
+      "bash run.sh --json-params '{\"x\":0.1,\"y\":0.1,\"yaw\":0}'"
+    ],
+    "id": "navigation_goto",
+    "intents": [],
+    "name": "navigation_goto",
+    "parameters_schema": {
+      "action": "goto|list",
+      "destination": "alias of point, accepted in json_params",
+      "frame_id": "optional frame id, default map",
+      "point": "optional known point alias from /home/test/new_project_optimized_v11_navsafe/data/navigation/named_points.json",
+      "x": "optional map x; requires y if point is omitted",
+      "y": "optional map y; requires x if point is omitted",
+      "yaw": "optional yaw radians, default 0"
+    },
+    "resources": [
+      "base",
+      "nav2"
+    ],
+    "scene_id": "navigation",
+    "skill_name": "navigation_goto",
+    "task_kind": "long",
+    "timeout_sec": 120.0
+  },
+  "single_function_skill": "navigation_goto",
+  "slot_questions_zh": {},
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "runtime_owner": "/home/test/new_project",
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "trigger_phrases_zh": [
+    "有哪些地点",
+    "可以去哪",
+    "列出导航点"
+  ],
+  "type": "python_function",
+  "when_to_call_zh": [
+    "用户询问可以去哪些地方",
+    "需要查看命名点位"
+  ],
+  "resident_runtime": {
+    "enabled": true,
+    "launcher": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime.sh",
+    "socket": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/resident/skills.sock",
+    "legacy_entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/navigation_list/run_legacy.sh"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "ideal-robot-android",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Fixed-points Android companion app for the Ideal robot",
+  "scripts": {
+    "sync": "npx cap sync android",
+    "build:apk": "cd android && gradlew.bat assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.0",
+    "@capacitor/core": "8.5.0",
+    "@fortawesome/fontawesome-free": "^7.3.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.0",
+    "html-validate": "^11.6.2",
+    "ws": "^8.18.3"
+  }
+}

@@ -1,0 +1,226 @@
+{
+  "allowed_actions": [
+    "start",
+    "query",
+    "stop",
+    "run"
+  ],
+  "certification_status": "unchecked",
+  "composition_affordances": [],
+  "config_defaults": {
+    "action": "run",
+    "camera": "config.cameras.back.device",
+    "duration": null
+  },
+  "description_zh": "抬头后使用 config.cameras.back.device 指向的后摄像头进行深蹲计数、查询或停止。机器人约30cm高，深蹲需要拍到用户身体，因此默认后摄并要求 head_control(up)。",
+  "disabled_reason": null,
+  "domain_tags": [
+    "fitness",
+    "exercise",
+    "squat",
+    "camera",
+    "back_camera",
+    "requires_head_up",
+    "where_required"
+  ],
+  "entrypoint": "/home/test/single_function/squat/run.sh",
+  "example_function_call": {
+    "arguments": {
+      "action": "run",
+      "duration": 30
+    },
+    "name": "squat"
+  },
+  "llm_notes_zh": [
+    "优先只填用户明确给出的参数，未给出的参数使用 config_defaults。",
+    "涉及 moves_robot、moves_robot_long_running、opens_camera 的调用需要确认用户确实要求执行硬件动作。",
+    "side_effects 包含 disabled 的 skill 当前仅用于测试禁用返回，不应用于真实硬件控制。",
+    "该 skill 只通过 single_function stdout 输出语音事件，由 /home/test/new_project 统一接管 TTS 播报。"
+  ],
+  "module": "/home/test/self_program/new_self_test.py",
+  "name": "squat",
+  "optional_enhancements": [
+    {
+      "applies_when_zh": "用户要做运动但未说明是否需要投影辅助。",
+      "enhancement_id": "fitness_projection",
+      "if_yes_task": {
+        "arguments": {
+          "action": "fitness_video_on"
+        },
+        "order": "before_current",
+        "skill": "projector_control"
+      },
+      "question_zh": "需要我打开投影辅助训练吗？",
+      "related_skill": "projector_control"
+    }
+  ],
+  "optional_slots": [
+    "duration",
+    "camera",
+    "initial_count",
+    "resume_from_interrupt",
+    "initial_elapsed_seconds",
+    "where",
+    "point",
+    "projector_control"
+  ],
+  "parameters": {
+    "properties": {
+      "action": {
+        "default_source": "audio_config.json",
+        "description": "要执行的动作，优先使用 allowed_actions 中的值。",
+        "python_default": null,
+        "required": false,
+        "type": "string"
+      },
+      "camera": {
+        "type": "string|null",
+        "required": false,
+        "description": "默认由 config.cameras.back.device 提供，即后摄 fitness_body_camera。"
+      },
+      "duration": {
+        "default_source": "audio_config.json",
+        "description": "执行、追踪或运动计数持续秒数。",
+        "python_default": null,
+        "required": false,
+        "type": "number|null"
+      },
+      "initial_count": {
+        "description": "恢复运动计数时的初始累计次数。",
+        "python_default": 0,
+        "required": false,
+        "type": "integer"
+      },
+      "initial_elapsed_seconds": {
+        "description": "恢复运动计数时已经消耗的秒数。",
+        "python_default": 0.0,
+        "required": false,
+        "type": "number"
+      },
+      "resume_from_interrupt": {
+        "description": "是否从中断状态恢复执行。",
+        "python_default": false,
+        "required": false,
+        "type": "boolean"
+      },
+      "where": {
+        "type": "string|null",
+        "required": false,
+        "description": "运动地点；here 表示当前位置，也可以是已保存导航点。"
+      },
+      "point": {
+        "type": "string|null",
+        "required": false,
+        "description": "如果 where 是导航点，则先 navigation_goto(point)。"
+      }
+    },
+    "required": [],
+    "type": "object"
+  },
+  "planning_notes_zh": [
+    "用户要做深蹲时，必须确认 where：就在这里，还是去某个已保存地点。未明确时要追问。",
+    "执行深蹲前先 head_control(action=up)，然后 environment_perception(purpose=fitness_projection, camera=both)。",
+    "深蹲计数默认使用 config.cameras.back.device 指向的后摄；前摄主要用于投影环境判断。",
+    "如果用户需要投影，在环境感知确认后再 projector_control(action=fitness_video_on) 播放外部运动视频。"
+  ],
+  "recovery": {
+    "resumable": true,
+    "requires_scene_restore": true,
+    "resume_strategy": "resume_with_arguments",
+    "resume_argument_mapping": {
+      "resume_from_interrupt": true,
+      "initial_count": "last_progress.payload.current_count or last_progress.payload.count",
+      "initial_elapsed_seconds": "last_progress.payload.elapsed_seconds",
+      "camera": "config.cameras.back.device"
+    },
+    "progress_schema": {
+      "current_count": "integer",
+      "count": "integer alias",
+      "elapsed_seconds": "number",
+      "initial_count": "integer",
+      "session_count": "integer",
+      "state": "ready|active|completed|interrupted"
+    },
+    "scene_restore_requirements": [
+      "pose",
+      "head",
+      "back_camera",
+      "npu"
+    ],
+    "notes_zh": [
+      "恢复时从已完成次数继续；摄像头画面不要求完全一致，只需恢复头部/位置后重新打开后摄。"
+    ]
+  },
+  "required_slots": [],
+  "resources": [
+    "back_camera",
+    "npu"
+  ],
+  "returns": {
+    "description_zh": "底层 skill 封装通常返回 subprocess.CompletedProcess；摄像头拍照/录像返回输出文件 Path。",
+    "type": "subprocess.CompletedProcess or pathlib.Path"
+  },
+  "side_effects": [
+    "opens_camera"
+  ],
+  "single_function_contract": {
+    "actions": [
+      "start",
+      "query",
+      "stop",
+      "run"
+    ],
+    "allow_direct_execution": false,
+    "category": "单功能",
+    "certification_notes": [],
+    "certification_status": "unchecked",
+    "demo_script": [],
+    "description": "Count squats.",
+    "entrypoint": "/home/test/single_function/squat/run.sh",
+    "examples": [],
+    "id": "squat",
+    "intents": [],
+    "name": "squat",
+    "parameters_schema": {},
+    "resources": [
+      "camera"
+    ],
+    "scene_id": "fitness",
+    "skill_name": "squat",
+    "task_kind": "long",
+    "timeout_sec": 120.0
+  },
+  "single_function_skill": "squat",
+  "slot_questions_zh": {},
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "examples": [
+      "深蹲计数已开始，时长三十秒。",
+      "第一个",
+      "本次深蹲计数结束，共做了三个。"
+    ],
+    "group": "fitness",
+    "runtime_owner": "/home/test/new_project",
+    "speak": [
+      "start",
+      "count",
+      "idle_timeout",
+      "complete",
+      "query",
+      "stop"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "trigger_phrases_zh": [
+    "做深蹲",
+    "深蹲计数",
+    "开始深蹲"
+  ],
+  "type": "python_function",
+  "when_to_call_zh": [
+    "用户开始深蹲训练",
+    "用户查询深蹲个数"
+  ]
+}

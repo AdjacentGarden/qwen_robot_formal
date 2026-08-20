@@ -1,0 +1,242 @@
+{
+  "allowed_actions": [
+    "find",
+    "track",
+    "stop"
+  ],
+  "terminal_actions": [
+    "stop",
+    "cancel"
+  ],
+  "terminal_utterance_markers_zh": [
+    "停止追踪",
+    "停止跟踪",
+    "别再跟了",
+    "不要跟了"
+  ],
+  "terminal_reply_zh": "好，行人追踪已经停下来了。",
+  "certification_status": "unchecked",
+  "composition_affordances": [],
+  "config_defaults": {
+    "action": "track",
+    "name": "zhangsan",
+    "backend": null,
+    "camera": null,
+    "cmd_vel_topic": null,
+    "duration": null,
+    "base_speed": 0.78,
+    "max_linear": 0.55,
+    "max_angular": 1.3,
+    "steering_gain": 0.46,
+    "speed_ema_alpha": 0.32,
+    "max_speed_step": 0.08,
+    "search_spin_speed": 0.28,
+    "json_output": true
+  },
+  "description_zh": "使用前摄像头先通过注册人脸确认 zhangsan（张三），再用持续 ReID 锁定并跟随同一个人。身份未确认或 ReID 歧义时禁止移动；停止时使用 stop。",
+  "disabled_reason": null,
+  "domain_tags": [
+    "tracking",
+    "person",
+    "camera",
+    "base",
+    "long_running"
+  ],
+  "entrypoint": "/home/test/new_project_optimized_v11_navsafe/integrations/person_tracking/run.sh",
+  "example_function_call": {
+    "arguments": {
+      "action": "track",
+      "duration": 10
+    },
+    "name": "person_tracking"
+  },
+  "llm_notes_zh": [
+    "优先只填用户明确给出的参数，未给出的参数使用 config_defaults。",
+    "涉及 moves_robot、moves_robot_long_running、opens_camera 的调用需要确认用户确实要求执行硬件动作。",
+    "side_effects 包含 disabled 的 skill 当前仅用于测试禁用返回，不应用于真实硬件控制。",
+    "该 skill 只通过 single_function stdout 输出语音事件，由 /home/test/new_project 统一接管 TTS 播报。"
+  ],
+  "module": "/home/test/self_program/new_self_test.py",
+  "name": "person_tracking",
+  "optional_enhancements": [],
+  "optional_slots": [
+    "action",
+    "camera",
+    "duration",
+    "backend"
+  ],
+  "parameters": {
+    "properties": {
+      "action": {
+        "default_source": "audio_config.json",
+        "description": "要执行的动作，优先使用 allowed_actions 中的值。",
+        "python_default": null,
+        "required": false,
+        "type": "string"
+      },
+      "backend": {
+        "default_source": "audio_config.json",
+        "description": "运行后端，例如 ros2、dummy、cmd_vel。",
+        "python_default": null,
+        "required": false,
+        "type": "string|null"
+      },
+      "camera": {
+        "default_source": "audio_config.json",
+        "description": "摄像头设备路径；默认由硬件配置或 skill 运行时决定，不要在规划中硬编码具体设备。",
+        "python_default": null,
+        "required": false,
+        "type": "string|null"
+      },
+      "cmd_vel_topic": {
+        "default_source": "audio_config.json",
+        "description": "ROS2 Twist 运动控制话题。",
+        "python_default": null,
+        "required": false,
+        "type": "string|null"
+      },
+      "duration": {
+        "default_source": "audio_config.json",
+        "description": "执行、追踪或运动计数持续秒数。",
+        "python_default": null,
+        "required": false,
+        "type": "number|null"
+      },
+      "json_output": {
+        "default_source": "audio_config.json",
+        "description": "是否要求底层 skill 输出 JSON。",
+        "python_default": null,
+        "required": false,
+        "type": "boolean|null"
+      },
+      "name": {
+        "default_source": "config_defaults",
+        "description": "注册人脸身份名；张三统一使用 zhangsan。",
+        "python_default": "zhangsan",
+        "required": false,
+        "type": "string"
+      },
+      "target": {
+        "default_source": "user instruction",
+        "description": "用户对目标人物的称呼；张三相关表达统一规范为张三。",
+        "python_default": "张三",
+        "required": false,
+        "type": "string|null"
+      }
+    },
+    "required": [],
+    "type": "object"
+  },
+  "planning_notes_zh": [
+    "执行中用户唤醒时必须整体暂停该 TaskGroup，并保存恢复快照。",
+    "恢复任务时必须参考 recovery 字段、TaskGroup.resume_context 和 RobotStateSnapshot，不能盲目从头重复已完成 step。"
+  ],
+  "recovery": {
+    "notes_zh": [
+      "追踪类任务无法保证目标仍在原位；恢复时先恢复机器人现场，然后按原目标重新搜索并继续追踪。"
+    ],
+    "progress_schema": {
+      "elapsed_seconds": "number",
+      "last_bbox": "optional image bbox",
+      "state": "searching|tracking|lost|not_found",
+      "target": "object/person/pet description"
+    },
+    "requires_scene_restore": true,
+    "resumable": true,
+    "resume_argument_mapping": {
+      "resume_from_interrupt": true,
+      "target": "last_progress.payload.target when available"
+    },
+    "resume_strategy": "restore_scene_then_restart_search",
+    "scene_restore_requirements": [
+      "pose",
+      "head",
+      "front_camera",
+      "base",
+      "npu"
+    ]
+  },
+  "required_slots": [],
+  "resources": [
+    "camera",
+    "base",
+    "ros2"
+  ],
+  "returns": {
+    "description_zh": "底层 skill 封装通常返回 subprocess.CompletedProcess；摄像头拍照/录像返回输出文件 Path。",
+    "type": "subprocess.CompletedProcess or pathlib.Path"
+  },
+  "side_effects": [
+    "opens_camera",
+    "moves_robot_long_running"
+  ],
+  "single_function_contract": {
+    "actions": [
+      "find",
+      "track",
+      "stop"
+    ],
+    "allow_direct_execution": false,
+    "category": "单功能",
+    "certification_notes": [],
+    "certification_status": "unchecked",
+    "demo_script": [],
+    "description": "Track a person using the front camera.",
+    "entrypoint": "/home/test/new_project_optimized_v11_navsafe/integrations/person_tracking/run.sh",
+    "examples": [],
+    "id": "person_tracking",
+    "intents": [],
+    "name": "person_tracking",
+    "parameters_schema": {},
+    "resources": [
+      "camera",
+      "base"
+    ],
+    "scene_id": "person_follow",
+    "skill_name": "person_tracking",
+    "task_kind": "long",
+    "timeout_sec": 120.0
+  },
+  "single_function_skill": "person_tracking",
+  "slot_questions_zh": {},
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "examples": [
+      "这里有一只小狗",
+      "抱歉，我没有发现小狗",
+      "对不起，我没找到宠物"
+    ],
+    "group": "tracking",
+    "runtime_owner": "/home/test/new_project",
+    "speak": [
+      "found",
+      "not_found",
+      "lost",
+      "complete"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "trigger_phrases_zh": [
+    "请你追踪zhangsan",
+    "请你追踪zhangsan这个人",
+    "请你追踪张三",
+    "请你跟着张三",
+    "帮我找到张三并跟着他",
+    "盯住张三",
+    "追踪这个人",
+    "跟着前面那个人",
+    "请你跟着那个人",
+    "看看那个人在哪里",
+    "找一下前面的行人",
+    "找人",
+    "停止追踪人"
+  ],
+  "type": "python_function",
+  "when_to_call_zh": [
+    "用户要求跟随/追踪某个人",
+    "用户要求寻找某个行人并在找到后跟随",
+    "用户要求停止行人追踪"
+  ]
+}

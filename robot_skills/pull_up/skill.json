@@ -1,0 +1,59 @@
+{
+  "actions": [
+    "start",
+    "query",
+    "stop",
+    "run"
+  ],
+  "allow_direct_execution": false,
+  "category": "单功能",
+  "certification_notes": [],
+  "certification_status": "unchecked",
+  "demo_script": [],
+  "description": "Count pull-ups using the configured back fitness camera after head_control(up); location where must be resolved before execution.",
+  "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/pull_up/run.sh",
+  "examples": [],
+  "id": "pull_up",
+  "intents": [],
+  "name": "pull_up",
+  "parameters_schema": {
+    "camera": "default config.cameras.back.device",
+    "where": "here or saved navigation point",
+    "initial_count": "resume count"
+  },
+  "resources": [
+    "back_camera",
+    "npu"
+  ],
+  "scene_id": "fitness",
+  "skill_name": "pull_up",
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "examples": [
+      "深蹲计数已开始，时长三十秒。",
+      "第一个",
+      "本次深蹲计数结束，共做了三个。"
+    ],
+    "group": "fitness",
+    "runtime_owner": "/home/test/new_project",
+    "speak": [
+      "start",
+      "count",
+      "idle_timeout",
+      "complete",
+      "query",
+      "stop"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "task_kind": "long",
+  "timeout_sec": 120.0,
+  "resident_runtime": {
+    "enabled": true,
+    "launcher": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime.sh",
+    "socket": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/resident/skills.sock",
+    "legacy_entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/pull_up/run_legacy.sh"
+  }
+}

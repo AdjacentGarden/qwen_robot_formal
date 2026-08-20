@@ -1,0 +1,155 @@
+{
+  "allowed_actions": [
+    "back",
+    "front"
+  ],
+  "certification_status": null,
+  "composition_affordances": [],
+  "config_defaults": {
+    "back": {
+      "device": "config.cameras.back.device",
+      "fourcc": "mp4v",
+      "fps": 15,
+      "height": 640,
+      "image_path": "/home/test/self_program/back_camera.jpg",
+      "jpeg_quality": 90,
+      "record_seconds": 3,
+      "video_path": "/home/test/self_program/back_camera.mp4",
+      "warmup_frames": 5,
+      "width": 640
+    },
+    "front": {
+      "device": "/dev/video22",
+      "fourcc": "mp4v",
+      "fps": 15,
+      "height": 640,
+      "image_path": "/home/test/self_program/front_camera.jpg",
+      "jpeg_quality": 90,
+      "record_seconds": 3,
+      "video_path": "/home/test/self_program/front_camera.mp4",
+      "warmup_frames": 5,
+      "width": 640
+    }
+  },
+  "description_zh": "按 camera_name 选择前摄或后摄拍摄一张图片。",
+  "disabled_reason": null,
+  "domain_tags": [
+    "camera",
+    "perception",
+    "evidence"
+  ],
+  "entrypoint": null,
+  "example_function_call": {
+    "arguments": {
+      "camera_name": "front"
+    },
+    "name": "camera_capture"
+  },
+  "llm_notes_zh": [
+    "优先只填用户明确给出的参数，未给出的参数使用 config_defaults。",
+    "涉及 moves_robot、moves_robot_long_running、opens_camera 的调用需要确认用户确实要求执行硬件动作。",
+    "side_effects 包含 disabled 的 skill 当前仅用于测试禁用返回，不应用于真实硬件控制。"
+  ],
+  "module": "/home/test/self_program/new_self_test.py",
+  "name": "camera_capture",
+  "optional_enhancements": [],
+  "optional_slots": [
+    "output_path",
+    "width",
+    "height"
+  ],
+  "parameters": {
+    "properties": {
+      "camera_name": {
+        "description": "摄像头别名，front 表示前摄，back 表示后摄。",
+        "python_default": "front",
+        "required": false,
+        "type": "string"
+      },
+      "device": {
+        "default_source": "audio_config.json",
+        "description": "摄像头设备路径，覆盖配置文件中的默认设备。",
+        "python_default": null,
+        "required": false,
+        "type": "string|null"
+      },
+      "height": {
+        "default_source": "audio_config.json",
+        "description": "摄像头采集高度。",
+        "python_default": null,
+        "required": false,
+        "type": "integer|null"
+      },
+      "output_path": {
+        "default_source": "audio_config.json",
+        "description": "图片或视频输出路径。",
+        "python_default": null,
+        "required": false,
+        "type": "string|null"
+      },
+      "warmup_frames": {
+        "default_source": "audio_config.json",
+        "description": "正式读取前丢弃的预热帧数。",
+        "python_default": null,
+        "required": false,
+        "type": "integer|null"
+      },
+      "width": {
+        "default_source": "audio_config.json",
+        "description": "摄像头采集宽度。",
+        "python_default": null,
+        "required": false,
+        "type": "integer|null"
+      }
+    },
+    "required": [],
+    "type": "object"
+  },
+  "planning_notes_zh": [
+    "用户未说明前后摄且上下文无法判断时，需要追问 camera_name。",
+    "恢复任务时必须参考 recovery 字段、TaskGroup.resume_context 和 RobotStateSnapshot，不能盲目从头重复已完成 step。"
+  ],
+  "recovery": {
+    "notes_zh": [
+      "感知/拍摄类任务中断后通常重新执行当前 step。"
+    ],
+    "progress_schema": {},
+    "requires_scene_restore": false,
+    "resumable": false,
+    "resume_argument_mapping": {},
+    "resume_strategy": "restart_step",
+    "scene_restore_requirements": [
+      "head",
+      "camera"
+    ]
+  },
+  "required_slots": [
+    "camera_name"
+  ],
+  "resources": [
+    "camera"
+  ],
+  "returns": {
+    "description_zh": "底层 skill 封装通常返回 subprocess.CompletedProcess；摄像头拍照/录像返回输出文件 Path。",
+    "type": "subprocess.CompletedProcess or pathlib.Path"
+  },
+  "side_effects": [
+    "writes_image_file"
+  ],
+  "single_function_contract": null,
+  "single_function_skill": null,
+  "slot_questions_zh": {
+    "camera_name": "你想用前摄像头还是后摄像头？"
+  },
+  "trigger_phrases_zh": [
+    "拍照",
+    "截图",
+    "看一下",
+    "拍一张照片"
+  ],
+  "type": "python_function",
+  "when_to_call_zh": [
+    "用户明确指定前摄/后摄拍照",
+    "需要通用摄像头截图"
+  ]
+}

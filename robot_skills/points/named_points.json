@@ -1,0 +1,38 @@
+{
+  "origin": {
+    "name": "origin",
+    "display_name": "原点",
+    "aliases": ["原点", "起点", "零点", "door_waiting", "dining_room", "门口", "家门口", "餐厅"],
+    "x": 0.0,
+    "y": 0.0,
+    "yaw": -3.1415926,
+    "frame_id": "map",
+    "configured": true,
+    "room": "dining_room",
+    "purpose": "map_origin"
+  },
+  "white_wall": {
+    "name": "white_wall",
+    "display_name": "客厅白墙",
+    "aliases": ["客厅", "客厅白墙", "白墙", "living_room", "wall", "living_room_white_wall", "living_room_entry_a"],
+    "x": -2.2,
+    "y": 0.1,
+    "yaw": -1.5708,
+    "frame_id": "map",
+    "configured": true,
+    "room": "living_room",
+    "purpose": "fitness_projection"
+  },
+  "study_projection": {
+    "name": "study_projection",
+    "display_name": "书房白墙",
+    "aliases": ["书房", "书房白墙", "书房投影点", "书房会议点"],
+    "x": 0.0,
+    "y": 2.6,
+    "yaw": 1.5708,
+    "frame_id": "map",
+    "configured": true,
+    "room": "study",
+    "purpose": "meeting_projection_and_pet_route"
+  }
+}

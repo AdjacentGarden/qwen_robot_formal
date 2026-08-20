@@ -1,0 +1,138 @@
+{
+  "name": "pet_tracking",
+  "module": "/home/test/self_program/new_self_test.py",
+  "entrypoint": "/home/test/single_function/pet_tracking/run.sh",
+  "certification_status": "unchecked",
+  "description_zh": "按完整语义区分宠物任务：只寻找豆豆或家里的狗使用 find_at_home；寻找并明确要求喂食使用 find_and_feed_at_home；明确要求持续跟随才使用 track。两个寻找动作都会先去书房C点再原地旋转，找到即停且不跟随。",
+  "allowed_actions": [
+    "find",
+    "track",
+    "stop",
+    "find_route",
+    "find_and_track",
+    "find_route_and_track",
+    "find_at_home",
+    "find_and_feed_at_home"
+  ],
+  "required_slots": [],
+  "optional_slots": [
+    "action",
+    "pet",
+    "camera",
+    "duration",
+    "timeout",
+    "search_strategy",
+    "points",
+    "track_after_found",
+    "record_video",
+    "visited_points",
+    "current_point",
+    "current_point_index",
+    "last_search_result",
+    "video_path",
+    "pet_name",
+    "point",
+    "grams"
+  ],
+  "config_defaults": {
+    "action": "track",
+    "pet": "dog",
+    "search_strategy": "current_then_known_points",
+    "track_after_found": false,
+    "record_video": true,
+    "track_duration": 15,
+    "json_output": true
+  },
+  "trigger_phrases_zh": [
+    "找狗",
+    "找小狗",
+    "小狗不见了",
+    "宠物走丢了",
+    "小狗在哪",
+    "小狗现在在哪里",
+    "狗在哪",
+    "看看小狗在不在",
+    "去客厅看看小狗在不在",
+    "追踪宠物"
+  ],
+  "slot_questions_zh": {},
+  "domain_tags": [
+    "tracking",
+    "pet",
+    "camera",
+    "base",
+    "long_running",
+    "route_search"
+  ],
+  "resources": [
+    "front_camera",
+    "npu",
+    "base",
+    "navigation"
+  ],
+  "side_effects": [
+    "moves_robot",
+    "opens_camera",
+    "may_record_video",
+    "long_running"
+  ],
+  "when_to_call_zh": [
+    "用户的完整语义是只寻找豆豆/家里的狗，或寻找成功后再喂食；不要靠固定句式匹配。",
+    "用户明确要求持续跟随宠物时使用 track。"
+  ],
+  "composition_affordances": [
+    "find_at_home 和 find_and_feed_at_home 由场景编排器添加书房C点导航。",
+    "find_and_feed_at_home 只有稳定找到豆豆后才允许投食。"
+  ],
+  "optional_enhancements": [
+    "record_video_after_found",
+    "route_search_saved_points"
+  ],
+  "planning_notes_zh": [
+    "只寻找豆豆或家里的狗使用 action=find_at_home，找到后立即停止，不跟随。",
+    "寻找且明确要求喂食使用 action=find_and_feed_at_home；找到时播报和投食同时开始。",
+    "只要求喂食必须使用独立 feeder_control，不能擅自增加寻找。",
+    "只有用户明确要求跟随、追踪宠物时才使用 action=track。",
+    "不要用 camera_capture 或单帧截图替代持续旋转搜索。"
+  ],
+  "implementation_requirements": {
+    "all_find_dog_requests_track": false,
+    "home_find_action": "find_at_home",
+    "home_find_and_feed_action": "find_and_feed_at_home",
+    "follow_requires_explicit_intent": true,
+    "must_record_video_after_found": false,
+    "must_not_use_single_frame_detection_for_find_requests": true,
+    "must_save_artifact_fields": [
+      "search_points",
+      "visited_points",
+      "current_point_result",
+      "navigation_point_results",
+      "found",
+      "tracking_started_at",
+      "tracking_duration_ms",
+      "video_path",
+      "end_reason"
+    ]
+  },
+  "recovery": {
+    "resumable": true,
+    "resume_strategy": "resume_with_route_state",
+    "requires_scene_restore": true,
+    "scene_restore_requirements": [
+      "pose",
+      "head",
+      "front_camera",
+      "base",
+      "navigation",
+      "npu"
+    ],
+    "resume_slots": [
+      "visited_points",
+      "current_point",
+      "current_point_index",
+      "found",
+      "last_search_result",
+      "video_path"
+    ]
+  }
+}

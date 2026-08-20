@@ -1,0 +1,131 @@
+{
+  "allowed_actions": [
+    "recognize"
+  ],
+  "certification_status": "unchecked",
+  "composition_affordances": [],
+  "config_defaults": {
+    "camera": null
+  },
+  "description_zh": "识别当前摄像头画面中的已注册人脸。",
+  "disabled_reason": null,
+  "domain_tags": [
+    "identity",
+    "face",
+    "camera",
+    "recognition"
+  ],
+  "entrypoint": "/home/test/single_function/face_recognition/run.sh",
+  "example_function_call": {
+    "arguments": {},
+    "name": "face_recognition"
+  },
+  "llm_notes_zh": [
+    "优先只填用户明确给出的参数，未给出的参数使用 config_defaults。",
+    "涉及 moves_robot、moves_robot_long_running、opens_camera 的调用需要确认用户确实要求执行硬件动作。",
+    "side_effects 包含 disabled 的 skill 当前仅用于测试禁用返回，不应用于真实硬件控制。",
+    "该 skill 只通过 single_function stdout 输出语音事件，由 /home/test/new_project 统一接管 TTS 播报。"
+  ],
+  "module": "/home/test/self_program/new_self_test.py",
+  "name": "face_recognition",
+  "optional_enhancements": [],
+  "optional_slots": [
+    "camera"
+  ],
+  "parameters": {
+    "properties": {
+      "camera": {
+        "default_source": "audio_config.json",
+        "description": "摄像头设备路径；默认由硬件配置或 skill 运行时决定，不要在规划中硬编码具体设备。",
+        "python_default": null,
+        "required": false,
+        "type": "string|null"
+      }
+    },
+    "required": [],
+    "type": "object"
+  },
+  "planning_notes_zh": [
+    "如果用户说“刚才那个人”，可优先参考 history 中最近的 face_registration 或 face_recognition。",
+    "恢复任务时必须参考 recovery 字段、TaskGroup.resume_context 和 RobotStateSnapshot，不能盲目从头重复已完成 step。"
+  ],
+  "recovery": {
+    "notes_zh": [
+      "感知/拍摄类任务中断后通常重新执行当前 step。"
+    ],
+    "progress_schema": {},
+    "requires_scene_restore": true,
+    "resumable": false,
+    "resume_argument_mapping": {},
+    "resume_strategy": "restart_step",
+    "scene_restore_requirements": [
+      "head",
+      "camera"
+    ]
+  },
+  "required_slots": [],
+  "resources": [
+    "camera",
+    "face_db"
+  ],
+  "returns": {
+    "description_zh": "底层 skill 封装通常返回 subprocess.CompletedProcess；摄像头拍照/录像返回输出文件 Path。",
+    "type": "subprocess.CompletedProcess or pathlib.Path"
+  },
+  "side_effects": [
+    "opens_camera"
+  ],
+  "single_function_contract": {
+    "actions": [
+      "recognize"
+    ],
+    "allow_direct_execution": false,
+    "category": "单功能",
+    "certification_notes": [],
+    "certification_status": "unchecked",
+    "demo_script": [],
+    "description": "Recognize a registered face.",
+    "entrypoint": "/home/test/single_function/face_recognition/run.sh",
+    "examples": [],
+    "id": "face_recognition",
+    "intents": [],
+    "name": "face_recognition",
+    "parameters_schema": {},
+    "resources": [
+      "camera",
+      "face_db"
+    ],
+    "scene_id": "identity",
+    "skill_name": "face_recognition",
+    "task_kind": "session",
+    "timeout_sec": 30.0
+  },
+  "single_function_skill": "face_recognition",
+  "slot_questions_zh": {},
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "examples": [
+      "识别结果是张三，置信度0.82",
+      "人脸注册完成"
+    ],
+    "group": "session",
+    "runtime_owner": "/home/test/new_project",
+    "speak": [
+      "final_summary"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "trigger_phrases_zh": [
+    "识别一下",
+    "这是谁",
+    "人脸识别",
+    "看看这个人是谁"
+  ],
+  "type": "python_function",
+  "when_to_call_zh": [
+    "用户问这是谁",
+    "需要人脸识别或身份确认"
+  ]
+}

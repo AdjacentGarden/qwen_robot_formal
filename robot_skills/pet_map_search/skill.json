@@ -1,0 +1,16 @@
+{
+  "id": "pet_map_search",
+  "name": "矩形分区式找狗",
+  "description": "把机器人可达地图自动划分为少量矩形区域；大房间会继续拆分，确保矩形中心到最远角点不超过可靠检测距离。按当前位置就近排序，依次导航到每个安全中心并原地完整旋转检测宠物。找到立即结束，只有所有矩形中心均成功扫描后才报告未找到。",
+  "actions": ["search", "plan", "stop"],
+  "resources": ["base", "front_camera", "pet_npu"],
+  "resident_runtime": {"enabled": true},
+  "safety": {
+    "scan_at_region_centers": true,
+    "maximum_regions": 6,
+    "maximum_region_center_distance_m": 2.4,
+    "alternate_rotation_direction": true,
+    "do_not_claim_exhausted_on_safety_limit": true,
+    "stop_motion_on_every_exit": true
+  }
+}

@@ -1,0 +1,296 @@
+{
+  "source_project": "/home/test/new_project_optimized_v11_navsafe",
+  "target": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills",
+  "skill_count": 29,
+  "skills": [
+    {
+      "name": "back_camera_capture",
+      "source": "V11 built-in executor",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/back_camera_capture/run.sh",
+      "examples": [
+        "bash run.sh --dry-run",
+        "bash run.sh",
+        "bash run.sh --output ./runtime/media/test.jpg"
+      ]
+    },
+    {
+      "name": "back_camera_record",
+      "source": "V11 built-in executor",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/back_camera_record/run.sh",
+      "examples": [
+        "bash run.sh --dry-run",
+        "bash run.sh --duration 3",
+        "bash run.sh --duration 5 --output ./runtime/media/test.mp4"
+      ]
+    },
+    {
+      "name": "camera_capture",
+      "source": "V11 built-in executor",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/camera_capture/run.sh",
+      "examples": [
+        "bash run.sh --dry-run --camera front",
+        "bash run.sh --camera front",
+        "bash run.sh --output ./runtime/media/test.jpg --camera front"
+      ]
+    },
+    {
+      "name": "camera_record",
+      "source": "V11 built-in executor",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/camera_record/run.sh",
+      "examples": [
+        "bash run.sh --dry-run --camera front",
+        "bash run.sh --duration 3 --camera front",
+        "bash run.sh --duration 5 --output ./runtime/media/test.mp4 --camera front"
+      ]
+    },
+    {
+      "name": "environment_perception",
+      "source": "/home/test/single_function/environment_perception",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/environment_perception/run.sh",
+      "examples": [
+        "bash run.sh --purpose general --camera front --dry-run",
+        "bash run.sh --purpose general --camera front",
+        "bash run.sh --purpose projection --camera front",
+        "bash run.sh --purpose fitness --camera back --exercise-type push_up"
+      ]
+    },
+    {
+      "name": "face_recognition",
+      "source": "/home/test/single_function/face_recognition",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/face_recognition/run.sh",
+      "examples": [
+        "bash run.sh --camera /dev/video22"
+      ]
+    },
+    {
+      "name": "face_registration",
+      "source": "/home/test/single_function/face_registration",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/face_registration/run.sh",
+      "examples": [
+        "bash run.sh --name zhangsan --camera /dev/video22"
+      ]
+    },
+    {
+      "name": "fan_control",
+      "source": "/home/test/single_function/fan_control",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/fan_control/run.sh",
+      "examples": [
+        "bash run.sh status  # 当前 V11 配置为 disabled，只会返回禁用状态"
+      ]
+    },
+    {
+      "name": "feeder_control",
+      "source": "/home/test/single_function/feeder_control",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/feeder_control/run.sh",
+      "examples": [
+        "bash run.sh status",
+        "bash run.sh feed --grams 10 --dry-run",
+        "bash run.sh feed --grams 10"
+      ]
+    },
+    {
+      "name": "front_camera_capture",
+      "source": "V11 built-in executor",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/front_camera_capture/run.sh",
+      "examples": [
+        "bash run.sh --dry-run",
+        "bash run.sh",
+        "bash run.sh --output ./runtime/media/test.jpg"
+      ]
+    },
+    {
+      "name": "front_camera_record",
+      "source": "V11 built-in executor",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/front_camera_record/run.sh",
+      "examples": [
+        "bash run.sh --dry-run",
+        "bash run.sh --duration 3",
+        "bash run.sh --duration 5 --output ./runtime/media/test.mp4"
+      ]
+    },
+    {
+      "name": "head_control",
+      "source": "/home/test/new_project_optimized_v11_navsafe/skills/head_control",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/head_control/run.sh",
+      "examples": [
+        "bash run.sh up",
+        "bash run.sh down",
+        "bash run.sh level",
+        "bash run.sh angle --angle 185"
+      ]
+    },
+    {
+      "name": "light_control",
+      "source": "/home/test/single_function/light_control",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/light_control/run.sh",
+      "examples": [
+        "bash run.sh status",
+        "bash run.sh on --dry-run",
+        "bash run.sh on",
+        "bash run.sh off"
+      ]
+    },
+    {
+      "name": "move_backward",
+      "source": "/home/test/single_function/move_backward",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/move_backward/run.sh",
+      "examples": [
+        "bash run.sh --duration 1 --dry-run",
+        "bash run.sh --speed 0.20 --duration 1"
+      ]
+    },
+    {
+      "name": "move_forward",
+      "source": "/home/test/single_function/move_forward",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/move_forward/run.sh",
+      "examples": [
+        "bash run.sh --duration 1 --dry-run",
+        "bash run.sh --speed 0.20 --duration 1"
+      ]
+    },
+    {
+      "name": "move_left",
+      "source": "/home/test/single_function/move_left",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/move_left/run.sh",
+      "examples": [
+        "bash run.sh --duration 1 --dry-run",
+        "bash run.sh --angular-speed 0.40 --duration 1"
+      ]
+    },
+    {
+      "name": "move_right",
+      "source": "/home/test/single_function/move_right",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/move_right/run.sh",
+      "examples": [
+        "bash run.sh --duration 1 --dry-run",
+        "bash run.sh --angular-speed 0.40 --duration 1"
+      ]
+    },
+    {
+      "name": "navigation_goto",
+      "source": "/home/test/new_project_optimized_v11_navsafe/integrations/navigation_goto",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/navigation_goto/run.sh",
+      "examples": [
+        "bash run.sh list",
+        "bash run.sh --point origin --dry-run",
+        "bash run.sh --point origin",
+        "bash run.sh --x 0.1 --y 0.1 --yaw 0 --dry-run",
+        "bash run.sh --x 0.1 --y 0.1 --yaw 0"
+      ]
+    },
+    {
+      "name": "navigation_list",
+      "source": "/home/test/new_project_optimized_v11_navsafe/integrations/navigation_goto (shared list action)",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/navigation_list/run.sh",
+      "examples": [
+        "bash run.sh list"
+      ]
+    },
+    {
+      "name": "person_tracking",
+      "source": "/home/test/new_project_optimized_v11_navsafe/integrations/person_tracking",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/person_tracking/run.sh",
+      "examples": [
+        "bash run.sh track --name zhangsan --duration 10 --dry-run",
+        "bash run.sh find --name zhangsan --duration 10",
+        "bash run.sh track --name zhangsan --duration 30 --execute",
+        "bash run.sh stop"
+      ]
+    },
+    {
+      "name": "pet_tracking",
+      "source": "/home/test/single_function/pet_tracking",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/pet_tracking/run.sh",
+      "examples": [
+        "bash run.sh find --source /dev/video22 --pet dog --search-timeout 10 --backend dummy",
+        "bash run.sh track --source /dev/video22 --pet dog --duration 0 --backend ros2",
+        "bash run.sh stop",
+        "bash run.sh track --pet dog --dry-run"
+      ]
+    },
+    {
+      "name": "projector_control",
+      "source": "/home/test/new_project_optimized_v11_navsafe/integrations/projector_control",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/projector_control/run.sh",
+      "examples": [
+        "bash run.sh status",
+        "bash run.sh meeting_presentation_on --dry-run",
+        "bash run.sh meeting_presentation_on",
+        "bash run.sh meeting_pause",
+        "bash run.sh meeting_resume",
+        "bash run.sh fitness_video_on",
+        "bash run.sh off"
+      ]
+    },
+    {
+      "name": "pull_up",
+      "source": "/home/test/single_function/pull_up",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/pull_up/run.sh",
+      "examples": [
+        "bash run.sh run --camera /dev/video31 --duration 30",
+        "bash run.sh query",
+        "bash run.sh stop"
+      ]
+    },
+    {
+      "name": "push_up",
+      "source": "/home/test/new_project_optimized_v11_navsafe/integrations/push_up",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/push_up/run.sh",
+      "examples": [
+        "bash run.sh run --name zhangsan --camera /dev/video31 --duration 30 --dry-run",
+        "bash run.sh run --name zhangsan --camera /dev/video31 --duration 30",
+        "bash run.sh query",
+        "bash run.sh stop"
+      ]
+    },
+    {
+      "name": "realtime_information",
+      "source": "/home/test/single_function/realtime_information",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/realtime_information/run.sh",
+      "examples": [
+        "bash run.sh --action current_time",
+        "bash run.sh --action weather --location 北京市顺义区",
+        "bash run.sh --action location",
+        "bash run.sh --action nearby --query 美食 --location 北京市顺义区",
+        "bash run.sh --action traffic --location 北京市顺义区"
+      ]
+    },
+    {
+      "name": "reminder_cancel",
+      "source": "/home/test/single_function/reminder_cancel",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/reminder_cancel/run.sh",
+      "examples": [
+        "bash run.sh cancel --query 喝水 --dry-run",
+        "bash run.sh cancel --query 喝水"
+      ]
+    },
+    {
+      "name": "reminder_query",
+      "source": "/home/test/single_function/reminder_query",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/reminder_query/run.sh",
+      "examples": [
+        "bash run.sh query --dry-run",
+        "bash run.sh query"
+      ]
+    },
+    {
+      "name": "reminder_schedule",
+      "source": "/home/test/single_function/reminder_schedule",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/reminder_schedule/run.sh",
+      "examples": [
+        "bash run.sh schedule --content 喝水 --trigger-condition 5分钟后 --dry-run",
+        "bash run.sh schedule --content 喝水 --trigger-condition 5分钟后"
+      ]
+    },
+    {
+      "name": "squat",
+      "source": "/home/test/single_function/squat",
+      "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/squat/run.sh",
+      "examples": [
+        "bash run.sh run --camera /dev/video31 --duration 30",
+        "bash run.sh query",
+        "bash run.sh stop"
+      ]
+    }
+  ]
+}

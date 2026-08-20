@@ -1,0 +1,43 @@
+{
+  "name": "media_player",
+  "description_zh": "控制独立音乐和娱乐视频播放器，支持默认或指定内容、换歌、暂停、继续、结束、状态和列表。不会移动底盘或调整头部。",
+  "domain_tags": ["media", "music", "video", "player"],
+  "trigger_phrases_zh": ["我想听歌", "放点音乐", "换一首", "暂停播放", "继续播放", "结束播放", "我想看娱乐视频"],
+  "allowed_actions": ["play_music", "play_video", "pause", "resume", "next", "stop", "status", "list"],
+  "resources": ["speaker", "display"],
+  "side_effects": ["plays_media"],
+  "required_slots": ["action"],
+  "optional_slots": ["title"],
+  "example_function_call": {
+    "name": "media_player",
+    "arguments": {"action": "status"}
+  },
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": ["play_music", "play_video", "pause", "resume", "next", "stop", "status", "list"],
+        "description": "播放音乐、播放视频、暂停、继续、下一首、结束、查询状态或列出内容。"
+      },
+      "title": {
+        "type": "string",
+        "description": "用户明确指定的歌曲或视频名；没有指定时省略并播放默认内容。"
+      }
+    },
+    "required": ["action"]
+  },
+  "when_to_call_zh": [
+    "用户想听歌、选歌、换歌或控制音乐播放",
+    "用户想看娱乐视频或控制娱乐视频播放",
+    "用户询问播放器状态或可播放内容"
+  ],
+  "speech_contract": {
+    "speak_start_ack": false,
+    "speak_progress": false,
+    "speak_final_summary": true,
+    "summary_field": "message",
+    "speak_failure_summary": true,
+    "failure_summary_field": "message"
+  }
+}

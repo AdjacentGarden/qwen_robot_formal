@@ -1,0 +1,30 @@
+{
+  "timezone": "Asia/Shanghai",
+  "default_location": null,
+  "location": {
+    "address": "惠州市惠城区",
+    "latitude": 23.084657,
+    "longitude": 114.382526,
+    "coordinate_system": "gcj02",
+    "coordinate_source": "amap_district_center",
+    "timezone": "Asia/Shanghai",
+    "precision": "district_center",
+    "allow_ip_fallback": true
+  },
+  "request_timeout_seconds": 12,
+  "nearby_radius_meters": 2000,
+  "nearby_limit": 5,
+  "cache_ttl_seconds": {
+    "ip_location": 3600,
+    "weather": 300,
+    "nearby": 600,
+    "traffic": 120
+  },
+  "endpoints": {
+    "open_meteo_geocoding": "https://geocoding-api.open-meteo.com/v1/search",
+    "open_meteo_forecast": "https://api.open-meteo.com/v1/forecast",
+    "ip_location": "https://ipwho.is/",
+    "overpass": "https://overpass-api.de/api/interpreter",
+    "amap_traffic": "https://restapi.amap.com/v3/traffic/status/circle"
+  }
+}

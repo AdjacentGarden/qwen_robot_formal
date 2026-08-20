@@ -1,0 +1,39 @@
+{
+  "music": [
+    {
+      "id": "relax_one",
+      "title": "放松轻音乐一",
+      "aliases": ["轻音乐", "放松音乐", "第一首", "默认音乐"],
+      "available": true
+    },
+    {
+      "id": "relax_two",
+      "title": "放松轻音乐二",
+      "aliases": ["第二首", "换一首", "另一首"],
+      "available": true
+    },
+    {
+      "id": "qili_xiang",
+      "title": "七里香",
+      "aliases": ["周杰伦七里香"],
+      "available": false,
+      "reason": "等待用户提供合法音频文件"
+    },
+    {
+      "id": "qing_tian",
+      "title": "晴天",
+      "aliases": ["周杰伦晴天"],
+      "available": false,
+      "reason": "等待用户提供合法音频文件"
+    }
+  ],
+  "videos": [
+    {
+      "id": "big_buck_bunny",
+      "title": "大雄兔",
+      "aliases": ["好看的视频", "娱乐视频", "动画短片", "默认视频"],
+      "available": true,
+      "license": "Creative Commons Attribution 3.0, Blender Foundation"
+    }
+  ]
+}

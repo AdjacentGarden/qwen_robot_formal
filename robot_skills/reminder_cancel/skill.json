@@ -1,0 +1,73 @@
+{
+  "actions": [
+    "cancel",
+    "delete"
+  ],
+  "allow_direct_execution": true,
+  "category": "提醒",
+  "certification_notes": [],
+  "certification_status": "checked",
+  "demo_script": [],
+  "description": "按提醒 ID 或内容关键词取消待执行提醒；没有匹配条件时必须追问，禁止清空全部提醒。",
+  "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/reminder_cancel/run.sh",
+  "examples": [
+    "取消刚才的提醒"
+  ],
+  "id": "reminder.cancel",
+  "intents": [
+    "reminder"
+  ],
+  "name": "取消提醒",
+  "parameters_schema": {
+    "type": "object",
+    "properties": {
+      "reminder_id": {
+        "type": "string",
+        "minLength": 1
+      },
+      "query": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "anyOf": [
+      {
+        "required": [
+          "reminder_id"
+        ]
+      },
+      {
+        "required": [
+          "query"
+        ]
+      }
+    ],
+    "additionalProperties": true
+  },
+  "resources": [
+    "reminder_store"
+  ],
+  "scene_id": "reminder",
+  "skill_name": "reminder.cancel",
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "examples": [],
+    "group": "short",
+    "runtime_owner": "/home/test/new_project",
+    "speak": [
+      "final_summary",
+      "json_message"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "task_kind": "short",
+  "timeout_sec": 10.0,
+  "resident_runtime": {
+    "enabled": true,
+    "launcher": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime.sh",
+    "socket": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/resident/skills.sock",
+    "legacy_entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/reminder_cancel/run_legacy.sh"
+  }
+}

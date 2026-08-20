@@ -1,0 +1,64 @@
+{
+  "actions": [
+    "find",
+    "track",
+    "stop",
+    "find_route"
+  ],
+  "allow_direct_execution": false,
+  "category": "单功能",
+  "certification_notes": [],
+  "certification_status": "unchecked",
+  "demo_script": [],
+  "description": "Find/track pets. action=find rotates in place, stops immediately when the pet is found, remains stationary while recording a five-second clip, and writes the app upload manifest; it does not follow the pet. Tracking is only performed by the explicit track actions.",
+  "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/pet_tracking/run.sh",
+  "examples": [],
+  "id": "pet_tracking",
+  "intents": [
+    "找小狗",
+    "小狗不见了",
+    "小狗现在在哪里",
+    "宠物走丢了",
+    "追踪宠物"
+  ],
+  "name": "pet_tracking",
+  "parameters_schema": {
+    "search_mode": "rotate_then_track",
+    "search_strategy": "current_then_known_points",
+    "points": "optional saved navigation point order"
+  },
+  "resources": [
+    "camera",
+    "base",
+    "front_camera"
+  ],
+  "scene_id": "pet_care",
+  "skill_name": "pet_tracking",
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "examples": [
+      "这里有一只小狗",
+      "抱歉，我没有发现小狗",
+      "对不起，我没找到宠物"
+    ],
+    "group": "tracking",
+    "runtime_owner": "/home/test/new_project",
+    "speak": [
+      "found",
+      "not_found",
+      "lost",
+      "complete"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "task_kind": "long",
+  "timeout_sec": 180.0,
+  "resident_runtime": {
+    "enabled": true,
+    "launcher": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime.sh",
+    "socket": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/resident/skills.sock",
+    "legacy_entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/pet_tracking/run_legacy.sh"
+  }
+}

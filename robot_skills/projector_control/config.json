@@ -1,0 +1,41 @@
+{
+  "dian_module_path": "/home/test/dian.py",
+  "fitness_video_start_command": [
+    "sudo",
+    "-n",
+    "/usr/local/sbin/robot-start-exercise-projection"
+  ],
+  "fitness_video_container_path": "/sdcard/Movies/exercise.mp4",
+  "fitness_video_sha256": "de344de64d55a8ebb71bd827abf545c1fe89202d0ae0e8652573ce6e2f65222e",
+  "meeting_presentation_start_command": [
+    "sudo",
+    "-n",
+    "/usr/local/sbin/robot-meeting-projection-v2",
+    "loop-start"
+  ],
+  "meeting_presentation_stop_command": [
+    "sudo",
+    "-n",
+    "/usr/local/sbin/robot-meeting-projection-v2",
+    "loop-stop"
+  ],
+  "meeting_presentation_status_command": [
+    "sudo",
+    "-n",
+    "/usr/local/sbin/robot-meeting-projection-v2",
+    "loop-status"
+  ],
+  "meeting_slide_container_paths": [
+    "/sdcard/Pictures/test-1.jpg",
+    "/sdcard/Pictures/test-2.jpg"
+  ],
+  "meeting_slide_sha256": [
+    "88837f09935aa7579958d9b9a217a05473cc530886906a81f675246fca1d6123",
+    "9b6748f23f2e9ccede2a7c24d79b0a5d0c11b041b4c2ad0a2eb15cfb9a9dc618"
+  ],
+  "state_path": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/projector/state.json",
+  "lock_path": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/projector/control.lock",
+  "i2c_bus": 2,
+  "dlp_addr": "0x1b",
+  "timeout_sec": 20
+}

@@ -1,0 +1,268 @@
+{
+  "allowed_actions": [
+    "goto",
+    "list"
+  ],
+  "argument_aliases": {
+    "destination": "point",
+    "name": "point",
+    "point_or_coordinates": "point",
+    "target": "point"
+  },
+  "terminal_actions": [
+    "cancel",
+    "stop"
+  ],
+  "terminal_utterance_markers_zh": [
+    "停止导航",
+    "取消导航",
+    "别导航了",
+    "不要导航",
+    "别走了"
+  ],
+  "terminal_reply_zh": "好，导航已经停下来了。",
+  "certification_status": "unchecked",
+  "composition_affordances": [],
+  "config_defaults": {
+    "action": "goto",
+    "action_name": null,
+    "dry_run": false,
+    "frame_id": null,
+    "json_output": true,
+    "point": null,
+    "server_wait_timeout": null,
+    "timeout": null,
+    "x": null,
+    "y": null,
+    "yaw": null
+  },
+  "description_zh": "发送导航目标点或坐标，让机器人导航到指定位置。",
+  "disabled_reason": null,
+  "domain_tags": [
+    "navigation",
+    "location",
+    "base",
+    "long_running"
+  ],
+  "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/navigation_goto/run.sh",
+  "example_function_call": {
+    "arguments": {
+      "point": "a"
+    },
+    "name": "navigation_goto"
+  },
+  "llm_notes_zh": [
+    "优先只填用户明确给出的参数，未给出的参数使用 config_defaults。",
+    "涉及 moves_robot、moves_robot_long_running、opens_camera 的调用需要确认用户确实要求执行硬件动作。",
+    "side_effects 包含 disabled 的 skill 当前仅用于测试禁用返回，不应用于真实硬件控制。",
+    "该 skill 只通过 single_function stdout 输出语音事件，由 /home/test/new_project 统一接管 TTS 播报。"
+  ],
+  "module": "/home/test/self_program/new_self_test.py",
+  "name": "navigation_goto",
+  "optional_enhancements": [],
+  "optional_slots": [
+    "yaw",
+    "frame_id"
+  ],
+  "parameters": {
+    "properties": {
+      "action": {
+        "default_source": "audio_config.json",
+        "description": "要执行的动作，优先使用 allowed_actions 中的值。",
+        "python_default": null,
+        "required": false,
+        "type": "string"
+      },
+      "action_name": {
+        "default_source": "audio_config.json",
+        "description": "",
+        "python_default": null,
+        "required": false,
+        "type": "string|null"
+      },
+      "dry_run": {
+        "default_source": "audio_config.json",
+        "description": "只校验参数，不真正执行硬件动作。",
+        "python_default": null,
+        "required": false,
+        "type": "boolean|null"
+      },
+      "frame_id": {
+        "default_source": "audio_config.json",
+        "description": "导航目标坐标系，通常为 map。",
+        "python_default": null,
+        "required": false,
+        "type": "string|null"
+      },
+      "json_output": {
+        "default_source": "audio_config.json",
+        "description": "是否要求底层 skill 输出 JSON。",
+        "python_default": null,
+        "required": false,
+        "type": "boolean|null"
+      },
+      "point": {
+        "default_source": "audio_config.json",
+        "description": "导航点位名称。",
+        "python_default": null,
+        "required": false,
+        "type": "string|null"
+      },
+      "server_wait_timeout": {
+        "default_source": "audio_config.json",
+        "description": "导航 action server 等待超时时间。",
+        "python_default": null,
+        "required": false,
+        "type": "number|null"
+      },
+      "timeout": {
+        "default_source": "audio_config.json",
+        "description": "底层 skill 超时时间。",
+        "python_default": null,
+        "required": false,
+        "type": "number|null"
+      },
+      "x": {
+        "default_source": "audio_config.json",
+        "description": "导航目标 x 坐标。",
+        "python_default": null,
+        "required": false,
+        "type": "number|null"
+      },
+      "y": {
+        "default_source": "audio_config.json",
+        "description": "导航目标 y 坐标。",
+        "python_default": null,
+        "required": false,
+        "type": "number|null"
+      },
+      "yaw": {
+        "default_source": "audio_config.json",
+        "description": "导航目标朝向，单位弧度。",
+        "python_default": null,
+        "required": false,
+        "type": "number|null"
+      }
+    },
+    "required": [],
+    "type": "object"
+  },
+  "planning_notes_zh": [
+    "用户说“那里/那个地方”且 history 无法消解时，必须追问目的地。",
+    "恢复任务时必须参考 recovery 字段、TaskGroup.resume_context 和 RobotStateSnapshot，不能盲目从头重复已完成 step。"
+  ],
+  "recovery": {
+    "notes_zh": [
+      "导航恢复不复用旧路径，而是从当前位置重新规划到原目标。"
+    ],
+    "progress_schema": {
+      "current_pose": "best effort ROS pose",
+      "state": "navigating|cancelled|succeeded",
+      "target_pose": "x/y/yaw/frame_id"
+    },
+    "requires_scene_restore": false,
+    "resumable": true,
+    "resume_argument_mapping": {
+      "point": "original arguments point",
+      "resume_from_interrupt": true,
+      "x": "original arguments x",
+      "y": "original arguments y",
+      "yaw": "original arguments yaw"
+    },
+    "resume_strategy": "replan_to_original_goal",
+    "scene_restore_requirements": [
+      "current_pose",
+      "target_pose"
+    ]
+  },
+  "required_slots": [
+    "point_or_coordinates"
+  ],
+  "resources": [
+    "base",
+    "nav2",
+    "ros2"
+  ],
+  "returns": {
+    "description_zh": "底层 skill 封装通常返回 subprocess.CompletedProcess；摄像头拍照/录像返回输出文件 Path。",
+    "type": "subprocess.CompletedProcess or pathlib.Path"
+  },
+  "side_effects": [
+    "moves_robot_long_running"
+  ],
+  "single_function_contract": {
+    "actions": [
+      "goto",
+      "list"
+    ],
+    "allow_direct_execution": false,
+    "category": "navigation",
+    "certification_notes": [
+      "Unified on 2026-07-01: navigation_goto is the only active navigation skill.",
+      "Accepts point aliases from /home/test/new_project_optimized_v11_navsafe/data/navigation/named_points.json or direct map coordinates.",
+      "Each retry creates a fresh ROS Context, Node, and ActionClient; goal acceptance has its own bounded timeout."
+    ],
+    "certification_status": "unchecked",
+    "demo_script": [],
+    "description": "Single navigation skill. Use action=list to list known points, or action=goto with either a point name alias or direct map coordinates.",
+    "entrypoint": "/home/test/new_project_optimized_v11_navsafe/integrations/navigation_goto/run.sh",
+    "examples": [
+      "bash run.sh list",
+      "bash run.sh a",
+      "bash run.sh goto a",
+      "bash run.sh --point a",
+      "bash run.sh 0.1 0.1",
+      "bash run.sh --x 0.1 --y 0.1 --yaw 0",
+      "bash run.sh --json-params '{\"point\":\"a\"}'",
+      "bash run.sh --json-params '{\"x\":0.1,\"y\":0.1,\"yaw\":0}'"
+    ],
+    "id": "navigation_goto",
+    "intents": [],
+    "name": "navigation_goto",
+    "parameters_schema": {
+      "action": "goto|list",
+      "destination": "alias of point, accepted in json_params",
+      "frame_id": "optional frame id, default map",
+      "point": "optional known point alias from /home/test/new_project_optimized_v11_navsafe/data/navigation/named_points.json",
+      "x": "optional map x; requires y if point is omitted",
+      "y": "optional map y; requires x if point is omitted",
+      "yaw": "optional yaw radians, default 0"
+    },
+    "resources": [
+      "base",
+      "nav2"
+    ],
+    "scene_id": "navigation",
+    "skill_name": "navigation_goto",
+    "task_kind": "long",
+    "timeout_sec": 120.0
+  },
+  "single_function_skill": "navigation_goto",
+  "slot_questions_zh": {
+    "point_or_coordinates": "你想让我去哪个位置？"
+  },
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "runtime_owner": "/home/test/new_project",
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "trigger_phrases_zh": [
+    "去某地",
+    "导航到",
+    "到厨房",
+    "去那个点"
+  ],
+  "type": "python_function",
+  "when_to_call_zh": [
+    "用户要求去某个已知点位",
+    "用户给出地图坐标导航"
+  ],
+  "resident_runtime": {
+    "enabled": true,
+    "launcher": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime.sh",
+    "socket": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/resident/skills.sock",
+    "legacy_entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/navigation_goto/run_legacy.sh"
+  }
+}

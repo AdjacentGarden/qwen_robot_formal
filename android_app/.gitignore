@@ -1,0 +1,10 @@
+node_modules/
+.venv/
+vendor/
+wheels/
+android/.gradle/
+android/app/build/
+runtime/
+data/
+__pycache__/
+*.pyc

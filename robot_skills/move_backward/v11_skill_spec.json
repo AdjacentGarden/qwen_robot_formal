@@ -1,0 +1,153 @@
+{
+  "allowed_actions": [
+    "run"
+  ],
+  "certification_status": "unchecked",
+  "composition_affordances": [],
+  "config_defaults": {
+    "angular_speed": null,
+    "duration": null,
+    "speed": null,
+    "topic": null
+  },
+  "description_zh": "控制机器人短暂后退。",
+  "disabled_reason": null,
+  "domain_tags": [
+    "movement",
+    "base",
+    "short_action"
+  ],
+  "entrypoint": "/home/test/single_function/move_backward/run.sh",
+  "example_function_call": {
+    "arguments": {
+      "duration": 2
+    },
+    "name": "move_backward"
+  },
+  "llm_notes_zh": [
+    "优先只填用户明确给出的参数，未给出的参数使用 config_defaults。",
+    "涉及 moves_robot、moves_robot_long_running、opens_camera 的调用需要确认用户确实要求执行硬件动作。",
+    "side_effects 包含 disabled 的 skill 当前仅用于测试禁用返回，不应用于真实硬件控制。",
+    "该 skill 只通过 single_function stdout 输出语音事件，由 /home/test/new_project 统一接管 TTS 播报。"
+  ],
+  "module": "/home/test/self_program/new_self_test.py",
+  "name": "move_backward",
+  "optional_enhancements": [],
+  "optional_slots": [
+    "duration",
+    "speed"
+  ],
+  "parameters": {
+    "properties": {
+      "angular_speed": {
+        "default_source": "audio_config.json",
+        "description": "机器人转向角速度。",
+        "python_default": null,
+        "required": false,
+        "type": "number|null"
+      },
+      "duration": {
+        "default_source": "audio_config.json",
+        "description": "执行、追踪或运动计数持续秒数。",
+        "python_default": null,
+        "required": false,
+        "type": "number|null"
+      },
+      "speed": {
+        "default_source": "audio_config.json",
+        "description": "机器人线速度。",
+        "python_default": null,
+        "required": false,
+        "type": "number|null"
+      },
+      "topic": {
+        "default_source": "audio_config.json",
+        "description": "ROS2 话题名称。",
+        "python_default": null,
+        "required": false,
+        "type": "string|null"
+      }
+    },
+    "required": [],
+    "type": "object"
+  },
+  "planning_notes_zh": [
+    "短动作可直接使用 config 默认 duration 和 speed。",
+    "恢复任务时必须参考 recovery 字段、TaskGroup.resume_context 和 RobotStateSnapshot，不能盲目从头重复已完成 step。"
+  ],
+  "recovery": {
+    "captured_in_robot_state": true,
+    "notes_zh": [
+      "短时底盘动作完成后不重复执行；中断时只保存底盘现场状态。"
+    ],
+    "progress_schema": {},
+    "requires_scene_restore": false,
+    "resumable": false,
+    "resume_argument_mapping": {},
+    "resume_strategy": "restart_step_if_not_completed",
+    "scene_restore_requirements": [
+      "base"
+    ]
+  },
+  "required_slots": [],
+  "resources": [
+    "base",
+    "ros2"
+  ],
+  "returns": {
+    "description_zh": "底层 skill 封装通常返回 subprocess.CompletedProcess；摄像头拍照/录像返回输出文件 Path。",
+    "type": "subprocess.CompletedProcess or pathlib.Path"
+  },
+  "side_effects": [
+    "moves_robot"
+  ],
+  "single_function_contract": {
+    "actions": [
+      "run"
+    ],
+    "allow_direct_execution": false,
+    "category": "单功能",
+    "certification_notes": [],
+    "certification_status": "unchecked",
+    "demo_script": [],
+    "description": "Move backward briefly.",
+    "entrypoint": "/home/test/single_function/move_backward/run.sh",
+    "examples": [],
+    "id": "move_backward",
+    "intents": [],
+    "name": "move_backward",
+    "parameters_schema": {},
+    "resources": [
+      "base"
+    ],
+    "scene_id": "navigation",
+    "skill_name": "move_backward",
+    "task_kind": "short",
+    "timeout_sec": 10.0
+  },
+  "single_function_skill": "move_backward",
+  "slot_questions_zh": {},
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "examples": [],
+    "group": "short",
+    "runtime_owner": "/home/test/new_project",
+    "speak": [
+      "final_summary",
+      "json_message"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "trigger_phrases_zh": [
+    "后退",
+    "往后走",
+    "倒退"
+  ],
+  "type": "python_function",
+  "when_to_call_zh": [
+    "用户要求后退",
+    "需要避让或倒车"
+  ]
+}

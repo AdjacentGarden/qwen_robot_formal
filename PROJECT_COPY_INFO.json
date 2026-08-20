@@ -1,0 +1,15 @@
+{
+  "created_for": "Qwen Realtime fixed-scene and resident-skill isolation test",
+  "created_at": "2026-08-18T00:00:00+08:00",
+  "source_project": "/home/test/qwen_audio_3_realtime_flash_test",
+  "scene_snapshot_source": "/home/test/project_0727_fixed_points_home_scenes/voice_composable_agent",
+  "resident_skill_snapshot_source": "/home/test/project_0727_fixed_points_home_scenes/skills",
+  "allowed_ros_workspace": "/home/test/car_real_copy_zhenghang",
+  "source_projects_modified": false,
+  "runtime_isolation": {
+    "skill_host_socket": "runtime/skill_host.sock",
+    "resident_skill_socket": "robot_skills/runtime/resident/skills.sock",
+    "logs": "runtime/",
+    "models_and_skill_state": "robot_skills/"
+  }
+}

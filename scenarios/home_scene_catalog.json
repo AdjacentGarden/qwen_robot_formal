@@ -1,0 +1,180 @@
+{
+  "version": 2,
+  "scene": {
+    "rooms": ["餐厅", "客厅", "书房"],
+    "points": {"origin": "餐厅原点", "white_wall": "客厅白墙", "study_projection": "书房投影点"},
+    "room_defaults": {
+      "dining_room": {"display_name": "餐厅", "navigation_point": "origin"},
+      "living_room": {"display_name": "客厅", "navigation_point": "white_wall"},
+      "study": {"display_name": "书房", "navigation_point": "study_projection"}
+    }
+  },
+  "planner_rules": [
+    "所有动作基于千问端到端流式语音会话；不得改走本地ASR、DeepSeek或本地TTS回答链路。",
+    "第一次听到‘哈喽/哈啰/Hello理想（同学）’或自然同义问候时执行一次homecoming_welcome；允许语音转写省略‘同学’，但必须同时包含问候词和‘理想’；用户明确要求重播欢迎画面时也执行，普通后续问候不重复播放。",
+    "用户说今天很累、好疲惫、下班太累时先自然关心，再建议看电影；如果用户拒绝久坐，再建议一起运动。只有用户同意或直接要求运动时才执行push_up_companion。",
+    "‘不看了、已经坐了一天、今天很累’本身不是休息灯光指令，绝对不能调用rest_lighting；此时只自然建议起身活动，等待用户明确同意后再执行运动。",
+    "运动默认播放运动示范视频并使用人脸识别和持续ReID。只有用户明确说不用身份识别、不看脸或不用ReID时，才把identity_policy设为anonymous。",
+    "运动结束后在真实计数结果之后自然提醒喝口水；不得再次询问是否记录或上传视频。",
+    "普通找豆豆必须遍历white_wall、study_projection和origin三个已保存点，每到一点原地旋转寻找；找到后立即停止后续地点。",
+    "用户明确指定客厅、书房、餐厅或原点找豆豆时使用find_pet_at且只搜索指定点；明确说就在这里时使用find_pet_here且不导航。",
+    "用户说豆豆该吃饭了时使用find_and_feed_doudou，按客厅、书房、餐厅顺序寻找；只有找到后才投喂，并如实说明投喂失败原因。",
+    "会议投影默认导航到study_projection、抬头并循环播放会议内容；关闭会议投影后默认恢复平视。",
+    "模型不得把欢迎、运动或会议过程拆成导航、头部、投影、计数等原子调用；必须调用完整场景工具。",
+    "同一事实只播报一次。工具前只做一句简短自然确认，工具后只依据spoken_summary播报，不复述步骤列表。"
+  ],
+  "skill_resources": {"welcome_projection": ["projector"]},
+  "procedures": {
+    "homecoming_welcome": {
+      "description": "第一次自然问候或用户强制要求时执行欢迎回家：先说欢迎回家，低头播放三秒欢迎画面，结束后恢复平视；不导航、不抬头追踪人物。",
+      "semantic_examples": ["哈喽理想同学", "哈啰理想同学", "Hello理想同学", "哈喽理想", "哈啰理想", "Hello理想", "理想同学我回来了", "再播放一次欢迎回家"],
+      "parameters": {},
+      "effects": ["welcome_projection=off", "head=level"],
+      "composition_rules": ["首次问候只触发一次；明确要求重播不受限制。", "调用工具前只说一次欢迎回家，成功结果不重复。", "低头成功后播放三秒；无论视频成功失败都恢复平视。", "不包含导航、身份识别、ReID、跟踪或底盘移动。"],
+      "steps": [
+        {"id": "head_down", "skill": "head_control", "action": "down", "arguments": {}, "depends_on": [], "silent_result": true},
+        {"id": "welcome_video", "skill": "welcome_projection", "action": "play", "arguments": {"duration": 3}, "depends_on": ["head_down"], "silent_result": true},
+        {"id": "head_level", "skill": "head_control", "action": "level", "arguments": {}, "depends_on": ["welcome_video"], "dependency_policy": "completion", "silent_result": true}
+      ],
+      "outcomes": [
+        {"name": "completed", "when": {"all_ok": ["head_down", "welcome_video", "head_level"]}, "text": "欢迎画面播放好了。"},
+        {"name": "head_down_failed", "when": {"any_executed_failed": ["head_down"]}, "text": "刚才没有正常低头，所以欢迎画面没有播放。"},
+        {"name": "projection_failed", "when": {"all_ok": ["head_level"], "any_executed_failed": ["welcome_video"]}, "text": "刚才的欢迎画面没有正常播放，不过头部已经恢复平视。"},
+        {"name": "head_level_failed", "when": {"any_executed_failed": ["head_level"]}, "text": "欢迎画面已经结束，不过头部没有正常恢复平视。"}
+      ]
+    },
+    "push_up_companion": {
+      "description": "在客厅白墙处陪主人进行俯卧撑。默认身份识别、持续ReID、运动示范投影、实时计数和App视频同步，结束后关投影并恢复平视。",
+      "semantic_examples": ["来陪我一起做运动吧", "陪我做俯卧撑", "帮我数一下俯卧撑", "好啊开始运动吧"],
+      "parameters": {"name": {"type": "str", "default": "zhangsan"}, "duration": {"type": "float", "default": 30}, "identity_policy": {"type": "str", "default": "face_and_reid"}},
+      "effects": ["robot_at=white_wall", "push_up_session=completed", "fitness_uploaded_to_app=true", "projector=off", "head=level"],
+      "composition_rules": ["只说运动时默认俯卧撑。", "到达white_wall后才能抬头和身份确认。", "默认face_and_reid；明确拒绝身份识别时才anonymous。", "身份准备后默认播放运动示范视频。", "真实数量只由运动技能提供，结束后只补充一次喝水提醒。", "任何结束分支都关闭投影并恢复平视。"],
+      "steps": [
+        {"id": "navigate", "skill": "navigation_goto", "action": "goto", "arguments": {"point": "white_wall"}, "depends_on": [], "silent_result": true},
+        {"id": "prepare_view", "skill": "head_control", "action": "up", "arguments": {}, "depends_on": ["navigate"], "silent_result": true},
+        {"id": "count", "skill": "push_up", "action": "run", "arguments": {"name": {"$arg": "name", "default": "zhangsan"}, "duration": {"$arg": "duration", "default": 30}, "identity_policy": {"$arg": "identity_policy", "default": "face_and_reid"}, "identity_camera": "/dev/video31", "camera": "/dev/video31", "projector_after_identity": true, "preparation_delay": 4.0}, "depends_on": ["prepare_view"], "silent_result": false},
+        {"id": "projector_off", "skill": "projector_control", "action": "off", "arguments": {}, "depends_on": ["count"], "dependency_policy": "completion", "silent_result": true},
+        {"id": "level", "skill": "head_control", "action": "level", "arguments": {}, "depends_on": ["projector_off"], "dependency_policy": "completion", "silent_result": true}
+      ],
+      "outcomes": [
+        {"name": "navigation_failed", "when": {"any_executed_failed": ["navigate"]}, "text": "我刚才没能到达客厅白墙，所以还没有开始运动。"},
+        {"name": "preparation_failed", "when": {"any_executed_failed": ["prepare_view"]}, "text": "运动前的抬头准备没有完成，所以没有开始身份确认和计数。"},
+        {"name": "count_failed", "when": {"any_executed_failed": ["count"]}, "text": "这次身份确认或运动计数没有正常完成，请站到后摄像头画面中央后再试。"},
+        {"name": "cleanup_failed", "when": {"any_executed_failed": ["projector_off", "level"]}, "text": "运动已经结束，不过投影或头部状态没有完全恢复。"}
+      ]
+    },
+    "find_pet": {
+      "description": "依次遍历客厅白墙、书房和餐厅原点寻找豆豆，每到一点原地旋转检测，找到后停止并生成五秒视频。",
+      "semantic_examples": ["找一下豆豆", "看看豆豆在哪里", "豆豆不见了"],
+      "parameters": {"duration": {"type": "float", "default": 20}},
+      "effects": ["all_saved_points_searched_until_found=true", "pet_video_uploaded_if_found=true"],
+      "steps": [
+        {"id": "living", "skill": "navigation_goto", "action": "goto", "arguments": {"point": "white_wall"}, "depends_on": [], "silent_result": true},
+        {"id": "search_living", "skill": "pet_tracking", "action": "find", "arguments": {"pet": "dog", "duration": {"$arg": "duration", "default": 20}}, "depends_on": ["living"], "silent_result": true},
+        {"id": "study", "skill": "navigation_goto", "action": "goto", "arguments": {"point": "study_projection"}, "depends_on": ["search_living"], "run_if": {"field": {"step": "search_living", "path": "found", "equals": false}}, "silent_result": true},
+        {"id": "search_study", "skill": "pet_tracking", "action": "find", "arguments": {"pet": "dog", "duration": {"$arg": "duration", "default": 20}}, "depends_on": ["study"], "run_if": {"field": {"step": "search_living", "path": "found", "equals": false}}, "silent_result": true},
+        {"id": "dining", "skill": "navigation_goto", "action": "goto", "arguments": {"point": "origin"}, "depends_on": ["search_study"], "run_if": {"field": {"step": "search_study", "path": "found", "equals": false}}, "silent_result": true},
+        {"id": "search_dining", "skill": "pet_tracking", "action": "find", "arguments": {"pet": "dog", "duration": {"$arg": "duration", "default": 20}}, "depends_on": ["dining"], "run_if": {"field": {"step": "search_study", "path": "found", "equals": false}}, "silent_result": true}
+      ],
+      "outcomes": [
+        {"name": "found_living", "when": {"field": {"step": "search_living", "path": "found", "equals": true}}, "text": "找到豆豆了，它在客厅，五秒视频正在同步到手机。"},
+        {"name": "found_study", "when": {"field": {"step": "search_study", "path": "found", "equals": true}}, "text": "找到豆豆了，它在书房，五秒视频正在同步到手机。"},
+        {"name": "found_dining", "when": {"field": {"step": "search_dining", "path": "found", "equals": true}}, "text": "找到豆豆了，它在餐厅，五秒视频正在同步到手机。"},
+        {"name": "not_found", "when": {"all_ok": ["search_dining"], "field": {"step": "search_dining", "path": "found", "equals": false}}, "text": "客厅、书房和餐厅都找过了，这次没有看到豆豆。"},
+        {"name": "failed", "when": {"any_executed_failed": ["living", "search_living", "study", "search_study", "dining", "search_dining"]}, "text": "寻找豆豆的过程没有完整执行，我已经停止后续移动。"}
+      ]
+    },
+    "find_pet_at": {
+      "description": "只到用户明确指定的一个已保存地点寻找豆豆，不遍历其他地点。",
+      "semantic_examples": ["去书房找找豆豆", "只在客厅看看狗", "去餐厅找豆豆"],
+      "parameters": {"point": {"type": "str"}, "duration": {"type": "float", "default": 20}},
+      "effects": ["specified_point_searched=true"],
+      "steps": [
+        {"id": "navigate", "skill": "navigation_goto", "action": "goto", "arguments": {"point": {"$arg": "point"}}, "depends_on": [], "silent_result": true},
+        {"id": "search", "skill": "pet_tracking", "action": "find", "arguments": {"pet": "dog", "duration": {"$arg": "duration", "default": 20}}, "depends_on": ["navigate"], "silent_result": true}
+      ],
+      "outcomes": [
+        {"name": "found", "when": {"field": {"step": "search", "path": "found", "equals": true}}, "text": "在你指定的地方找到豆豆了，五秒视频正在同步到手机。"},
+        {"name": "not_found", "when": {"all_ok": ["search"], "field": {"step": "search", "path": "found", "equals": false}}, "text": "我只在你指定的地方找过了，这次没有看到豆豆。"},
+        {"name": "navigation_failed", "when": {"any_executed_failed": ["navigate"]}, "text": "我刚才没能到达你指定的地点，所以没有开始寻找豆豆。"},
+        {"name": "search_failed", "when": {"any_executed_failed": ["search"]}, "text": "刚才寻找豆豆的过程没有正常完成。"}
+      ]
+    },
+    "find_pet_here": {
+      "description": "只在机器人当前位置原地旋转寻找豆豆，不导航。",
+      "semantic_examples": ["就在这里找找豆豆", "原地找一下狗"],
+      "parameters": {"duration": {"type": "float", "default": 20}},
+      "effects": ["current_location_searched=true"],
+      "steps": [{"id": "search", "skill": "pet_tracking", "action": "find", "arguments": {"pet": "dog", "duration": {"$arg": "duration", "default": 20}}, "depends_on": [], "silent_result": true}],
+      "outcomes": [
+        {"name": "found", "when": {"field": {"step": "search", "path": "found", "equals": true}}, "text": "找到豆豆了，五秒视频正在同步到手机。"},
+        {"name": "not_found", "when": {"all_ok": ["search"], "field": {"step": "search", "path": "found", "equals": false}}, "text": "我在当前位置找过了，这次没有看到豆豆。"},
+        {"name": "search_failed", "when": {"any_executed_failed": ["search"]}, "text": "刚才在当前位置寻找豆豆的过程没有正常完成。"}
+      ]
+    },
+    "find_and_feed_doudou": {
+      "description": "按客厅、书房、餐厅三个点寻找豆豆，找到后生成五秒视频并投喂；找不到不投喂。",
+      "semantic_examples": ["帮我看看豆豆在干嘛它该吃饭了", "找找豆豆然后给它喂饭"],
+      "parameters": {"duration": {"type": "float", "default": 20}, "grams": {"type": "int", "default": 10}},
+      "effects": ["all_saved_points_searched_until_found=true", "pet_fed_if_found=true"],
+      "steps": [
+        {"id": "living", "skill": "navigation_goto", "action": "goto", "arguments": {"point": "white_wall"}, "depends_on": [], "silent_result": true},
+        {"id": "search_living", "skill": "pet_tracking", "action": "find", "arguments": {"pet": "dog", "duration": {"$arg": "duration", "default": 20}}, "depends_on": ["living"], "silent_result": true},
+        {"id": "study", "skill": "navigation_goto", "action": "goto", "arguments": {"point": "study_projection"}, "depends_on": ["search_living"], "run_if": {"field": {"step": "search_living", "path": "found", "equals": false}}, "silent_result": true},
+        {"id": "search_study", "skill": "pet_tracking", "action": "find", "arguments": {"pet": "dog", "duration": {"$arg": "duration", "default": 20}}, "depends_on": ["study"], "run_if": {"field": {"step": "search_living", "path": "found", "equals": false}}, "silent_result": true},
+        {"id": "dining", "skill": "navigation_goto", "action": "goto", "arguments": {"point": "origin"}, "depends_on": ["search_study"], "run_if": {"field": {"step": "search_study", "path": "found", "equals": false}}, "silent_result": true},
+        {"id": "search_dining", "skill": "pet_tracking", "action": "find", "arguments": {"pet": "dog", "duration": {"$arg": "duration", "default": 20}}, "depends_on": ["dining"], "run_if": {"field": {"step": "search_study", "path": "found", "equals": false}}, "silent_result": true},
+        {"id": "feed", "skill": "feeder_control", "action": "feed", "arguments": {"grams": {"$arg": "grams", "default": 10}}, "depends_on": ["search_living", "search_study", "search_dining"], "dependency_policy": "completion", "run_if": {"any_fields": [{"step": "search_living", "path": "found", "equals": true}, {"step": "search_study", "path": "found", "equals": true}, {"step": "search_dining", "path": "found", "equals": true}]}, "silent_result": true}
+      ],
+      "outcomes": [
+        {"name": "found_living_and_fed", "when": {"all_ok": ["feed"], "field": {"step": "search_living", "path": "found", "equals": true}}, "text": "找到啦，豆豆在客厅，五秒视频正在同步到手机，也已经给它喂食了。"},
+        {"name": "found_study_and_fed", "when": {"all_ok": ["feed"], "field": {"step": "search_study", "path": "found", "equals": true}}, "text": "找到啦，豆豆在书房，五秒视频正在同步到手机，也已经给它喂食了。"},
+        {"name": "found_dining_and_fed", "when": {"all_ok": ["feed"], "field": {"step": "search_dining", "path": "found", "equals": true}}, "text": "找到啦，豆豆在餐厅，五秒视频正在同步到手机，也已经给它喂食了。"},
+        {"name": "feed_auth_failed", "when": {"any_executed_failed": ["feed"], "field": {"step": "feed", "path": "failure_reason", "equals": "auth_expired_or_invalid"}}, "text": "豆豆找到了，视频正在同步，不过投食机凭证已失效，所以没有投喂。"},
+        {"name": "feed_device_offline", "when": {"any_executed_failed": ["feed"], "field": {"step": "feed", "path": "failure_reason", "equals": "device_offline"}}, "text": "豆豆找到了，视频正在同步，不过投食机当前离线，所以没有投喂。"},
+        {"name": "feed_failed", "when": {"any_executed_failed": ["feed"]}, "text": "豆豆找到了，视频正在同步，不过投食机刚才没有成功出粮。"},
+        {"name": "not_found", "when": {"all_ok": ["search_dining"], "field": {"step": "search_dining", "path": "found", "equals": false}}, "text": "客厅、书房和餐厅都找过了，这次没有找到豆豆，所以没有投喂。"},
+        {"name": "search_failed", "when": {"any_executed_failed": ["living", "search_living", "study", "search_study", "dining", "search_dining"]}, "text": "寻找豆豆的过程没有完整执行，所以没有启动投喂。"}
+      ]
+    },
+    "meeting_projection": {
+      "description": "导航到书房投影点，抬头并循环播放会议内容。现场语音和App语音共用本过程。",
+      "semantic_examples": ["陪我一起开个会吧", "开始会议投影", "把会议内容投出来"],
+      "parameters": {
+        "point": {"type": "string", "enum": ["origin", "white_wall", "study_projection"], "default": "study_projection"},
+        "stay_put": {"type": "boolean", "default": false}
+      },
+      "effects": ["robot_at=study_projection", "meeting_projection=on"],
+      "steps": [
+        {"id": "navigate", "skill": "navigation_goto", "action": "goto", "arguments": {"point": {"$arg": "point", "default": "study_projection"}}, "enabled_if": {"argument": "stay_put", "equals": false}, "depends_on": [], "silent_result": true},
+        {"id": "head_up", "skill": "head_control", "action": "up", "arguments": {}, "depends_on": ["navigate"], "silent_result": true},
+        {"id": "project", "skill": "projector_control", "action": "meeting_presentation_on", "arguments": {}, "depends_on": ["head_up"], "silent_result": true}
+      ],
+      "outcomes": [
+        {"name": "all_success_here", "when": {"all_ok": ["navigate", "head_up", "project"], "field": {"step": "navigate", "path": "intentional_skip", "equals": true}}, "text": "已经在当前位置抬头并投影好会议内容了。"},
+        {"name": "all_success", "when": {"all_ok": ["navigate", "head_up", "project"]}, "text": "已经投影好会议内容了。"},
+        {"name": "navigation_failed", "when": {"any_executed_failed": ["navigate"]}, "text": "我刚才没能到达指定的会议投影位置，所以没有抬头或开始投影。"},
+        {"name": "head_failed_here", "when": {"any_executed_failed": ["head_up"], "field": {"step": "navigate", "path": "intentional_skip", "equals": true}}, "text": "我留在了当前位置，不过头部没有抬到投影角度，所以没有播放会议内容。"},
+        {"name": "head_failed", "when": {"any_executed_failed": ["head_up"]}, "text": "已经到投影位置了，不过头部没有抬到投影角度，所以没有播放会议内容。"},
+        {"name": "projection_failed_here", "when": {"any_executed_failed": ["project"], "field": {"step": "navigate", "path": "intentional_skip", "equals": true}}, "text": "头部已经在当前位置调整好了，不过会议内容刚才没有正常投出来。"},
+        {"name": "projection_failed", "when": {"any_executed_failed": ["project"]}, "text": "会议内容刚才没有在指定位置正常投出来。"}
+      ]
+    },
+    "rest_lighting": {
+      "description": "主人想休息时，机器人前往客厅并同步调整灯光。",
+      "semantic_examples": ["我想休息一会", "有点累帮我调整灯光"],
+      "parameters": {},
+      "effects": ["robot_room=living_room", "living_room_light=off"],
+      "steps": [
+        {"id": "light_off", "skill": "light_control", "action": "off", "arguments": {}, "depends_on": [], "silent_result": true},
+        {"id": "navigate", "skill": "navigation_goto", "action": "goto", "arguments": {"point": "white_wall"}, "depends_on": [], "silent_result": true}
+      ],
+      "outcomes": [
+        {"name": "success", "when": {"all_ok": ["light_off", "navigate"]}, "text": "好的，已经帮你调整好灯光了，安心休息一会儿吧。"},
+        {"name": "light_failed", "when": {"all_ok": ["navigate"], "any_executed_failed": ["light_off"]}, "text": "我已经回到客厅，不过灯光刚才没有调整成功。"},
+        {"name": "navigation_failed", "when": {"all_ok": ["light_off"], "any_executed_failed": ["navigate"]}, "text": "灯光已经调整好了，不过我刚才没能顺利回到客厅。"},
+        {"name": "both_failed", "when": {"any_executed_failed": ["light_off", "navigate"]}, "text": "灯光调整和回到客厅刚才都没有正常完成。"}
+      ]
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "actions": [
+    "schedule",
+    "start"
+  ],
+  "allow_direct_execution": true,
+  "category": "提醒",
+  "certification_notes": [],
+  "certification_status": "checked",
+  "demo_script": [],
+  "description": "创建持久化定时提醒；必须提供提醒内容和可解析的触发时间，到期后由 daemon 自动语音播报。",
+  "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/reminder_schedule/run.sh",
+  "examples": [
+    "五分钟后提醒我喝水"
+  ],
+  "id": "reminder.schedule",
+  "intents": [
+    "reminder"
+  ],
+  "name": "定时提醒",
+  "parameters_schema": {
+    "type": "object",
+    "properties": {
+      "content": {
+        "type": "string",
+        "minLength": 1,
+        "description": "提醒内容"
+      },
+      "trigger_time": {
+        "description": "Unix 时间戳或明确日期时间"
+      },
+      "trigger_condition": {
+        "type": "string",
+        "minLength": 1,
+        "description": "例如十分钟后、明天下午三点"
+      },
+      "trigger_time_or_condition": {
+        "type": "string",
+        "minLength": 1,
+        "description": "追问填槽兼容字段"
+      },
+      "reminder_id": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "content"
+    ],
+    "anyOf": [
+      {
+        "required": [
+          "trigger_time"
+        ]
+      },
+      {
+        "required": [
+          "trigger_condition"
+        ]
+      },
+      {
+        "required": [
+          "trigger_time_or_condition"
+        ]
+      }
+    ],
+    "additionalProperties": true
+  },
+  "resources": [
+    "reminder_store"
+  ],
+  "scene_id": "reminder",
+  "skill_name": "reminder.schedule",
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "examples": [],
+    "group": "short",
+    "runtime_owner": "/home/test/new_project",
+    "speak": [
+      "final_summary",
+      "json_message"
+    ],
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "version": 1
+  },
+  "task_kind": "short",
+  "timeout_sec": 10.0,
+  "resident_runtime": {
+    "enabled": true,
+    "launcher": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime.sh",
+    "socket": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/resident/skills.sock",
+    "legacy_entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/reminder_schedule/run_legacy.sh"
+  }
+}
