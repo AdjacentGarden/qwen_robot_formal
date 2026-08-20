@@ -130,6 +130,53 @@ class ScenarioCatalogTests(unittest.TestCase):
                 self.assertFalse(ok)
                 self.assertEqual(reason, expected_reason)
 
+    def test_model_semantics_accept_natural_paraphrases_not_fixed_templates(self):
+        accepted = (
+            ("push_up_companion", "陪我活动活动筋骨吧"),
+            ("find_pet", "去瞧瞧毛孩子跑哪儿了"),
+            ("find_and_feed_doudou", "毛孩子该开饭了，你去看看"),
+            ("meeting_projection", "我要汇报一下，把内容投到墙上"),
+            ("meeting_projection_stop", "会议就先到这里吧"),
+            ("rest_lighting", "我想眯一会儿，帮我调整下灯光"),
+        )
+        for scenario, text in accepted:
+            with self.subTest(scenario=scenario, text=text):
+                ok, reason = self.catalog.model_scenario_supported(scenario, text)
+                self.assertTrue(ok, reason)
+
+    def test_model_scene_can_resolve_an_omitted_object_from_immediate_context(self):
+        ok, reason = self.catalog.model_scenario_supported(
+            "meeting_projection_stop",
+            "这个先停一下吧",
+            prior_context="已经投影好会议内容了。",
+        )
+        self.assertTrue(ok, reason)
+
+        for context in ("今天天气不错。", "音乐已经开始播放了。"):
+            with self.subTest(context=context):
+                ok, reason = self.catalog.model_scenario_supported(
+                    "meeting_projection_stop",
+                    "这个先停一下吧",
+                    prior_context=context,
+                )
+                self.assertFalse(ok)
+                self.assertEqual(reason, "missing_topic_evidence")
+
+    def test_semantic_flexibility_keeps_negation_and_questions_safe(self):
+        rejected = (
+            "先别把会议投影收起来",
+            "投影暂时别停",
+            "为什么会议就到这里了",
+            "你能不能在会议结束时自动收起投影",
+        )
+        for text in rejected:
+            with self.subTest(text=text):
+                ok, _reason = self.catalog.model_scenario_supported(
+                    "meeting_projection_stop",
+                    text,
+                )
+                self.assertFalse(ok)
+
     def test_homecoming_accepts_common_wake_variants_and_asr_omission(self):
         accepted = (
             "哈喽理想同学",

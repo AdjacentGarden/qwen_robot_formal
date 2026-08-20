@@ -32,17 +32,28 @@ LEGACY_POINT_ALIASES = {
 }
 SCENARIO_TOPIC_TERMS = {
     "living_room_light_service": ("客厅", "灯光", "照明", "开灯", "亮起来", "太暗", "太黑"),
-    "push_up_companion": ("俯卧撑", "做运动", "锻炼", "健身"),
+    "push_up_companion": (
+        "俯卧撑", "做运动", "锻炼", "健身", "活动筋骨", "活动一下", "热热身", "练一组",
+    ),
     "pull_up_companion": ("引体向上", "引体", "单杠"),
     "squat_companion": ("深蹲", "下蹲", "蹲起"),
-    "find_pet": ("豆豆", "小狗", "宠物", "找狗"),
-    "find_pet_at": ("豆豆", "小狗", "宠物", "找狗"),
-    "find_pet_here": ("豆豆", "小狗", "宠物", "找狗"),
-    "find_and_feed_doudou": ("喂饭", "喂食", "吃饭", "饿了", "狗粮", "开饭"),
-    "meeting_projection": ("会议", "开会", "开个会", "讨论", "汇报", "演示", "投屏", "投影", "ppt", "幻灯"),
-    "meeting_projection_stop": ("会议", "投屏", "投影", "ppt", "幻灯"),
+    "find_pet": ("豆豆", "小狗", "宠物", "找狗", "毛孩子", "小家伙"),
+    "find_pet_at": ("豆豆", "小狗", "宠物", "找狗", "毛孩子", "小家伙"),
+    "find_pet_here": ("豆豆", "小狗", "宠物", "找狗", "毛孩子", "小家伙"),
+    "find_and_feed_doudou": (
+        "喂饭", "喂食", "吃饭", "饿了", "狗粮", "开饭", "加餐", "添粮",
+    ),
+    "meeting_projection": (
+        "会议", "开会", "开个会", "讨论", "汇报", "演示", "投屏", "投影", "ppt", "幻灯",
+        "会议画面", "墙上内容", "大屏内容",
+    ),
+    "meeting_projection_stop": (
+        "会议", "投屏", "投影", "ppt", "幻灯", "会议画面", "墙上内容", "大屏内容",
+    ),
     "homecoming_welcome": ("回家", "到家", "回来了", "下班", "欢迎回家", "理想同学"),
-    "rest_lighting": ("休息", "歇一会", "歇会", "睡一会", "困了", "躺一会", "放松一下"),
+    "rest_lighting": (
+        "休息", "歇一会", "歇会", "睡一会", "困了", "躺一会", "放松一下", "缓一缓", "眯一会",
+    ),
 }
 SHORT_AFFIRMATIONS = {
     "好", "好的", "好啊", "可以", "行", "没问题", "开始吧", "那就开始吧", "就这样吧",
@@ -511,8 +522,19 @@ class ScenarioCatalog:
         text = _normalize_text(transcript)
         return bool(
             re.search(
-                r"(?:不要|别|不用|无需|不需要)(?:帮我|给我)?"
-                r"(?:关闭|关掉|停止|结束)(?:会议)?(?:投影|投屏|ppt|幻灯)",
+                r"(?:不要|别|先别|暂时别|不用|无需|不需要)(?:帮我|给我)?"
+                r"(?:关闭|关掉|停止|停掉|结束|收起|撤掉)(?:会议)?(?:投影|投屏|ppt|幻灯|画面|内容)",
+                text,
+            )
+            or re.search(
+                r"(?:投影|投屏|ppt|幻灯|会议画面|墙上内容|大屏内容)"
+                r"(?:不要|别|先别|暂时别)(?:关闭|关掉|停止|停掉|结束|收起|撤掉|停)",
+                text,
+            )
+            or re.search(
+                r"(?:不要|别|先别|暂时别).{0,8}"
+                r"(?:投影|投屏|ppt|幻灯|会议画面|墙上内容|大屏内容).{0,6}"
+                r"(?:关闭|关掉|停止|停掉|结束|收起|撤掉|停)",
                 text,
             )
         )
@@ -610,12 +632,12 @@ class ScenarioCatalog:
             pet = any(_contains_term(transcript, term) for term in terms)
             return pet and any(
                 _contains_term(transcript, term)
-                for term in ("找", "看看", "在哪", "去看", "瞧瞧", "寻找")
+                for term in ("找", "看看", "在哪", "跑哪", "去看", "瞧瞧", "寻找", "找找")
             )
         if name == "find_and_feed_doudou":
             pet = any(
                 _contains_term(transcript, term)
-                for term in ("豆豆", "小狗", "宠物", "狗")
+                for term in ("豆豆", "小狗", "宠物", "狗", "毛孩子", "小家伙")
             )
             feeding = any(_contains_term(transcript, term) for term in terms)
             return pet and feeding
@@ -625,11 +647,57 @@ class ScenarioCatalog:
                 _contains_term(transcript, term)
                 for term in (
                     "关闭", "关掉", "关上", "关投影", "停止", "停掉", "停播", "停下来",
-                    "结束", "收起", "收起来", "不投了", "别播了", "取消", "退出",
+                    "结束", "收起", "收起来", "撤掉", "到这里", "就到这", "不投了", "别播了",
+                    "不用继续", "不用放了", "取消", "退出",
                 )
             )
             return topic and closing
         return any(_contains_term(transcript, term) for term in terms)
+
+    def _context_corroborates_model_scene(
+        self,
+        name: str,
+        transcript: str,
+        prior_context: str,
+    ) -> bool:
+        """Use dialogue context only to resolve an omitted object.
+
+        Qwen has already selected an enum-constrained scene.  This helper does
+        not classify an unrelated sentence: the current turn must still carry
+        the scene's action direction, while the immediately preceding robot
+        sentence may provide an omitted object such as “会议投影”.
+        """
+
+        text = _normalize_text(transcript)
+        context = _normalize_text(prior_context)
+        if not text or not context or name == "homecoming_welcome":
+            return False
+        topic_name = "meeting_projection" if name == "meeting_projection_stop" else name
+        if not self._has_topic_evidence(topic_name, context):
+            return False
+        continuation = any(
+            word in text
+            for word in ("这个", "那个", "刚才", "前面", "它", "先", "继续", "就", "不用", "别再")
+        ) or len(text) <= 8
+        if not continuation:
+            return False
+        actions = {
+            "meeting_projection_stop": (
+                "关闭", "关掉", "停", "结束", "收起", "撤掉", "到这里", "到这", "不用继续",
+                "不用放", "别播", "取消",
+            ),
+            "meeting_projection": ("开始", "打开", "播放", "投出来", "放出来", "展示"),
+            "push_up_companion": ("开始", "来一组", "活动", "锻炼", "练", "数"),
+            "pull_up_companion": ("开始", "来一组", "练", "数"),
+            "squat_companion": ("开始", "来一组", "练", "数"),
+            "find_pet": ("找", "看看", "瞧瞧", "在哪", "跑哪"),
+            "find_pet_at": ("找", "看看", "瞧瞧", "在哪"),
+            "find_pet_here": ("找", "看看", "瞧瞧", "在哪"),
+            "find_and_feed_doudou": ("喂", "吃饭", "开饭", "添粮", "加餐"),
+            "rest_lighting": ("休息", "歇", "躺", "眯", "放松", "缓缓"),
+            "living_room_light_service": ("打开", "调亮", "照亮", "太暗", "太黑"),
+        }.get(name, ())
+        return bool(actions) and any(_contains_term(text, item) for item in actions)
 
     @staticmethod
     def _explicitly_cancelled(transcript: str) -> bool:
@@ -642,11 +710,20 @@ class ScenarioCatalog:
     @staticmethod
     def _capability_question(transcript: str) -> bool:
         text = _normalize_text(transcript)
-        if not re.match(r"^(?:你)?(?:会|能|可以|支持)", text):
+        if not re.match(r"^(?:你)?(?:会不会|能不能|能否|会|能|可以|支持)", text):
             return False
         if any(term in text for term in ("帮我", "陪我", "给我", "现在", "马上", "开始")):
             return False
-        return text.endswith(("吗", "么")) or any(term in text for term in ("什么功能", "会不会", "能不能做到"))
+        # “你能不能帮我现在关掉投影”是当前指令；“你能不能在会议
+        # 结束时自动收起投影”是在询问自动化能力，不能据此立刻操作。
+        future_or_automatic = bool(
+            re.search(r"(?:在|等)(?:会议|视频|音乐|投影|播放)?.{0,8}(?:结束|完成|播完|以后|之后|时)|每次|自动", text)
+        )
+        return (
+            text.endswith(("吗", "么"))
+            or any(term in text for term in ("什么功能", "会不会", "能不能做到", "是否支持"))
+            or future_or_automatic
+        )
 
     @staticmethod
     def _informational_question(transcript: str) -> bool:
@@ -701,6 +778,7 @@ class ScenarioCatalog:
         *,
         matched: str | None = None,
         allow_additional_intents: bool = False,
+        prior_context: str = "",
     ) -> tuple[bool, str]:
         """Validate Qwen's semantic scene choice without re-classifying it.
 
@@ -735,7 +813,11 @@ class ScenarioCatalog:
             return False, "negated_action"
         if requested == "living_room_light_service" and self.living_light_requires_atomic_sequence(text):
             return False, "ordered_lighting_requires_atomic_sequence"
-        if not self._has_topic_evidence(requested, text):
+        if not self._has_topic_evidence(requested, text) and not self._context_corroborates_model_scene(
+            requested,
+            text,
+            prior_context,
+        ):
             return False, "missing_topic_evidence"
         return True, "qwen_semantic_with_local_evidence"
 

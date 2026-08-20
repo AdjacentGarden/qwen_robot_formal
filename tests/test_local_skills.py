@@ -273,6 +273,60 @@ class LocalSkillTests(unittest.TestCase):
         self.assertFalse(supported)
         self.assertEqual(reason, "explicitly_negated_lighting")
 
+    def test_atomic_semantics_accept_natural_paraphrases(self):
+        accepted = (
+            ("face_recognition", {}, "看看是不是还能认出我"),
+            ("head_control", {"action": "up"}, "把视线往高处调整一点"),
+            ("head_control", {"action": "level"}, "恢复正常角度，看正前方"),
+            ("projector_control", {"action": "off"}, "墙上的内容先收起来吧"),
+            ("media_player", {"action": "stop"}, "这个节目就到这里吧"),
+            ("reminder_cancel", {}, "刚才那个提醒不用留了"),
+            ("reminder_query", {}, "列一下我都安排了哪些提醒"),
+            ("environment_perception", {}, "瞧瞧面前现在是什么情况"),
+        )
+        for name, arguments, text in accepted:
+            with self.subTest(name=name, text=text):
+                supported, reason = _atomic_intent_supported(name, arguments, text)
+                self.assertTrue(supported, reason)
+
+    def test_context_can_ground_only_low_risk_continuation_actions(self):
+        supported, reason = _atomic_intent_supported(
+            "media_player",
+            {"action": "stop"},
+            "这个先停了吧",
+            prior_assistant_text="正在播放一段轻松音乐。",
+        )
+        self.assertTrue(supported, reason)
+
+        supported, reason = _atomic_intent_supported(
+            "projector_control",
+            {"action": "off"},
+            "这个先收起来",
+            prior_assistant_text="会议内容已经投影好了。",
+        )
+        self.assertTrue(supported, reason)
+
+        # Context never supplies permission or a destination for motion.
+        supported, reason = _atomic_intent_supported(
+            "navigation_goto",
+            {"point": "study_projection"},
+            "这个开始吧",
+            prior_assistant_text="我可以导航到书房。",
+        )
+        self.assertFalse(supported)
+        self.assertIn(reason, {"missing_navigation_goto_evidence", "navigation_destination_conflict"})
+
+    def test_atomic_paraphrases_still_respect_negation_and_capability_questions(self):
+        rejected = (
+            ("projector_control", {"action": "off"}, "投影暂时别停"),
+            ("head_control", {"action": "up"}, "先别把视线往上调"),
+            ("reminder_cancel", {}, "不要删除刚才的提醒"),
+            ("media_player", {"action": "stop"}, "你能不能自动停止节目"),
+        )
+        for name, arguments, text in rejected:
+            with self.subTest(name=name, text=text):
+                self.assertFalse(_atomic_intent_supported(name, arguments, text)[0])
+
     def test_visual_question_does_not_implicitly_authorize_camera(self):
         self.assertFalse(
             _atomic_intent_supported(

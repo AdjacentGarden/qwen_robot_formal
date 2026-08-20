@@ -422,6 +422,7 @@ def _atomic_intent_supported(
     user_text: str,
     *,
     in_sequence: bool = False,
+    prior_assistant_text: str = "",
 ) -> tuple[bool, str]:
     """Reject associative tool guesses without becoming a second NLU model.
 
@@ -433,6 +434,7 @@ def _atomic_intent_supported(
     """
 
     text = _intent_text(user_text)
+    context = _intent_text(prior_assistant_text)
     if not text:
         return True, "empty_text_not_checked"
 
@@ -455,7 +457,10 @@ def _atomic_intent_supported(
         "move_backward": ("后退", "往后", "向后", "倒退"),
         "move_left": ("左转", "向左转", "往左转"),
         "move_right": ("右转", "向右转", "往右转"),
-        "head_control": ("抬头", "低头", "平视", "回正", "向上看", "向下看"),
+        "head_control": (
+            "抬头", "低头", "平视", "回正", "向上看", "向下看", "视线往上", "视线往下",
+            "镜头往上", "镜头往下", "看正前方", "恢复正常角度",
+        ),
         "camera_capture": ("拍照", "拍张", "照相", "合影"),
         "front_camera_capture": ("拍照", "拍张", "照相", "合影"),
         "back_camera_capture": ("拍照", "拍张", "照相", "合影"),
@@ -470,7 +475,7 @@ def _atomic_intent_supported(
         return False, "explicitly_negated_action"
 
     general_evidence = {
-        "face_recognition": r"我是谁|认得我|认识我|知道我是谁|面前.{0,4}(?:谁|人)|识别.{0,3}(?:我|人脸|身份)|看看.{0,4}(?:我|谁)",
+        "face_recognition": r"我是谁|认得我|认识我|认出我|看出我|知道我是谁|面前.{0,4}(?:谁|人)|识别.{0,3}(?:我|人脸|身份)|看看.{0,6}(?:我|谁|认不认得)",
         "face_registration": r"注册|登记|录入|添加|保存|记住.{0,3}(?:人脸|脸|身份)",
         "camera_capture": r"拍照|拍张|照片|照相|合影",
         "front_camera_capture": r"拍照|拍张|照片|照相|合影",
@@ -480,7 +485,7 @@ def _atomic_intent_supported(
         "back_camera_record": r"录像|录.{0,12}视频|拍视频|录制",
         "fan_control": r"风扇|吹风|风机",
         "feeder_control": r"投食|喂|出粮|狗粮|吃饭|开饭|投食器",
-        "head_control": r"抬头|低头|平视|回正|头部|脑袋|向上看|向下看|恢复水平",
+        "head_control": r"抬头|低头|平视|回正|头部|脑袋|视线|镜头|向上看|向下看|往高处看|看正前方|恢复水平|恢复正常角度",
         "move_forward": r"前进|往前|向前",
         "move_backward": r"后退|往后|向后|倒退",
         "move_left": r"左转|向左|往左",
@@ -488,14 +493,14 @@ def _atomic_intent_supported(
         "navigation_goto": r"导航|前往|过去|去往|到|去|回",
         "person_tracking": r"跟踪|跟随|追踪|找人|寻找.{0,3}人|跟着",
         "pet_tracking": r"豆豆|小狗|狗狗|宠物|找狗|跟踪狗|跟着狗",
-        "projector_control": r"投影|投屏|ppt|幻灯|会议画面|会议内容",
+        "projector_control": r"投影|投屏|ppt|幻灯|会议画面|会议内容|墙上.{0,4}内容|大屏|正在放的内容",
         "reminder_schedule": r"提醒|闹钟|到点叫我|记得叫我",
         "reminder_query": r"提醒|闹钟|待办",
         "reminder_cancel": r"提醒|闹钟|待办",
-        "media_player": r"音乐|歌曲|听歌|视频|电影|暂停|继续播放|恢复播放|下一首|换一首|播放器",
+        "media_player": r"音乐|歌曲|听歌|视频|电影|短片|节目|正在播|暂停|继续播放|恢复播放|下一首|换一首|播放器",
     }
     general_terms = {
-        "face_recognition": ("人脸识别", "身份识别", "我是谁", "认得我"),
+        "face_recognition": ("人脸识别", "身份识别", "我是谁", "认得我", "认出我", "看出我"),
         "face_registration": ("登记人脸", "注册人脸", "录入人脸"),
         "camera_capture": ("拍照", "拍张照片", "照相"),
         "front_camera_capture": ("拍照", "前摄拍照"),
@@ -505,7 +510,7 @@ def _atomic_intent_supported(
         "back_camera_record": ("录像", "后摄录像"),
         "fan_control": ("风扇", "风机"),
         "feeder_control": ("投食", "喂食", "狗粮", "投食器"),
-        "head_control": ("抬头", "低头", "平视", "回正"),
+        "head_control": ("抬头", "低头", "平视", "回正", "视线往上", "视线往下", "看正前方"),
         "move_forward": ("前进", "往前", "向前"),
         "move_backward": ("后退", "往后", "倒退"),
         "move_left": ("左转", "向左"),
@@ -513,14 +518,38 @@ def _atomic_intent_supported(
         "navigation_goto": ("导航", "前往", "回原点"),
         "person_tracking": ("跟踪人", "跟随人", "追踪人"),
         "pet_tracking": ("豆豆", "小狗", "宠物", "找狗"),
-        "projector_control": ("投影", "投屏", "幻灯", "会议内容"),
+        "projector_control": ("投影", "投屏", "幻灯", "会议内容", "墙上内容", "大屏内容"),
         "reminder_schedule": ("设置提醒", "提醒我", "闹钟"),
         "reminder_query": ("查询提醒", "查看提醒"),
         "reminder_cancel": ("取消提醒", "删除提醒"),
-        "media_player": ("播放音乐", "听歌", "播放视频", "暂停播放", "继续播放"),
+        "media_player": ("播放音乐", "听歌", "播放视频", "暂停播放", "继续播放", "正在播的内容"),
     }
     evidence = general_evidence.get(name)
-    if evidence and not _intent_evidence(text, evidence, general_terms.get(name, ())):
+    current_evidence = bool(
+        evidence and _intent_evidence(text, evidence, general_terms.get(name, ()))
+    )
+    action = str(arguments.get("action") or "").strip().lower()
+    context_groundable = bool(
+        (name == "projector_control" and action in {"off", "stop", "meeting_pause", "meeting_resume"})
+        or (name == "media_player" and action in {"pause", "resume", "next", "stop", "status"})
+        or name in {"reminder_cancel", "reminder_query"}
+        or (name in {"person_tracking", "pet_tracking"} and action == "stop")
+    )
+    contextual_reference = bool(
+        re.search(r"这个|那个|刚才|前面|正在|当前|它|先|继续|不用再|别再", text)
+    )
+    context_evidence = bool(
+        evidence
+        and context_groundable
+        and contextual_reference
+        and context
+        and _intent_evidence(context, evidence, general_terms.get(name, ()))
+    )
+    # If Qwen has already selected a tool, the immediately preceding robot
+    # sentence may provide an omitted object (“这个先停了”).  Context can
+    # ground the object, but every action-specific polarity/destination check
+    # below still uses only the current user turn.
+    if evidence and not current_evidence and not context_evidence:
         return False, f"missing_{name}_evidence"
 
     if name == "light_control":
@@ -585,15 +614,15 @@ def _atomic_intent_supported(
     if name == "head_control":
         action = str(arguments.get("action") or "").strip().lower()
         action_evidence = {
-            "up": r"抬头|向上看|头.{0,3}抬",
-            "down": r"低头|向下看|头.{0,3}低",
-            "level": r"平视|回正|恢复水平|头.{0,3}正",
+            "up": r"抬头|向上看|往上看|往高处看|视线.{0,4}(?:上|高)|镜头.{0,4}(?:上|高)|头.{0,3}抬",
+            "down": r"低头|向下看|往下看|视线.{0,4}下|镜头.{0,4}下|头.{0,3}低",
+            "level": r"平视|回正|摆正|看正前方|恢复水平|恢复正常角度|头.{0,3}正",
             "angle": r"角度|\d+(?:\.\d+)?度",
         }.get(action)
         head_terms = {
-            "up": ("抬头", "向上看"),
-            "down": ("低头", "向下看"),
-            "level": ("平视", "回正", "恢复水平"),
+            "up": ("抬头", "向上看", "视线往上", "往高处看"),
+            "down": ("低头", "向下看", "视线往下"),
+            "level": ("平视", "回正", "摆正", "看正前方", "恢复正常角度"),
             "angle": ("角度",),
         }.get(action, ())
         if action_evidence and not _intent_evidence(text, action_evidence, head_terms):
@@ -601,7 +630,16 @@ def _atomic_intent_supported(
 
     if name == "projector_control":
         action = str(arguments.get("action") or "").strip().lower()
-        if action in {"off", "stop"} and not re.search(r"关|停止|结束|不投|取消", text):
+        if action in {"off", "stop"} and re.search(
+            r"(?:不要|别|先别|暂时别).{0,8}(?:投影|投屏|ppt|幻灯|画面|内容).{0,6}(?:关|停|结束|收起|撤掉)|"
+            r"(?:投影|投屏|ppt|幻灯|画面|内容).{0,6}(?:不要|别|先别|暂时别).{0,4}(?:关|停|结束|收起|撤掉)",
+            text,
+        ):
+            return False, "projector_stop_explicitly_negated"
+        if action in {"off", "stop"} and not re.search(
+            r"关|停|结束|收起|撤掉|到这里|到这|不投|不用继续|不用放|别播|取消",
+            text,
+        ):
             return False, "projector_stop_not_requested"
         if action in {"meeting_pause"} and not _intent_evidence(
             text, r"暂停|停一下|停在", ("暂停投影", "暂停播放")
@@ -631,7 +669,7 @@ def _atomic_intent_supported(
             "pause": r"暂停|停一下",
             "resume": r"继续|恢复",
             "next": r"下一首|换一首|换歌",
-            "stop": r"停止|结束|关掉|不听|不看",
+            "stop": r"停止|停了|结束|关掉|到这里|到这|先这样|不用继续|不听|不看",
             "list": r"有什么|列表|哪些|可以播放",
             "status": r"状态|在播什么|播放到哪",
         }.get(action)
@@ -641,22 +679,25 @@ def _atomic_intent_supported(
             "pause": ("暂停播放", "停一下"),
             "resume": ("继续播放", "恢复播放"),
             "next": ("下一首", "换歌"),
-            "stop": ("停止播放", "结束播放"),
+            "stop": ("停止播放", "结束播放", "就到这里", "不用继续播放"),
             "list": ("播放列表",),
             "status": ("播放状态",),
         }.get(action, ())
         if action_evidence and not _intent_evidence(text, action_evidence, media_terms):
             return False, "media_action_conflict"
 
-    if name == "reminder_cancel" and not re.search(r"删|取消|不要|清除|移除", text):
-        return False, "reminder_cancel_not_requested"
-    if name == "reminder_query" and not re.search(r"查|查询|看看|哪些|什么|多少|有没有", text):
+    if name == "reminder_cancel":
+        if re.search(r"(?:不要|别|先别|暂时别).{0,6}(?:删|取消|作废|撤掉|清除|移除)", text):
+            return False, "reminder_cancel_explicitly_negated"
+        if not re.search(r"删|取消|不要|不用留|作废|撤掉|清除|移除", text):
+            return False, "reminder_cancel_not_requested"
+    if name == "reminder_query" and not re.search(r"查|查询|看看|列一下|都有|安排了|哪些|什么|多少|有没有", text):
         return False, "reminder_query_not_requested"
     if name == "reminder_schedule" and not re.search(r"提醒|闹钟|到点叫我|记得叫我", text):
         return False, "reminder_schedule_not_requested"
 
     if name == "environment_perception":
-        if not re.search(r"看看|看一下|识别|观察|检查|摄像头|画面|镜头|周围|面前|环境|能看见", text):
+        if not re.search(r"看看|看一下|看一眼|瞧瞧|识别|观察|检查|摄像头|画面|镜头|周围|面前|环境|能看见", text):
             return False, "missing_visual_inspection_evidence"
 
     if name in {"move_forward", "move_backward", "move_left", "move_right"}:
@@ -1258,6 +1299,7 @@ class LocalSkillBridge:
                     requested,
                     user_text,
                     matched=matched,
+                    prior_context=prior_assistant_text,
                 )
                 if not semantic_ok:
                     return {
@@ -1369,7 +1411,13 @@ class LocalSkillBridge:
                     **dict(arguments),
                     "point": explicit_navigation["arguments"]["point"],
                 }
-        return self._invoke_atomic(name, arguments, user_text, turn_id=turn_id)
+        return self._invoke_atomic(
+            name,
+            arguments,
+            user_text,
+            turn_id=turn_id,
+            prior_assistant_text=prior_assistant_text,
+        )
 
     def _emit_speech_event(self, event: dict[str, Any]) -> None:
         if self.event_callback is None:
@@ -1510,6 +1558,7 @@ class LocalSkillBridge:
                         requested,
                         user_text,
                         allow_additional_intents=True,
+                        prior_context=prior_assistant_text,
                     )
                 else:
                     supported, reason = _atomic_intent_supported(
@@ -1517,6 +1566,7 @@ class LocalSkillBridge:
                         child_arguments,
                         user_text,
                         in_sequence=True,
+                        prior_assistant_text=prior_assistant_text,
                     )
                 if not supported:
                     # A negative constraint is not an executable task. If the
@@ -1614,11 +1664,17 @@ class LocalSkillBridge:
             else:
                 # Only model-exposed atomic children enter the sequence, so
                 # direct dispatch here cannot bypass protected scene routing.
+                atomic_kwargs: dict[str, Any] = {"announce": False}
+                # Keep compatibility with existing integrations/tests that
+                # wrap the historical _invoke_atomic signature. Context is
+                # only passed when it can actually contribute evidence.
+                if str(prior_assistant_text or "").strip():
+                    atomic_kwargs["prior_assistant_text"] = prior_assistant_text
                 result = self._invoke_atomic(
                     task["name"],
                     task["arguments"],
                     user_text,
-                    announce=False,
+                    **atomic_kwargs,
                 )
             succeeded = bool(result.get("ok") or result.get("validation_ok"))
             records.append(
@@ -1684,6 +1740,7 @@ class LocalSkillBridge:
         user_text: str,
         *,
         turn_id: str = "",
+        prior_assistant_text: str = "",
         announce: bool = True,
     ) -> dict[str, Any]:
         started = time.monotonic()
@@ -1696,7 +1753,12 @@ class LocalSkillBridge:
                 "error": f"unavailable_skill:{reason}",
                 "spoken_summary": "这个功能现在还没准备好，所以我没有贸然执行。",
             }
-        supported, support_reason = _atomic_intent_supported(name, arguments, user_text)
+        supported, support_reason = _atomic_intent_supported(
+            name,
+            arguments,
+            user_text,
+            prior_assistant_text=prior_assistant_text,
+        )
         if not supported:
             rejection_speech = {
                 "navigation_destination_missing": (
