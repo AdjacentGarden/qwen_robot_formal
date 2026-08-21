@@ -45,7 +45,7 @@
     },
     "push_up_companion": {
       "description": "在客厅白墙处陪主人进行俯卧撑。默认身份识别、持续ReID、运动示范投影、实时计数和App视频同步，结束后关投影并恢复平视。",
-      "semantic_examples": ["来陪我一起做运动吧", "陪我做俯卧撑", "帮我数一下俯卧撑", "好啊开始运动吧"],
+      "semantic_examples": ["来陪我一起做运动吧", "我想做运动了", "你陪我做运动吧", "陪我做俯卧撑", "帮我数一下俯卧撑", "好啊开始运动吧"],
       "parameters": {"name": {"type": "str", "default": "zhangsan"}, "duration": {"type": "float", "default": 30}, "identity_policy": {"type": "str", "default": "face_and_reid"}},
       "effects": ["robot_at=white_wall", "push_up_session=completed", "fitness_uploaded_to_app=true", "projector=off", "head=level"],
       "composition_rules": ["只说运动时默认俯卧撑。", "到达white_wall后才能抬头和身份确认。", "默认face_and_reid；明确拒绝身份识别时才anonymous。", "身份准备后默认播放运动示范视频。", "真实数量只由运动技能提供，结束后只补充一次喝水提醒。", "任何结束分支都关闭投影并恢复平视。"],

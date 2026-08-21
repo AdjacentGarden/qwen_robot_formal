@@ -52,6 +52,51 @@ def _contains_any_term(text: str, terms: Sequence[str]) -> bool:
     return any(_contains_term(text, term) for term in terms if str(term).strip())
 
 
+def _scenario_clarification(
+    requested: str,
+    user_text: str,
+    reason: str = "",
+) -> tuple[str, str | None]:
+    """Return one concrete, non-executing clarification question.
+
+    This is intentionally narrower than scenario matching.  It may explain a
+    plausible interpretation, but it never upgrades that interpretation into
+    permission to operate hardware.  The second value is a scenario that a
+    later short affirmation may safely confirm.
+    """
+
+    text = _intent_text(user_text)
+    if requested == "push_up_companion" and re.search(r"俯卧|辅导|运动|锻炼|健身|练", text):
+        return "我听到的内容有点像“俯卧撑”。你是想让我陪你做俯卧撑吗？", requested
+    if requested == "pull_up_companion" and re.search(r"引体|单杠|运动|锻炼", text):
+        return "你是想让我陪你做引体向上吗？", requested
+    if requested == "squat_companion" and re.search(r"深蹲|蹲|运动|锻炼", text):
+        return "你是想让我陪你做深蹲吗？", requested
+    if requested in {"find_pet", "find_pet_at", "find_pet_here", "find_and_feed_doudou"}:
+        if re.search(r"豆|狗|宠物|找|在哪|喂|吃饭|饿", text):
+            if re.search(r"喂|吃饭|饿|狗粮", text):
+                return "我没听清宠物的名字。你是想让我去找豆豆并给它喂食吗？", "find_and_feed_doudou"
+            return "我没听清宠物的名字。你是想让我去找豆豆吗？", "find_pet"
+    if requested in {"meeting_projection", "meeting_projection_stop"} and re.search(
+        r"会议|开会|投影|投屏|ppt|幻灯", text
+    ):
+        if re.search(r"关|停|结束|退出|不投", text):
+            return "你是想结束当前的会议投影吗？", "meeting_projection_stop"
+        return "你是想让我开始会议投影吗？", "meeting_projection"
+    if requested == "rest_lighting" and re.search(r"休息|累|困|灯|光", text):
+        return "你是想让我调整灯光，好让你休息一会儿吗？", requested
+    if reason == "not_requested":
+        return "我没听清具体想做什么。你可以只重说动作，比如做运动、找豆豆或开始会议投影。", None
+    return "我听出了大概方向，但还缺一个关键信息。请只重说你想执行的动作。", None
+
+
+_CONTEXT_AFFIRMATIONS = {
+    "是", "是的", "对", "对的", "对呀", "对啊", "没错", "嗯", "嗯嗯",
+    "好", "好的", "好啊", "可以", "行", "开始吧", "那就开始吧",
+}
+_CONTEXT_REJECTIONS = {"不是", "不对", "不要", "不用", "算了", "取消", "先不要"}
+
+
 def _action_explicitly_negated(text: str, terms: Sequence[str]) -> bool:
     """Check negation inside the action's own spoken clause."""
 
@@ -334,6 +379,16 @@ def _recover_explicit_sequence_tasks(user_text: str, catalog: ScenarioCatalog | 
         candidates.append({"name": "realtime_information", "arguments": {"action": "weather"}})
     if re.search(r"几点|时间|日期|年月日|星期|几月几日|几号", text):
         candidates.append({"name": "realtime_information", "arguments": {"action": "current_time"}})
+    # Explicit read-only queries should be refreshed on every turn.  Without
+    # this conservative fallback, the realtime model can reuse an earlier
+    # answer from conversation memory and skip the local tool entirely.
+    # Keep the evidence narrow so a destination request can never be turned
+    # into a list query (and therefore can never mask navigation).
+    if (
+        re.search(r"(?:导航点|保存(?:的)?(?:地点|位置)|可以去(?:哪些|什么|哪几个)(?:地点|位置)?|能去(?:哪些|什么|哪几个)(?:地点|位置)?|(?:机器人|你).{0,6}有哪些(?:导航)?(?:地点|位置|点位))", text)
+        and not re.search(r"导航到|前往|带我去|到.+去|回原点|去(?:原点|客厅|书房|白墙)", text)
+    ):
+        candidates.append({"name": "navigation_list", "arguments": {}})
     if re.search(
         r"(?:查|查询|看看|告诉我).{0,5}(?:当前位置|当前定位|所在位置|位置)|"
         r"机器人.{0,4}(?:在哪|哪里|位置)",
@@ -359,6 +414,8 @@ def _recover_explicit_sequence_tasks(user_text: str, catalog: ScenarioCatalog | 
             reminder_arguments["content"] = reminder.group("content").strip("的事一下")
         if reminder_arguments.get("content") and reminder_arguments.get("trigger_condition"):
             candidates.append({"name": "reminder_schedule", "arguments": reminder_arguments})
+        elif re.search(r"查|查询|看看|列一下|都有|安排了|哪些|什么|多少|有没有", text):
+            candidates.append({"name": "reminder_query", "arguments": {}})
     pet_stop = bool(re.search(r"(?:停止|结束|别再|不要再|不用再).{0,5}(?:跟踪|跟随|追踪).{0,5}(?:豆豆|狗|宠物)", text))
     person_stop = bool(re.search(r"(?:停止|结束|别再|不要再|不用再).{0,5}(?:跟踪|跟随|追踪).{0,5}(?:人|他|她|面前)", text))
     if pet_stop:
@@ -583,6 +640,15 @@ def _atomic_intent_supported(
         }.get(action)
         if evidence and not re.search(evidence, text):
             return False, f"missing_realtime_{action}_evidence"
+
+    if name == "navigation_list":
+        if not re.search(
+            r"导航点|保存(?:的)?(?:地点|位置)|可以去(?:哪些|什么|哪几个)|能去(?:哪些|什么|哪几个)|(?:机器人|你).{0,6}有哪些(?:导航)?(?:地点|位置|点位)",
+            text,
+        ):
+            return False, "navigation_list_not_requested"
+        if re.search(r"导航到|前往|带我去|回原点|去(?:原点|客厅|书房|白墙)", text):
+            return False, "navigation_list_conflicts_with_destination"
 
     if name == "navigation_goto":
         point = str(arguments.get("point") or "").strip()
@@ -832,20 +898,20 @@ def build_skill_start_speech(
         destination = _spoken_point(arguments.get("point"))
         return _pick_variant(
             (
-                f"好，我这就出发去{destination}。",
-                f"明白，我现在前往{destination}。",
-                f"收到，准备去{destination}，我出发了。",
-                f"行，我马上去{destination}。",
+                f"好，我去{destination}。",
+                f"收到，这就去{destination}。",
+                f"行，出发去{destination}。",
+                f"好，马上到{destination}。",
             ),
             key,
         )
     if phrase.startswith(("查询", "看看", "查看", "读取")):
         return _pick_variant(
-            (f"我马上{phrase}。", f"好，我来{phrase}。", f"稍等，我现在{phrase}。"),
+            ("好，我查一下。", "稍等，我来看看。", "收到，马上查。"),
             key,
         )
     return _pick_variant(
-        (f"收到，我现在{phrase}。", f"好，我这就{phrase}。", f"明白，马上{phrase}。"),
+        ("好，我来处理。", "收到，马上开始。", "可以，交给我。"),
         key,
     )
 
@@ -855,17 +921,17 @@ def build_sequence_start_speech(tasks: list[dict[str, Any]], variation_key: str 
     if len(phrases) == 2:
         return _pick_variant(
             (
-                f"收到，我先{phrases[0]}，完成后再{phrases[1]}。",
-                f"好，我按你说的来：先{phrases[0]}，再{phrases[1]}。",
-                f"明白，这两件事按顺序处理，先{phrases[0]}，再{phrases[1]}。",
+                "好，我按顺序来。",
+                "收到，这两件事依次处理。",
+                "明白，我先做第一件。",
             ),
             f"{variation_key}|sequence|{phrases}",
         )
     return _pick_variant(
         (
-            f"收到，我会按顺序完成这{len(phrases)}项任务，先{phrases[0]}。",
-            f"明白，这{len(phrases)}项我依次处理，先{phrases[0]}。",
-            f"好，我从{phrases[0]}开始，一项一项完成。",
+            "好，我按顺序处理。",
+            f"收到，这{len(phrases)}件事依次来。",
+            "明白，我一项一项完成。",
         ),
         f"{variation_key}|sequence|{phrases}",
     )
@@ -1215,6 +1281,60 @@ class LocalSkillBridge:
             },
         }
 
+    def recover_contextual_plan(
+        self,
+        user_text: str,
+        prior_assistant_text: str,
+    ) -> dict[str, Any] | None:
+        """Resolve only a short answer to our immediately preceding question.
+
+        Ordinary conversation never enters this path.  A plan is recovered
+        only when the current answer is an unambiguous affirmation and the
+        preceding local speech contains one concrete confirmation question,
+        or when the preceding question requested a navigation destination and
+        the user supplies an allowed point.
+        """
+
+        answer = _intent_text(user_text)
+        prior = _intent_text(prior_assistant_text)
+        if not answer or not prior:
+            return None
+        if answer in _CONTEXT_REJECTIONS or re.match(r"^(?:不是|不对|不要|不用|算了|取消)", answer):
+            return None
+
+        if any(term in prior for term in ("要去哪个位置", "要去哪里", "目的地没听清", "原点客厅白墙还是书房")):
+            plan = _explicit_navigation_task(f"导航到{user_text}")
+            if plan is not None:
+                return plan
+
+        if answer not in _CONTEXT_AFFIRMATIONS:
+            return None
+        if "你是想" not in prior and "是想" not in prior:
+            return None
+        scenario = None
+        if "俯卧撑" in prior:
+            scenario = "push_up_companion"
+        elif "引体向上" in prior:
+            scenario = "pull_up_companion"
+        elif "深蹲" in prior:
+            scenario = "squat_companion"
+        elif "找豆豆并" in prior and "喂食" in prior:
+            scenario = "find_and_feed_doudou"
+        elif "找豆豆" in prior:
+            scenario = "find_pet"
+        elif "结束当前的会议投影" in prior:
+            scenario = "meeting_projection_stop"
+        elif "开始会议投影" in prior:
+            scenario = "meeting_projection"
+        elif "调整灯光" in prior and "休息" in prior:
+            scenario = "rest_lighting"
+        if scenario is None or scenario not in self.scenario_catalog.procedures:
+            return None
+        return {
+            "name": SCENARIO_TOOL_NAME,
+            "arguments": {"scenario": scenario},
+        }
+
     def invoke(
         self,
         name: str,
@@ -1225,6 +1345,13 @@ class LocalSkillBridge:
         trusted_scenario: bool = False,
         announce_scenario: bool = True,
     ) -> dict[str, Any]:
+        trusted_resume = bool(
+            trusted_scenario
+            and (
+                arguments.get("resume_from_interrupt")
+                or name == SEQUENCE_TOOL_NAME
+            )
+        )
         # Realtime models occasionally emit a valid scenario name directly as
         # the function name (for example ``meeting_projection``) instead of
         # calling ``run_robot_scenario`` with a scenario argument.  Sequence
@@ -1232,7 +1359,8 @@ class LocalSkillBridge:
         # apply the same rule to a top-level call so the protected compiler,
         # intent evidence checks and dependency gates still run.
         if (
-            self.scenario_catalog is not None
+            not trusted_resume
+            and self.scenario_catalog is not None
             and name != SCENARIO_TOOL_NAME
             and name in self.scenario_catalog.procedures
         ):
@@ -1244,8 +1372,9 @@ class LocalSkillBridge:
                 user_text=user_text,
                 turn_id=turn_id,
                 prior_assistant_text=prior_assistant_text,
+                trusted_resume=trusted_resume,
             )
-        if self.scenario_catalog is not None and self.scenario_executor is not None:
+        if not trusted_resume and self.scenario_catalog is not None and self.scenario_executor is not None:
             matched = self.scenario_catalog.match(user_text)
             if (
                 matched
@@ -1285,9 +1414,7 @@ class LocalSkillBridge:
                     )
             protected = self.scenario_catalog.protected_scenario(name, arguments)
             normalized_user = "".join(str(user_text or "").split()).strip("，。！？!?、")
-            affirmative = normalized_user.lower() in {
-                "好", "好的", "好啊", "可以", "行", "没问题", "开始吧", "那就开始吧", "就这样吧"
-            }
+            affirmative = normalized_user.lower() in _CONTEXT_AFFIRMATIONS | {"没问题", "就这样吧"}
             contextual = (
                 self.scenario_catalog.match(f"{prior_assistant_text} {user_text}")
                 if affirmative and str(prior_assistant_text or "").strip()
@@ -1302,6 +1429,11 @@ class LocalSkillBridge:
                     prior_context=prior_assistant_text,
                 )
                 if not semantic_ok:
+                    clarification, suggested = _scenario_clarification(
+                        requested,
+                        user_text,
+                        semantic_reason,
+                    )
                     return {
                         "ok": False,
                         "validation_ok": False,
@@ -1312,7 +1444,9 @@ class LocalSkillBridge:
                         "mode": "intent_rejected",
                         "error": "scenario_not_supported_by_user_intent",
                         "routing_reason": semantic_reason,
-                        "spoken_summary": "我还没完全听明白你想启动哪个场景，所以先没有动作。你直接说想做什么就行。",
+                        "clarification_required": True,
+                        "suggested_scenario": suggested,
+                        "spoken_summary": clarification,
                     }
             scenario = matched or contextual or requested or protected
             if scenario:
@@ -1417,6 +1551,7 @@ class LocalSkillBridge:
             user_text,
             turn_id=turn_id,
             prior_assistant_text=prior_assistant_text,
+            trusted_resume=trusted_resume,
         )
 
     def _emit_speech_event(self, event: dict[str, Any]) -> None:
@@ -1454,6 +1589,7 @@ class LocalSkillBridge:
         user_text: str,
         turn_id: str,
         prior_assistant_text: str,
+        trusted_resume: bool = False,
     ) -> dict[str, Any]:
         started = time.monotonic()
         self.current_turn_id = str(turn_id or self.current_turn_id or "")
@@ -1486,7 +1622,7 @@ class LocalSkillBridge:
                     "spoken_summary": "我没有收到完整的任务顺序，所以先没有执行。",
                 }
 
-        allowed = self._sequence_child_names()
+        allowed = set(self.specs) if trusted_resume else self._sequence_child_names()
         tasks: list[dict[str, Any]] = []
         for index, item in enumerate(raw_tasks):
             if not isinstance(item, dict):
@@ -1524,7 +1660,8 @@ class LocalSkillBridge:
                 }
             tasks.append({"name": child_name, "arguments": dict(child_arguments)})
 
-        tasks = _repair_sequence_tasks(tasks, user_text, self.scenario_catalog)
+        if not trusted_resume:
+            tasks = _repair_sequence_tasks(tasks, user_text, self.scenario_catalog)
         if not tasks:
             return {
                 "ok": False,
@@ -1552,7 +1689,9 @@ class LocalSkillBridge:
                 child_arguments = task["arguments"]
                 supported = True
                 reason = "explicit_or_unrestricted"
-                if child_name == SCENARIO_TOOL_NAME and self.scenario_catalog is not None:
+                if trusted_resume:
+                    supported, reason = True, "trusted_resume"
+                elif child_name == SCENARIO_TOOL_NAME and self.scenario_catalog is not None:
                     requested = str(child_arguments.get("scenario") or "")
                     supported, reason = self.scenario_catalog.model_scenario_supported(
                         requested,
@@ -1616,14 +1755,15 @@ class LocalSkillBridge:
                 "spoken_summary": "这句话里没有需要执行的正向设备动作，所以我没有操作。",
             }
 
-        self._emit_speech_event(
-            {
-                "skill_name": SEQUENCE_TOOL_NAME,
-                "kind": "acknowledgement",
-                "text": build_sequence_start_speech(tasks, turn_id),
-                "task_count": len(tasks),
-            }
-        )
+        if not trusted_resume:
+            self._emit_speech_event(
+                {
+                    "skill_name": SEQUENCE_TOOL_NAME,
+                    "kind": "acknowledgement",
+                    "text": build_sequence_start_speech(tasks, turn_id),
+                    "task_count": len(tasks),
+                }
+            )
         records: list[dict[str, Any]] = []
         stopped = False
         for index, task in enumerate(tasks):
@@ -1642,15 +1782,18 @@ class LocalSkillBridge:
                 continue
             if index:
                 prior_ok = bool(records[-1].get("succeeded"))
-                prefix = "上一项已经完成，" if prior_ok else "上一项没有完成，但按你的要求继续，"
-                self._emit_speech_event(
-                    {
-                        "skill_name": SEQUENCE_TOOL_NAME,
-                        "kind": "progress",
-                        "text": prefix + f"现在{task_future_phrase(task['name'], task['arguments'])}。",
-                        "task_index": index,
-                    }
-                )
+                # Successful internal transitions do not need narration; the
+                # user already heard one acknowledgement and will receive one
+                # aggregate result. Only a meaningful exception is announced.
+                if not prior_ok:
+                    self._emit_speech_event(
+                        {
+                            "skill_name": SEQUENCE_TOOL_NAME,
+                            "kind": "progress",
+                            "text": "上一项没完成，我按你的要求继续。",
+                            "task_index": index,
+                        }
+                    )
             if task["name"] == SCENARIO_TOOL_NAME:
                 result = self.invoke(
                     task["name"],
@@ -1670,6 +1813,8 @@ class LocalSkillBridge:
                 # only passed when it can actually contribute evidence.
                 if str(prior_assistant_text or "").strip():
                     atomic_kwargs["prior_assistant_text"] = prior_assistant_text
+                if trusted_resume:
+                    atomic_kwargs["trusted_resume"] = True
                 result = self._invoke_atomic(
                     task["name"],
                     task["arguments"],
@@ -1742,6 +1887,7 @@ class LocalSkillBridge:
         turn_id: str = "",
         prior_assistant_text: str = "",
         announce: bool = True,
+        trusted_resume: bool = False,
     ) -> dict[str, Any]:
         started = time.monotonic()
         spec = self.specs.get(name)
@@ -1753,12 +1899,15 @@ class LocalSkillBridge:
                 "error": f"unavailable_skill:{reason}",
                 "spoken_summary": "这个功能现在还没准备好，所以我没有贸然执行。",
             }
-        supported, support_reason = _atomic_intent_supported(
-            name,
-            arguments,
-            user_text,
-            prior_assistant_text=prior_assistant_text,
-        )
+        if trusted_resume:
+            supported, support_reason = True, "trusted_resume"
+        else:
+            supported, support_reason = _atomic_intent_supported(
+                name,
+                arguments,
+                user_text,
+                prior_assistant_text=prior_assistant_text,
+            )
         if not supported:
             rejection_speech = {
                 "navigation_destination_missing": (
@@ -1772,6 +1921,14 @@ class LocalSkillBridge:
                     "这个目的地不在已保存的导航点里，所以我没有移动。"
                     "目前可以去原点、客厅白墙或书房。"
                 ),
+                "navigation_list_not_requested": (
+                    "我听到你想导航，但目的地没听清。"
+                    "你要去原点、客厅白墙，还是书房？"
+                ) if _navigation_predicate(user_text) else "你是想查看已保存的导航点吗？",
+                "navigation_list_conflicts_with_destination": (
+                    "我听到你是要导航，不是查列表。"
+                    "请只说一次目的地：原点、客厅白墙或书房。"
+                ),
             }.get(
                 support_reason,
                 "这句话没有明确要求这项设备操作，所以我没有执行。",
@@ -1784,6 +1941,13 @@ class LocalSkillBridge:
                 "skill": name,
                 "mode": "intent_rejected",
                 "error": f"tool_not_supported_by_user_intent:{support_reason}",
+                "clarification_required": support_reason in {
+                    "navigation_destination_missing",
+                    "navigation_destination_conflict",
+                    "navigation_destination_unknown",
+                    "navigation_list_not_requested",
+                    "navigation_list_conflicts_with_destination",
+                },
                 "spoken_summary": rejection_speech,
             }
         schema = _normalized_schema(spec)

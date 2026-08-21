@@ -1,0 +1,3 @@
+{
+  "README": "Generate /home/test/Mijia/auth.json by logging in locally. Never commit the real login state."
+}

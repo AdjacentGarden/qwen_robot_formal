@@ -27,6 +27,7 @@ from typing import Any, Callable
 
 from shared_runtime_server import SharedRuntime, recv_request, send_response
 from resident_camera_ipc import SharedCameraError, open_capture
+from head_pose_supervisor import HeadPoseSupervisor
 
 
 ROOT = Path(__file__).resolve().parent
@@ -374,6 +375,63 @@ class ResidentSkills:
         self._face_module = None
         from autonomy_exploration import AutonomyEngine
         self.exploration = AutonomyEngine(self, ROOT / "config" / "exploration.json")
+        self.head_pose_supervisor = HeadPoseSupervisor(
+            sample_provider=self._head_feedback_sample,
+            resource_provider=self.resources.status,
+            projection_active_provider=self._persistent_projection_active,
+            correction=self._automatic_head_level,
+            state_path=STATE_DIR / "head_pose_supervisor.json",
+            level_angle=float(os.getenv("HEAD_LEVEL_ANGLE", "185")),
+            enter_error_deg=float(os.getenv("HEAD_AUTO_LEVEL_ENTER_ERROR_DEG", "7.0")),
+            exit_error_deg=float(os.getenv("HEAD_AUTO_LEVEL_EXIT_ERROR_DEG", "4.0")),
+            deviation_hold_sec=float(os.getenv("HEAD_AUTO_LEVEL_HOLD_SEC", "0.8")),
+            maximum_sample_age_sec=float(os.getenv("HEAD_AUTO_LEVEL_MAX_SAMPLE_AGE_SEC", "0.7")),
+            retry_cooldown_sec=float(os.getenv("HEAD_AUTO_LEVEL_RETRY_COOLDOWN_SEC", "3.0")),
+            maximum_attempts_per_excursion=int(os.getenv("HEAD_AUTO_LEVEL_MAX_ATTEMPTS", "3")),
+            startup_grace_sec=float(os.getenv("HEAD_AUTO_LEVEL_STARTUP_GRACE_SEC", "3.0")),
+        )
+        self.head_pose_supervisor.start()
+
+    def _head_feedback_sample(self) -> tuple[float, float] | None:
+        with self.runtime.head_feedback_condition:
+            return self.runtime.latest_head_roll
+
+    @staticmethod
+    def _persistent_projection_active() -> bool:
+        """Protect an active meeting session across resident restarts."""
+        path = ROOT / "runtime" / "projector" / "state.json"
+        try:
+            state = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            return False
+        return bool(state.get("session_active")) and str(state.get("mode")) != "off"
+
+    def _automatic_head_level(self) -> dict[str, Any]:
+        """Level the head while holding both motion arbitration resources.
+
+        Acquiring ``base`` does not publish any velocity; it only prevents a
+        navigation or direct-motion request from starting halfway through the
+        short recovery operation.
+        """
+        try:
+            with self.resources.acquire(["base", "head"], "head_auto_level", 0.05):
+                if self._persistent_projection_active():
+                    return {"ok": False, "error": "projection_became_active"}
+                return self._move_head_resident(
+                    "level",
+                    # This head can cross the target once and settle from the
+                    # opposite side.  Keep the correction bounded, but allow
+                    # enough time for that real mechanical response instead
+                    # of reporting a false failure at the first overshoot.
+                    feedback_timeout=float(os.getenv("HEAD_AUTO_LEVEL_FEEDBACK_TIMEOUT_SEC", "15.0")),
+                    update_supervisor=False,
+                )
+        except ResourceBusy as exc:
+            return {
+                "ok": False,
+                "error": f"resource_busy:{exc.resource}",
+                "owners": exc.owners,
+            }
 
     def _set_lidar_live(self, enable: bool, timeout: float = 2.0) -> dict[str, Any]:
         """Synchronously acknowledge the scan gate without stopping the lidar.
@@ -763,6 +821,7 @@ class ResidentSkills:
         feedback_max_roll_span: float = 1.5,
         feedback_max_rate: float = 4.0,
         feedback_max_age: float = 0.5,
+        update_supervisor: bool = True,
     ) -> dict[str, Any]:
         """Move the head through the resident ROS participant.
 
@@ -785,6 +844,19 @@ class ResidentSkills:
             angle = defaults[action]
         angle = int(angle)
 
+        supervisor = getattr(self, "head_pose_supervisor", None) if update_supervisor else None
+        if supervisor is not None:
+            supervisor.note_command_started(action, angle)
+
+        def finish(result: dict[str, Any]) -> dict[str, Any]:
+            if supervisor is not None:
+                supervisor.note_command_finished(
+                    ok=bool(result.get("ok")),
+                    action=action,
+                    angle=angle,
+                )
+            return result
+
         with self.head_control_lock:
             level_angle = defaults["level"]
             tilting = abs(angle - level_angle) > 4
@@ -792,7 +864,7 @@ class ResidentSkills:
                 "called": False, "ok": True, "message": "already_guarded_or_leveling"
             }
             if tilting and not guard_before.get("ok"):
-                return {
+                return finish({
                     "ok": False,
                     "skill": "head_control",
                     "action": action,
@@ -803,7 +875,7 @@ class ResidentSkills:
                     "service": guard_before,
                     "error": "lidar_guard_not_ready",
                     "transport": "resident_ros_participant",
-                }
+                })
             deadline = time.monotonic() + max(0.0, float(discovery_timeout))
             subscribers = int(self.head_pub.get_subscription_count())
             while subscribers <= 0 and time.monotonic() < deadline:
@@ -872,7 +944,7 @@ class ResidentSkills:
                 and bool(fresh_scan.get("ok"))
                 and bool(localization_recovery.get("ok"))
             )
-            return {
+            return finish({
                 "ok": delivered and at_target and guard_ok,
                 "skill": "head_control",
                 "action": action,
@@ -889,7 +961,7 @@ class ResidentSkills:
                     else "localization_recovery_failed"
                 ),
                 "transport": "resident_ros_participant",
-            }
+            })
 
     def _head(self, argv: list[str]) -> int:
         parser = argparse.ArgumentParser(description="Resident head control")
@@ -1513,10 +1585,12 @@ class ResidentSkills:
             "camera_broker": camera_broker,
             "active_resources": self.resources.status(),
             "resource_wait_sec": self.resource_wait_sec,
+            "head_pose_supervisor": self.head_pose_supervisor.status(),
         }
 
     def close(self):
         self.exploration_stop.set()
+        self.head_pose_supervisor.close()
         self.camera.close_all()
         self.runtime.close()
         if sys.stdout is self.stdout_router:

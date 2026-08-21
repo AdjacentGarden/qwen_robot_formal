@@ -9,6 +9,7 @@ import inspect
 import json
 import os
 import queue
+import re
 import signal
 import stat
 import sys
@@ -28,6 +29,11 @@ from local_skills import (
 from memory_store import MemoryStore
 from skill_runner import running_controller_conflicts
 from skill_event_audio import QwenSkillEventSpeaker
+from runtime_supervisor import (
+    InterruptibleTaskCoordinator,
+    TaskAction,
+    TaskSnapshot,
+)
 from realtime_core import (
     INPUT_RATE,
     MODEL,
@@ -88,6 +94,7 @@ DEFAULT_ASSISTANT_INSTRUCTIONS = """你是家庭陪伴机器人“理想同学�
 语义理解与任务规划：
 A. 先理解整句话中“谁要做什么、对象是什么、先后关系是什么”，再选择工具。工具说明、示例话术和场景名称只用于说明能力，不是关键词触发器；绝不能看到“客厅”就联想到灯光，看到“会议”就自行增加导航或投影，看到“公司”就查询机器人位置。
 B. 语音转写的逗号、停顿、同音字和漏字可能不准，应结合常见搭配与上下文恢复最合理的原意。例如“关闭会议，投影导航到客厅去”应优先理解为“关闭会议投影，然后导航到客厅”，而不是增加开灯流程。若仍有两种会导致不同硬件动作的合理解释，只追问一个关键点。
+B1. 只有高置信的常见转写偏差才能自动归一，必须同时有动作谓语和对象上下文佐证；不得因发音略像就擅自操作硬件。当大致意图已知但目的地、对象或动作仍不唯一时，不调用工具，而是用一句具体问句确认，例如“你是想让我陪你做俯卧撑吗？”或“你要去原点、客厅白墙，还是书房？”。用户回答“是的/对/不是”时必须承接这句问话，不要要求重说整句指令。
 C. 对含多个动作的一句话遵守“动作守恒”：用户明确说出的每个动作都要保留且只执行一次，顺序不变；没有说出的设备动作一个也不能添加。调用前在心里逐项核对“原话依据—工具—参数”，但不要把核对过程说出来。
 D. 区分聊天、能力咨询和立即执行。询问公司、概念、原因、能力或做法时正常回答，不因句中出现某个地点或功能名就操作设备；只有整句语义是在要求当前机器人执行或查询实时设备状态时才调用工具。用户说法自然、口语化或省略礼貌词时按意思理解，不要求复述固定句式。
 E. 否定短语是约束，不是待执行动作。“我不想开灯，导航去客厅”只导航，不能生成关灯；“去书房，不要投影”只导航，不能启动或关闭投影。只有“把灯关掉、结束投影”这类明确正向命令才执行关闭动作。泛泛的“客厅有什么”也不等于要求打开摄像头；只有用户明确说“看看、观察、识别、用摄像头检查”时才做视觉感知。
@@ -112,6 +119,8 @@ E. 否定短语是约束，不是待执行动作。“我不想开灯，导航�
 18. 音乐和娱乐视频统一调用 media_player。用户只说“想听歌、放点音乐、听歌放松”时用 play_music 且不强迫用户先选歌；用户只说“想看好看的/娱乐视频”时用 play_video。选歌、换歌、暂停、继续、结束、查询列表或状态均调用对应 action。播放器本身不等于投影场景，不得顺带移动底盘或头部。
 19. 表达可以有稳定的个性，但不能像抽签一样突兀，也不能机械套模板。输出前先对照上一条自己的回复：如果整句或主要句式相同，必须在不改变事实的前提下换一个自然说法；相邻两轮不要复用完全相同的开头、结尾或整句。根据任务类型、目的地、执行结果和刚才的对话换说法。变化只发生在措辞层，不能改变工具结果、条件、数量、地点或失败原因。
 20. 工具和场景参数遵循“显式优先、默认兜底”：用户明确说出的地点、时长、数量、对象、摄像头、原地执行、抬头、低头、暂停或继续等参数必须原样保留；用户没有提到的可选参数应省略，让本地 Skill 使用经过测试的默认值，禁止模型自行猜测。场景不是固定口令：语义明确即可触发完整场景；会议投影默认前往书房，明确说原地/当前位置/不要导航时设置 stay_put=true，明确指定其他已保存点时填写 point。不得因为开放了参数就绕过场景的依赖、安全检查或失败播报。
+21. 回复长度按信息价值分级，不按动作数量机械展开：问候和简单成功确认通常只说一句短话；复合任务成功只概括用户关心的最终结果，不逐项讲导航、头部、投影、清理等内部步骤；只有失败、部分完成、存在风险、需要用户配合或用户明确追问时，才用一到两句说清原因和下一步。能用十几个字说清楚就不要扩成三四句，不要习惯性追加“还有什么需要吗”。“欢迎回家”场景只说一次“欢迎回家”，随后安静播放画面；成功后不再补充说明。
+22. 长任务执行期间，用户明确提出新的设备任务时，以新指令为准；本地任务协调器会暂停旧任务、保存可恢复进度并处理新任务。不得把旧任务的中断结果说成正常完成，也不得在新任务期间补播旧结果。协调器询问“是否继续”后，“好的、继续、接着做、不用了、算了”等短答要结合刚才暂停的任务理解，不要求用户重说完整命令；只有用户确认继续时才恢复保存的任务和进度。
 """
 
 
@@ -163,13 +172,14 @@ def build_tool_reply_instruction(tool_name: str, result: dict[str, Any]) -> str:
         )
 
     return (
-        "现在只生成本次工具结果后的最终用户回复，控制在一到两句。"
+        "现在只生成本次工具结果后的最终用户回复。简单成功只说一句短话；"
+        "复合成功概括最终结果；只有失败、部分完成或需要用户配合时才允许一到两句。"
         f"工具标识为 {skill}；权威播报要点为 {summary_json}；错误标识为 "
         f"{json.dumps(error, ensure_ascii=False)}。"
         "spoken_summary 是事实约束，不是必须逐字照念的台词：保留其中所有关键事实，"
         "可以自然改写语序和语气，但禁止增加未经结果证实的状态。"
         f"{state_rule}{special_rule}本轮表达风格提示为‘{speech_style}’，只用于措辞变化，不得改变事实。"
-        "不要暴露工具名、错误代码或内部步骤；不要重复已经说过的事实；"
+        "不要逐项播报导航、头部、投影或清理等内部步骤；不要暴露工具名、错误代码；不要重复已经说过的事实；"
         "不要以‘还有什么需要吗’作模板结尾。"
     )
 
@@ -295,6 +305,13 @@ class AudioEngine:
         if output_device_index is not None:
             output_args["output_device_index"] = output_device_index
         self.input_frames = max(160, int(INPUT_RATE * chunk_ms / 1000))
+        self.chunk_ms = int(chunk_ms)
+        self.microphone_reads = 0
+        self.microphone_bytes_read = 0
+        self.last_microphone_read_at = 0.0
+        self.microphone_signal_seen = False
+        self.consecutive_zero_reads = 0
+        self.zero_read_limit = max(10, int(3000 / max(1, self.chunk_ms)))
         self.output_slice_bytes = int(OUTPUT_RATE * SAMPLE_WIDTH * 0.02)
         self.input_stream = self.interface.open(
             format=pyaudio.paInt16,
@@ -321,7 +338,45 @@ class AudioEngine:
         self.worker.start()
 
     def read_microphone(self) -> bytes:
-        return self.input_stream.read(self.input_frames, exception_on_overflow=False)
+        pcm = self.input_stream.read(self.input_frames, exception_on_overflow=False)
+        self.microphone_reads += 1
+        self.microphone_bytes_read += len(pcm)
+        self.last_microphone_read_at = time.monotonic()
+        if any(pcm):
+            self.microphone_signal_seen = True
+            self.consecutive_zero_reads = 0
+        else:
+            self.consecutive_zero_reads += 1
+        return pcm
+
+    def microphone_health(self) -> dict[str, Any]:
+        try:
+            stream_active = bool(self.input_stream.is_active())
+        except Exception:
+            stream_active = False
+        age = (
+            max(0.0, time.monotonic() - self.last_microphone_read_at)
+            if self.last_microphone_read_at
+            else None
+        )
+        recent_read = age is not None and age <= max(1.0, self.chunk_ms / 1000.0 * 5.0)
+        digital_silence = self.consecutive_zero_reads >= self.zero_read_limit
+        healthy = bool(
+            stream_active
+            and recent_read
+            and self.microphone_signal_seen
+            and not digital_silence
+        )
+        return {
+            "healthy": healthy,
+            "stream_active": stream_active,
+            "signal_detected": self.microphone_signal_seen,
+            "digital_silence": digital_silence,
+            "consecutive_zero_reads": self.consecutive_zero_reads,
+            "reads": self.microphone_reads,
+            "bytes_read": self.microphone_bytes_read,
+            "last_read_age_ms": round(age * 1000.0, 1) if age is not None else None,
+        }
 
     def enqueue(self, pcm: bytes) -> None:
         if self.closed.is_set():
@@ -338,9 +393,11 @@ class AudioEngine:
                 self.output_queue.get_nowait()
             except queue.Empty:
                 break
-        with contextlib.suppress(Exception):
-            self.output_stream.stop_stream()
-            self.output_stream.start_stream()
+        # The playback worker is the sole owner of output-stream I/O. Calling
+        # stop_stream()/start_stream() here can race its write() and abort the
+        # whole process inside PortAudio/PulseAudio when a new App utterance
+        # interrupts status speech. Generation invalidation stops playback at
+        # the next 20 ms slice, which is both fast enough and thread-safe.
         self.playing.clear()
         self.last_playback_at = time.monotonic()
 
@@ -378,10 +435,27 @@ class AudioEngine:
         if self.closed.is_set():
             return
         self.closed.set()
-        self.interrupt()
+        # Do not call interrupt() here.  It stops *and immediately restarts*
+        # the PulseAudio output stream, which races with a blocked worker
+        # write during a realtime-session reconnect.  That race used to leave
+        # PulseAudio in "Bad state" and could abort the whole resident
+        # process after Qwen's 180-second idle timeout.
+        self.generation += 1
+        while True:
+            try:
+                self.output_queue.get_nowait()
+            except queue.Empty:
+                break
         with contextlib.suppress(queue.Full):
             self.output_queue.put_nowait(None)
-        self.worker.join(timeout=2.0)
+        # Abort first so an in-flight PortAudio read/write is released before
+        # the worker and interface are torn down.
+        for stream in (self.input_stream, self.output_stream):
+            abort_stream = getattr(stream, "abort_stream", None)
+            if callable(abort_stream):
+                with contextlib.suppress(Exception):
+                    abort_stream()
+        self.worker.join(timeout=5.0)
         for stream in (self.input_stream, self.output_stream):
             with contextlib.suppress(Exception):
                 stream.stop_stream()
@@ -454,6 +528,17 @@ class RealtimeConversation:
         # still pending.
         self.awaiting_input_transcript = False
         self.deferred_function_calls: list[dict[str, Any]] = []
+        # ``user_turn_id`` advances only after a transcript arrives, so it
+        # cannot distinguish two consecutive utterances when the first ASR
+        # result is lost.  Keep an independent VAD utterance id and bind every
+        # deferred call to it.  This prevents an old call from being released
+        # against the next sentence.
+        self.input_utterance_id = 0
+        self.active_input_utterance_id = 0
+        self.last_committed_utterance_id = 0
+        self.committed_input_utterances: dict[int, int] = {}
+        self.input_transcription_failed = False
+        self.transcript_timeout_task: asyncio.Task[Any] | None = None
         # Function calls and final ASR transcripts are separate Realtime
         # events and can arrive in either order.  Keep a small per-turn ledger
         # so a background task never validates an action against the previous
@@ -461,7 +546,18 @@ class RealtimeConversation:
         self.committed_user_turns: dict[int, dict[str, Any]] = {}
         self.function_call_tasks: set[asyncio.Task[Any]] = set()
         self.function_call_turns: dict[asyncio.Task[Any], int] = {}
+        self.function_call_values: dict[asyncio.Task[Any], dict[str, Any]] = {}
+        self.function_call_started_at: dict[asyncio.Task[Any], float] = {}
         self.skill_dispatch_lock = asyncio.Lock()
+        self.task_coordinator = InterruptibleTaskCoordinator()
+        self.coordinator_owner_call_id = ""
+        self.preempted_call_ids: set[str] = set()
+        self.preempted_turn_ids: set[int] = set()
+        self.interruption_driver_call_id = ""
+        self.resume_call_ids: set[str] = set()
+        self.interruption_session_kind = ""
+        self._long_task_progress_lock = threading.Lock()
+        self._long_task_progress: dict[str, Any] = {}
         self.speech_turn_assistant_context = ""
         # A rejected/hallucinated call must not be retried indefinitely in the
         # same user turn.  Cache by normalized function name + arguments.
@@ -543,14 +639,413 @@ class RealtimeConversation:
             count=payload.get("count"),
             turn_id=payload.get("turn_id"),
         )
-        if self.skill_event_speaker is not None:
+        try:
+            event_turn_id = int(payload.get("turn_id"))
+        except (TypeError, ValueError):
+            event_turn_id = -1
+        event_is_preempted = event_turn_id in self.preempted_turn_ids
+        skill_name = str(payload.get("skill_name") or "")
+        if skill_name in {"push_up", "pull_up", "squat", "person_tracking", "pet_tracking"}:
+            with self._long_task_progress_lock:
+                if self._long_task_progress.get("skill_name") != skill_name:
+                    self._long_task_progress = {
+                        "skill_name": skill_name,
+                        "started_monotonic": time.monotonic(),
+                        "count": 0,
+                        "elapsed_seconds": 0.0,
+                    }
+                if payload.get("count") is not None:
+                    with contextlib.suppress(TypeError, ValueError):
+                        self._long_task_progress["count"] = max(
+                            int(self._long_task_progress.get("count") or 0),
+                            int(payload.get("count") or 0),
+                        )
+                if payload.get("elapsed_seconds") is not None:
+                    with contextlib.suppress(TypeError, ValueError):
+                        self._long_task_progress["elapsed_seconds"] = max(
+                            float(self._long_task_progress.get("elapsed_seconds") or 0.0),
+                            float(payload.get("elapsed_seconds") or 0.0),
+                        )
+                self._long_task_progress["updated_monotonic"] = time.monotonic()
+        if self.skill_event_speaker is not None and not event_is_preempted:
             self.skill_event_speaker.submit_from_thread(payload)
+        elif event_is_preempted:
+            self.logger.write(
+                "preempted_skill_event_suppressed",
+                skill=payload.get("skill_name"),
+                kind=payload.get("kind"),
+                turn_id=event_turn_id,
+            )
+
+    @staticmethod
+    def _call_arguments(value: dict[str, Any]) -> dict[str, Any]:
+        raw = value.get("arguments") or "{}"
+        if isinstance(raw, dict):
+            return dict(raw)
+        try:
+            parsed = json.loads(str(raw))
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return {}
+        return dict(parsed) if isinstance(parsed, dict) else {}
+
+    @staticmethod
+    def _resolve_procedure_value(value: Any, parameters: dict[str, Any]) -> Any:
+        if isinstance(value, dict) and "$arg" in value:
+            key = str(value.get("$arg") or "")
+            return parameters.get(key, value.get("default"))
+        if isinstance(value, dict):
+            return {
+                key: RealtimeConversation._resolve_procedure_value(item, parameters)
+                for key, item in value.items()
+            }
+        if isinstance(value, list):
+            return [
+                RealtimeConversation._resolve_procedure_value(item, parameters)
+                for item in value
+            ]
+        return value
+
+    def _progress_checkpoint(
+        self,
+        task_name: str,
+        *,
+        started_at: float | None = None,
+    ) -> tuple[int, float]:
+        count = 0
+        fitness_tasks = {"push_up", "pull_up", "squat"}
+        elapsed = (
+            0.0
+            if task_name in fitness_tasks
+            else max(0.0, time.monotonic() - started_at) if started_at else 0.0
+        )
+        with self._long_task_progress_lock:
+            progress = dict(self._long_task_progress)
+        if progress.get("skill_name") == task_name:
+            with contextlib.suppress(TypeError, ValueError):
+                count = max(0, int(progress.get("count") or 0))
+            with contextlib.suppress(TypeError, ValueError):
+                elapsed = max(elapsed, float(progress.get("elapsed_seconds") or 0.0))
+            progress_started = progress.get("started_monotonic")
+            if progress_started is not None and task_name not in fitness_tasks:
+                with contextlib.suppress(TypeError, ValueError):
+                    elapsed = max(elapsed, time.monotonic() - float(progress_started))
+        return count, elapsed
+
+    def _snapshot_from_call(
+        self,
+        value: dict[str, Any],
+        *,
+        started_at: float | None = None,
+    ) -> TaskSnapshot | None:
+        """Translate an executing call into the smallest safely resumable task."""
+
+        resumable = {
+            "push_up", "pull_up", "squat", "person_tracking", "pet_tracking",
+            "navigation_goto",
+        }
+        name = str(value.get("name") or "")
+        arguments = self._call_arguments(value)
+        if name in resumable:
+            action = str(arguments.get("action") or "run").lower()
+            if action in {"stop", "off", "cancel", "query", "status", "check"}:
+                return None
+            count, elapsed = self._progress_checkpoint(name, started_at=started_at)
+            return TaskSnapshot(
+                task_name=name,
+                arguments=arguments,
+                count=count,
+                elapsed_seconds=elapsed,
+                context={"source_call": name},
+            )
+        if name == SEQUENCE_TOOL_NAME:
+            candidates = arguments.get("tasks")
+            if isinstance(candidates, list):
+                for item in candidates:
+                    if not isinstance(item, dict):
+                        continue
+                    nested = {
+                        "name": item.get("name"),
+                        "arguments": item.get("arguments") or {},
+                    }
+                    snapshot = self._snapshot_from_call(nested, started_at=started_at)
+                    if snapshot is not None:
+                        return snapshot
+            return None
+        if name != "run_robot_scenario" or self.skill_bridge is None:
+            return None
+        catalog = getattr(self.skill_bridge, "scenario_catalog", None)
+        procedures = getattr(catalog, "procedures", None)
+        if not isinstance(procedures, dict):
+            return None
+        scenario = str(arguments.get("scenario") or "")
+        procedure = procedures.get(scenario)
+        if not isinstance(procedure, dict):
+            return None
+        parameters: dict[str, Any] = {}
+        for key, spec in dict(procedure.get("parameters") or {}).items():
+            if isinstance(spec, dict) and "default" in spec:
+                parameters[str(key)] = spec.get("default")
+        parameters.update({key: val for key, val in arguments.items() if key != "scenario"})
+        location: str | None = None
+        resume_prefix: list[TaskAction] = []
+        for step in list(procedure.get("steps") or []):
+            if not isinstance(step, dict):
+                continue
+            step_skill = str(step.get("skill") or "")
+            step_arguments = self._resolve_procedure_value(
+                dict(step.get("arguments") or {}),
+                parameters,
+            )
+            if step_skill == "navigation_goto":
+                point = str(step_arguments.get("point") or "").strip()
+                if point:
+                    location = point
+                continue
+            if step_skill == "head_control":
+                action = str(step.get("action") or step_arguments.get("direction") or "").lower()
+                if action == "up":
+                    resume_prefix = [
+                        TaskAction("restore_context", "head_control", {"direction": "up"})
+                    ]
+                continue
+            if step_skill not in resumable:
+                continue
+            step_arguments.setdefault("action", str(step.get("action") or "run"))
+            count, elapsed = self._progress_checkpoint(step_skill, started_at=started_at)
+            return TaskSnapshot(
+                task_name=step_skill,
+                arguments=step_arguments,
+                location=location,
+                count=count,
+                elapsed_seconds=elapsed,
+                resume_prefix=tuple(resume_prefix),
+                context={"source_call": name, "scenario": scenario},
+            )
+        return None
+
+    @staticmethod
+    def _explicitly_stops_active_task(value: dict[str, Any]) -> bool:
+        name = str(value.get("name") or "")
+        arguments = RealtimeConversation._call_arguments(value)
+        action = str(arguments.get("action") or "").lower()
+        return name in {
+            "push_up", "pull_up", "squat", "person_tracking", "pet_tracking",
+            "navigation_goto",
+        } and action in {"stop", "cancel", "off"}
+
+    @staticmethod
+    def _session_transition(value: dict[str, Any]) -> tuple[str, str]:
+        """Return (start|end|none, session-kind) for persistent inserted tasks."""
+
+        name = str(value.get("name") or "")
+        arguments = RealtimeConversation._call_arguments(value)
+        if name == SEQUENCE_TOOL_NAME:
+            transition = ("none", "")
+            for item in arguments.get("tasks") or []:
+                if isinstance(item, dict):
+                    child = {
+                        "name": item.get("name"),
+                        "arguments": item.get("arguments") or {},
+                    }
+                    child_transition = RealtimeConversation._session_transition(child)
+                    if child_transition[0] != "none":
+                        transition = child_transition
+            return transition
+        if name == "run_robot_scenario":
+            scenario = str(arguments.get("scenario") or "")
+            if scenario == "meeting_projection":
+                return "start", "projector"
+            if scenario == "meeting_projection_stop":
+                return "end", "projector"
+        if name == "projector_control":
+            action = str(arguments.get("action") or "").lower()
+            if action in {"off", "close", "disable", "stop"}:
+                return "end", "projector"
+            if action in {
+                "meeting_presentation_on", "external_video_on", "on", "open", "enable",
+            }:
+                return "start", "projector"
+        if name == "media_player":
+            action = str(arguments.get("action") or "").lower()
+            if action in {"stop", "end", "close"}:
+                return "end", "media"
+            if action in {"play_music", "play_video", "play", "resume"}:
+                return "start", "media"
+        return "none", ""
+
+    @staticmethod
+    def _extract_progress_from_result(result: dict[str, Any]) -> tuple[int | None, float | None]:
+        count: int | None = None
+        elapsed: float | None = None
+
+        def visit(value: Any) -> None:
+            nonlocal count, elapsed
+            if isinstance(value, dict):
+                for key in ("current_count", "count"):
+                    if value.get(key) is not None:
+                        with contextlib.suppress(TypeError, ValueError):
+                            count = max(count or 0, int(value.get(key)))
+                if value.get("elapsed_seconds") is not None:
+                    with contextlib.suppress(TypeError, ValueError):
+                        elapsed = max(elapsed or 0.0, float(value.get("elapsed_seconds")))
+                for item in value.values():
+                    visit(item)
+            elif isinstance(value, list):
+                for item in value:
+                    visit(item)
+
+        visit(result.get("structured_result"))
+        return count, elapsed
+
+    def _speak_internal(self, kind: str, text: str, *, event_id: str) -> None:
+        value = str(text or "").strip()
+        if not value:
+            return
+        if self.skill_event_speaker is not None:
+            self.skill_event_speaker.submit_from_thread(
+                {
+                    "event_id": event_id,
+                    "turn_id": self.user_turn_id,
+                    "skill_name": "task_coordinator",
+                    "kind": kind,
+                    "text": value,
+                }
+            )
+        self._remember_local_assistant_speech(value)
+        self.logger.write("task_coordinator_speech", kind=kind, text=value)
+
+    @staticmethod
+    def _classify_resume_reply(text: str, task_name: str) -> bool | None:
+        normalized = re.sub(r"[\s，。！？、,.!?]", "", str(text or "").lower())
+        if not normalized:
+            return None
+        negative = (
+            "不用继续", "不继续", "别继续", "不要继续", "不用了", "算了", "先不做了",
+            "不做了", "停了吧", "结束吧", "取消吧", "不需要", "不用恢复", "别恢复",
+        )
+        if any(item in normalized for item in negative) or normalized in {"不用", "不要", "不了", "否", "不是"}:
+            return False
+        task_terms = {
+            "push_up": ("运动", "俯卧撑"),
+            "pull_up": ("运动", "引体向上"),
+            "squat": ("运动", "深蹲"),
+            "navigation_goto": ("导航", "刚才的路程"),
+            "person_tracking": ("跟踪", "找人"),
+            "pet_tracking": ("找狗", "找豆豆", "宠物"),
+        }.get(task_name, ("刚才的任务",))
+        if any(term in normalized for term in task_terms) and any(
+            verb in normalized for verb in ("继续", "接着", "恢复", "再来")
+        ):
+            return True
+        if normalized in {
+            "好", "好的", "好啊", "行", "可以", "要", "继续", "继续吧", "接着来",
+            "接着做", "恢复吧", "再来", "是", "是的", "对", "对的", "嗯", "嗯嗯",
+        }:
+            return True
+        if any(item in normalized for item in ("继续刚才", "接着刚才", "恢复刚才")):
+            return True
+        return None
+
+    async def _apply_resume_decision(self, accepted: bool) -> None:
+        snapshot = self.task_coordinator.suspended
+        if snapshot is None:
+            self.task_coordinator.discard()
+            return
+        actions = self.task_coordinator.resume_decision(accepted)
+        if not accepted:
+            if actions:
+                self._speak_internal(
+                    "attention",
+                    actions[-1].fallback_text,
+                    event_id=f"resume-declined-{self.user_turn_id}",
+                )
+            return
+        executable = [
+            action for action in actions
+            if action.kind in {"navigate_back", "restore_context", "resume_task"}
+        ]
+        if not executable:
+            self.task_coordinator.discard()
+            return
+        resume_speech = executable[-1].fallback_text or "好，我继续刚才的任务。"
+        self._speak_internal(
+            "acknowledgement",
+            resume_speech,
+            event_id=f"resume-accepted-{self.user_turn_id}",
+        )
+        tasks = [
+            {"name": action.name, "arguments": dict(action.arguments)}
+            for action in executable
+        ]
+        if len(tasks) == 1:
+            call_name = tasks[0]["name"]
+            call_arguments = tasks[0]["arguments"]
+        else:
+            call_name = SEQUENCE_TOOL_NAME
+            call_arguments = {"tasks": tasks, "failure_policy": "stop"}
+        call_id = f"resume_{self.user_turn_id}_{uuid.uuid4().hex[:10]}"
+        self.resume_call_ids.add(call_id)
+        self.coordinator_owner_call_id = call_id
+        self.schedule_function_call(
+            {
+                "call_id": call_id,
+                "name": call_name,
+                "arguments": json.dumps(call_arguments, ensure_ascii=False),
+                "_synthetic_local": True,
+                "_coordinator_resume": True,
+            },
+            turn_id=self.user_turn_id,
+            user_text="继续刚才暂停的任务",
+            assistant_context=self.last_assistant_text,
+            received_at=time.time(),
+        )
 
     async def send(self, payload: dict[str, Any]) -> None:
         async with self.send_lock:
             if self.websocket is None:
                 raise ConnectionError("websocket_not_connected")
             await self.websocket.send(json.dumps(payload, ensure_ascii=False))
+
+    def microphone_health_payload(self) -> dict[str, Any]:
+        if self.audio is None:
+            return {
+                "healthy": False,
+                "stream_active": False,
+                "signal_detected": False,
+                "digital_silence": False,
+                "consecutive_zero_reads": 0,
+                "reads": 0,
+                "bytes_read": 0,
+                "last_read_age_ms": None,
+            }
+        health_reader = getattr(self.audio, "microphone_health", None)
+        if callable(health_reader):
+            return dict(health_reader())
+        # Compatibility for injected audio adapters used by tests and older
+        # integrations. Production AudioEngine always exposes detailed health.
+        return {
+            "healthy": True,
+            "stream_active": True,
+            "signal_detected": True,
+            "digital_silence": False,
+            "consecutive_zero_reads": 0,
+            "reads": 0,
+            "bytes_read": 0,
+            "last_read_age_ms": None,
+        }
+
+    def microphone_status_payload(self) -> dict[str, Any]:
+        audio_health = self.microphone_health_payload()
+        return {
+            "enabled": self.local_microphone_enabled,
+            "accepting_local_voice": bool(
+                self.connected
+                and self.local_microphone_enabled
+                and audio_health["healthy"]
+            ),
+            "app_voice_enabled": True,
+            **audio_health,
+        }
 
     def status_payload(self) -> dict[str, Any]:
         return {
@@ -560,13 +1055,7 @@ class RealtimeConversation:
             "model": MODEL,
             "session_id": self.runtime_session_id,
             "execute_skills": bool(getattr(self.args, "execute_skills", False)),
-            "microphone": {
-                "enabled": self.local_microphone_enabled,
-                "accepting_local_voice": bool(
-                    self.connected and self.local_microphone_enabled
-                ),
-                "app_voice_enabled": True,
-            },
+            "microphone": self.microphone_status_payload(),
             **self.task_state,
         }
 
@@ -634,11 +1123,7 @@ class RealtimeConversation:
                     "ok": True,
                     "status": "enabled" if enabled else "disabled",
                     "changed": changed,
-                    "microphone": {
-                        "enabled": enabled,
-                        "accepting_local_voice": bool(self.connected and enabled),
-                        "app_voice_enabled": True,
-                    },
+                    "microphone": self.microphone_status_payload(),
                 }
             elif operation == "cancel_all":
                 if self.skill_bridge is not None:
@@ -653,7 +1138,12 @@ class RealtimeConversation:
                 if not self.connected:
                     raise RuntimeError("qwen_realtime_not_connected")
                 pcm_path = Path(str(request.get("pcm_path") or "")).resolve()
-                if self.app_voice_root not in pcm_path.parents:
+                # Resolve both sides.  On macOS /var is a symlink to
+                # /private/var; comparing one resolved path with one raw path
+                # incorrectly rejected legitimate app audio during tests and
+                # can do the same with symlinked runtime directories.
+                app_voice_root = self.app_voice_root.resolve()
+                if app_voice_root not in pcm_path.parents:
                     raise ValueError("app_voice_path_outside_runtime")
                 pcm = await asyncio.to_thread(pcm_path.read_bytes)
                 if not pcm or len(pcm) > 4 * 1024 * 1024 or len(pcm) % SAMPLE_WIDTH:
@@ -884,6 +1374,40 @@ class RealtimeConversation:
         return len(history)
 
     def mark_input_speech_started(self) -> None:
+        previous_utterance = self.active_input_utterance_id
+        if self.transcript_timeout_task is not None:
+            self.transcript_timeout_task.cancel()
+            self.transcript_timeout_task = None
+        self.input_utterance_id += 1
+        self.active_input_utterance_id = self.input_utterance_id
+        self.input_transcription_failed = False
+        if previous_utterance:
+            stale = [
+                item for item in self.deferred_function_calls
+                if int(item.get("utterance_id") or 0) == previous_utterance
+            ]
+            if stale:
+                self.deferred_function_calls = [
+                    item for item in self.deferred_function_calls
+                    if int(item.get("utterance_id") or 0) != previous_utterance
+                ]
+                self.logger.write(
+                    "stale_deferred_calls_discarded",
+                    utterance_id=previous_utterance,
+                    count=len(stale),
+                    reason="new_utterance_started",
+                )
+                # Do not leave unresolved function calls in Qwen's
+                # conversation when the next utterance starts before the
+                # transcript grace timer expires.  Execution is still
+                # prohibited; this only closes the stale protocol item.
+                for item in stale:
+                    asyncio.create_task(
+                        self._send_discarded_function_output(
+                            item,
+                            reason="superseded_by_new_utterance",
+                        )
+                    )
         self.awaiting_input_transcript = True
         self.speech_turn_assistant_context = self.last_assistant_text
         # Hold the primary model response until the final ASR transcript tells
@@ -896,7 +1420,117 @@ class RealtimeConversation:
         self.turn_had_function_call = False
         if self.skill_event_speaker is not None and hasattr(self.skill_event_speaker, "cancel_pending"):
             self.skill_event_speaker.cancel_pending()
-        self.logger.write("input_speech_started")
+        self.logger.write(
+            "input_speech_started",
+            utterance_id=self.active_input_utterance_id,
+        )
+
+    def _remember_local_assistant_speech(self, text: str) -> None:
+        """Make authoritative local speech available to the next turn.
+
+        The dedicated speaker bypasses Qwen's output transcript, so without
+        this small ledger an answer such as “是的” cannot refer to a local
+        clarification question.
+        """
+
+        value = str(text or "").strip()
+        if not value:
+            return
+        self.last_assistant_text = value
+        self.memory_store.append_conversation("assistant", value, self.runtime_session_id)
+        self.logger.write("local_assistant_context", text=value)
+
+    async def _send_discarded_function_output(
+        self,
+        deferred: dict[str, Any],
+        *,
+        reason: str,
+    ) -> None:
+        value = dict(deferred.get("value") or {})
+        call_id = str(value.get("call_id") or "")
+        if not call_id or self.websocket is None:
+            return
+        with contextlib.suppress(Exception):
+            await self.send(
+                {
+                    "type": "conversation.item.create",
+                    "item": {
+                        "type": "function_call_output",
+                        "call_id": call_id,
+                        "output": json.dumps(
+                            {
+                                "status": "NOT_EXECUTED",
+                                "success": False,
+                                "reason": reason,
+                                "message_to_user": "语音没有转写完整，未执行任何动作。",
+                            },
+                            ensure_ascii=False,
+                        ),
+                    },
+                }
+            )
+
+    def schedule_transcript_timeout(self) -> None:
+        if not self.awaiting_input_transcript:
+            return
+        if self.transcript_timeout_task is not None:
+            self.transcript_timeout_task.cancel()
+        utterance_id = self.active_input_utterance_id
+        delay = 0.35 if self.input_transcription_failed else float(
+            getattr(self.args, "transcript_grace_seconds", 1.5)
+        )
+
+        async def expire() -> None:
+            try:
+                await asyncio.sleep(max(0.2, delay))
+            except asyncio.CancelledError:
+                return
+            if (
+                not self.awaiting_input_transcript
+                or utterance_id != self.active_input_utterance_id
+            ):
+                return
+            stale = [
+                item for item in self.deferred_function_calls
+                if int(item.get("utterance_id") or 0) == utterance_id
+            ]
+            self.deferred_function_calls = [
+                item for item in self.deferred_function_calls
+                if int(item.get("utterance_id") or 0) != utterance_id
+            ]
+            for item in stale:
+                await self._send_discarded_function_output(
+                    item,
+                    reason="input_transcript_missing",
+                )
+            self.awaiting_input_transcript = False
+            self.turn_had_function_call = False
+            self.turn_recovery_plan = None
+            self.model_audio_quarantine = False
+            self._discard_quarantined_model_output("input_transcript_missing")
+            prompt = "我没听清刚才那句话，请再说一遍。"
+            if self.skill_event_speaker is not None:
+                self.skill_event_speaker.submit_from_thread(
+                    {
+                        "event_id": f"asr-missing-{utterance_id}",
+                        "turn_id": self.user_turn_id,
+                        "skill_name": "conversation",
+                        "kind": "attention",
+                        "text": prompt,
+                    }
+                )
+            self._remember_local_assistant_speech(prompt)
+            self.logger.write(
+                "input_transcript_timeout",
+                utterance_id=utterance_id,
+                discarded_calls=len(stale),
+                transcription_failed=self.input_transcription_failed,
+            )
+
+        self.transcript_timeout_task = asyncio.create_task(
+            expire(),
+            name=f"input-transcript-timeout:{utterance_id}",
+        )
 
     def _commit_assistant_transcript(self, text: str) -> None:
         value = str(text).strip()
@@ -941,15 +1575,24 @@ class RealtimeConversation:
         value: dict[str, Any],
         *,
         turn_id: int | None = None,
+        utterance_id: int | None = None,
         user_text: str | None = None,
         assistant_context: str | None = None,
         received_at: float | None = None,
     ) -> dict[str, Any] | None:
+        target_utterance_id = int(
+            self.active_input_utterance_id
+            if utterance_id is None
+            else utterance_id
+        )
+        committed_turn_id = self.committed_input_utterances.get(target_utterance_id)
         target_turn_id = int(
             self.user_turn_id + (1 if self.awaiting_input_transcript else 0)
             if turn_id is None
             else turn_id
         )
+        if committed_turn_id is not None:
+            target_turn_id = int(committed_turn_id)
         self.logger.write(
             "function_call_received",
             call_id=value.get("call_id"),
@@ -961,11 +1604,29 @@ class RealtimeConversation:
         # transcript may commit between schedule_function_call() and this
         # coroutine getting its first timeslice.  The immutable target turn is
         # what tells us whether its transcript is actually available.
-        if target_turn_id > self.user_turn_id:
+        if (
+            committed_turn_id is None
+            and target_utterance_id
+            and target_utterance_id != self.active_input_utterance_id
+        ):
+            self.logger.write(
+                "stale_function_call_discarded",
+                call_id=value.get("call_id"),
+                skill=value.get("name"),
+                utterance_id=target_utterance_id,
+                active_utterance_id=self.active_input_utterance_id,
+            )
+            await self._send_discarded_function_output(
+                {"value": dict(value)},
+                reason="stale_audio_utterance",
+            )
+            return None
+        if committed_turn_id is None and target_turn_id > self.user_turn_id:
             self.deferred_function_calls.append(
                 {
                     "value": dict(value),
                     "turn_id": target_turn_id,
+                    "utterance_id": target_utterance_id,
                     "assistant_context": assistant_context,
                     "received_at": received_at,
                 }
@@ -1007,10 +1668,16 @@ class RealtimeConversation:
         user_text: str | None = None,
         assistant_context: str | None = None,
         received_at: float | None = None,
+        utterance_id: int | None = None,
     ) -> asyncio.Task[Any]:
         """Run a potentially long tool call without blocking Realtime input."""
 
         awaiting_at_schedule = bool(self.awaiting_input_transcript)
+        target_utterance_id = int(
+            self.active_input_utterance_id
+            if utterance_id is None
+            else utterance_id
+        )
         target_turn_id = int(
             self.user_turn_id + (1 if awaiting_at_schedule else 0)
             if turn_id is None
@@ -1042,26 +1709,186 @@ class RealtimeConversation:
         }
 
         async def run() -> Any:
+            # A model function call can precede the final ASR transcript.  Do
+            # not stop a real task until that transcript has committed and the
+            # call has passed the normal intent guards.  accept_input_transcript
+            # schedules the deferred call again with an immutable turn binding.
+            if (
+                target_utterance_id
+                and target_utterance_id not in self.committed_input_utterances
+                and target_turn_id > self.user_turn_id
+            ):
+                return await self.handle_or_defer_function_call(
+                    dict(value),
+                    turn_id=target_turn_id,
+                    utterance_id=target_utterance_id,
+                    user_text=user_text,
+                    assistant_context=assistant_context,
+                    received_at=received_at,
+                )
+
+            call_id = str(value.get("call_id") or "")
+            interruption_driver = False
+            session_was_active = self.task_coordinator.state == "interruption_session_active"
             if older and self._call_requests_preemption(value) and self.skill_bridge is not None:
+                snapshot = self.task_coordinator.active
+                if snapshot is None and self.task_coordinator.state == "idle":
+                    ordered_older = sorted(
+                        older,
+                        key=lambda item: self.function_call_started_at.get(item, 0.0),
+                        reverse=True,
+                    )
+                    for old_task in ordered_older:
+                        snapshot = self._snapshot_from_call(
+                            self.function_call_values.get(old_task, {}),
+                            started_at=self.function_call_started_at.get(old_task),
+                        )
+                        if snapshot is not None:
+                            self.task_coordinator.start(snapshot)
+                            self.coordinator_owner_call_id = str(
+                                self.function_call_values.get(old_task, {}).get("call_id") or ""
+                            )
+                            break
+                if (
+                    self._explicitly_stops_active_task(value)
+                    and self.task_coordinator.state == "running"
+                ):
+                    self.task_coordinator.discard()
+                elif self.task_coordinator.state == "running" and self.task_coordinator.active is not None:
+                    active = self.task_coordinator.active
+                    count, elapsed = self._progress_checkpoint(
+                        active.task_name,
+                        started_at=min(
+                            (self.function_call_started_at.get(item, time.monotonic()) for item in older),
+                            default=time.monotonic(),
+                        ),
+                    )
+                    self.task_coordinator.checkpoint(count=count, elapsed_seconds=elapsed)
+                    actions = self.task_coordinator.interrupt(
+                        str(value.get("name") or ""),
+                        self._call_arguments(value),
+                    )
+                    interruption_driver = True
+                    self.interruption_driver_call_id = call_id
+                    acknowledgement = next(
+                        (item.fallback_text for item in actions if item.kind == "execute_interruption"),
+                        "好，我先暂停刚才的任务，马上处理这件事。",
+                    )
+                    self._speak_internal(
+                        "acknowledgement",
+                        acknowledgement,
+                        event_id=f"interrupt-{call_id or target_turn_id}",
+                    )
+                elif self.task_coordinator.state in {"interrupting", "interruption_session_active"}:
+                    action = self.task_coordinator.continue_interruption(
+                        str(value.get("name") or ""),
+                        self._call_arguments(value),
+                    )
+                    interruption_driver = True
+                    self.interruption_driver_call_id = call_id
+                    self._speak_internal(
+                        "acknowledgement",
+                        action.fallback_text,
+                        event_id=f"interrupt-update-{call_id or target_turn_id}",
+                    )
+                for old_task in older:
+                    old_call_id = str(self.function_call_values.get(old_task, {}).get("call_id") or "")
+                    if old_call_id:
+                        self.preempted_call_ids.add(old_call_id)
+                    with contextlib.suppress(TypeError, ValueError):
+                        self.preempted_turn_ids.add(int(self.function_call_turns.get(old_task)))
+                if len(self.preempted_turn_ids) > 128:
+                    self.preempted_turn_ids = set(sorted(self.preempted_turn_ids)[-128:])
                 self.logger.write(
                     "long_task_preemption_requested",
                     new_skill=value.get("name"),
                     older_tasks=[task.get_name() for task in older],
+                    resumable_task=(
+                        self.task_coordinator.suspended.task_name
+                        if self.task_coordinator.suspended is not None
+                        else None
+                    ),
                 )
                 await asyncio.to_thread(self.skill_bridge.cancel_all)
                 done, pending = await asyncio.wait(older, timeout=5.0)
+                for old_task in done:
+                    if old_task.cancelled():
+                        continue
+                    with contextlib.suppress(Exception):
+                        old_result = old_task.result()
+                        if isinstance(old_result, dict):
+                            count, elapsed = self._extract_progress_from_result(old_result)
+                            self.task_coordinator.checkpoint_suspended(
+                                count=count,
+                                elapsed_seconds=elapsed,
+                            )
                 self.logger.write(
                     "long_task_preemption_settled",
                     completed=len(done),
                     still_running=len(pending),
                 )
-            return await self.handle_or_defer_function_call(
+            elif session_was_active and call_id:
+                transition, session_kind = self._session_transition(value)
+                if transition == "end" and (
+                    not self.interruption_session_kind
+                    or not session_kind
+                    or session_kind == self.interruption_session_kind
+                ):
+                    self.task_coordinator.continue_interruption(
+                        str(value.get("name") or ""),
+                        self._call_arguments(value),
+                    )
+                    interruption_driver = True
+                    self.interruption_driver_call_id = call_id
+
+            result = await self.handle_or_defer_function_call(
                 dict(value),
                 turn_id=target_turn_id,
+                utterance_id=target_utterance_id,
                 user_text=user_text,
                 assistant_context=assistant_context,
                 received_at=received_at,
             )
+            if call_id in self.resume_call_ids and isinstance(result, dict):
+                self.resume_call_ids.discard(call_id)
+                if result.get("ok"):
+                    self.task_coordinator.complete_active()
+                else:
+                    self.task_coordinator.discard()
+                self.coordinator_owner_call_id = ""
+            if (
+                interruption_driver
+                and call_id == self.interruption_driver_call_id
+                and isinstance(result, dict)
+                and self.task_coordinator.state == "interrupting"
+            ):
+                transition, session_kind = self._session_transition(value)
+                if session_was_active:
+                    session_remains_active = not (
+                        transition == "end" and bool(result.get("ok"))
+                    )
+                else:
+                    session_remains_active = (
+                        transition == "start" and bool(result.get("ok"))
+                    )
+                actions = self.task_coordinator.interruption_completed(
+                    session_remains_active=session_remains_active,
+                )
+                if session_remains_active:
+                    self.interruption_session_kind = (
+                        self.interruption_session_kind or session_kind
+                    )
+                else:
+                    self.interruption_session_kind = ""
+                self.interruption_driver_call_id = ""
+                ask = next((item for item in actions if item.kind == "ask_resume"), None)
+                if ask is not None:
+                    self._speak_internal(
+                        "attention",
+                        ask.fallback_text,
+                        event_id=f"ask-resume-{call_id or target_turn_id}",
+                    )
+            return result
 
         task = asyncio.create_task(
             run(),
@@ -1069,10 +1896,14 @@ class RealtimeConversation:
         )
         self.function_call_tasks.add(task)
         self.function_call_turns[task] = target_turn_id
+        self.function_call_values[task] = dict(value)
+        self.function_call_started_at[task] = time.monotonic()
 
         def finished(done: asyncio.Task[Any]) -> None:
             self.function_call_tasks.discard(done)
             self.function_call_turns.pop(done, None)
+            self.function_call_values.pop(done, None)
+            self.function_call_started_at.pop(done, None)
             if done.cancelled():
                 return
             error = done.exception()
@@ -1092,15 +1923,15 @@ class RealtimeConversation:
         if name in {
             "navigation_goto", "head_control", "projector_control",
             "welcome_projection", "push_up", "pull_up", "squat",
-            "pet_tracking", "person_tracking", SEQUENCE_TOOL_NAME,
+            "pet_tracking", "person_tracking", "media_player",
+            "light_control", "feeder_control", "pet_feeder",
+            "camera_capture", "camera_record", "face_recognition",
+            SEQUENCE_TOOL_NAME,
         }:
             return True
         if name != "run_robot_scenario":
             return False
-        try:
-            arguments = json.loads(str(value.get("arguments") or "{}"))
-        except (TypeError, ValueError, json.JSONDecodeError):
-            return False
+        arguments = RealtimeConversation._call_arguments(value)
         return bool(str(arguments.get("scenario") or ""))
 
     async def stop_function_calls(self) -> None:
@@ -1132,6 +1963,19 @@ class RealtimeConversation:
         )
         self.last_user_text = transcript
         self.user_turn_id += 1
+        # Direct text/app inputs do not create a VAD utterance.  Reusing the
+        # last audio utterance id for them would overwrite its turn binding and
+        # let a delayed call pick up the later text.
+        committed_utterance_id = (
+            self.active_input_utterance_id
+            if self.awaiting_input_transcript
+            else 0
+        )
+        if committed_utterance_id:
+            self.committed_input_utterances[committed_utterance_id] = self.user_turn_id
+            self.last_committed_utterance_id = committed_utterance_id
+        for stale_utterance_id in sorted(self.committed_input_utterances)[:-64]:
+            self.committed_input_utterances.pop(stale_utterance_id, None)
         self.current_user_turn_received_at = time.time()
         self.committed_user_turns[self.user_turn_id] = {
             "text": transcript,
@@ -1144,17 +1988,40 @@ class RealtimeConversation:
             self.committed_user_turns.pop(stale_turn_id, None)
         self.turn_tool_results.clear()
         self.awaiting_input_transcript = False
+        if self.transcript_timeout_task is not None:
+            self.transcript_timeout_task.cancel()
+            self.transcript_timeout_task = None
+        self.input_transcription_failed = False
         self.speech_turn_assistant_context = ""
         self.memory_store.append_conversation("user", transcript, self.runtime_session_id)
         print(f"[用户] {transcript}", flush=True)
         self.logger.write("input_transcript", text=transcript, turn_id=self.user_turn_id)
 
+        resume_decision: bool | None = None
+        if self.task_coordinator.state == "awaiting_resume" and self.task_coordinator.suspended is not None:
+            resume_decision = self._classify_resume_reply(
+                transcript,
+                self.task_coordinator.suspended.task_name,
+            )
         self.turn_recovery_plan = (
-            self.skill_bridge.recover_explicit_plan(transcript)
-            if self.skill_bridge is not None
-            and hasattr(self.skill_bridge, "recover_explicit_plan")
-            else None
+            {"internal_resume_decision": resume_decision}
+            if resume_decision is not None
+            else (
+                self.skill_bridge.recover_explicit_plan(transcript)
+                if self.skill_bridge is not None
+                and hasattr(self.skill_bridge, "recover_explicit_plan")
+                else None
+            )
         )
+        if (
+            self.turn_recovery_plan is None
+            and self.skill_bridge is not None
+            and hasattr(self.skill_bridge, "recover_contextual_plan")
+        ):
+            self.turn_recovery_plan = self.skill_bridge.recover_contextual_plan(
+                transcript,
+                self.turn_assistant_context,
+            )
         if self.turn_recovery_plan is None and not self.turn_had_function_call:
             self._flush_quarantined_model_audio()
             for assistant_text in self.quarantined_output_transcripts:
@@ -1169,13 +2036,45 @@ class RealtimeConversation:
         ready_deferred = [
             item
             for item in self.deferred_function_calls
-            if int(item.get("turn_id", self.user_turn_id)) <= self.user_turn_id
+            if int(item.get("utterance_id") or 0) == committed_utterance_id
+        ]
+        stale_deferred = [
+            item
+            for item in self.deferred_function_calls
+            if int(item.get("utterance_id") or 0) not in {0, committed_utterance_id}
+            and int(item.get("utterance_id") or 0) < committed_utterance_id
         ]
         self.deferred_function_calls = [
             item
             for item in self.deferred_function_calls
-            if int(item.get("turn_id", self.user_turn_id)) > self.user_turn_id
+            if item not in ready_deferred and item not in stale_deferred
         ]
+        for stale in stale_deferred:
+            await self._send_discarded_function_output(
+                stale,
+                reason="stale_audio_utterance",
+            )
+        if stale_deferred:
+            self.logger.write(
+                "stale_deferred_calls_discarded",
+                utterance_id=committed_utterance_id,
+                count=len(stale_deferred),
+                reason="later_transcript_committed",
+            )
+        if resume_decision is not None:
+            for deferred in ready_deferred:
+                await self._send_discarded_function_output(
+                    deferred,
+                    reason="task_resume_decision_handled_locally",
+                )
+            self.logger.write(
+                "task_resume_decision",
+                accepted=resume_decision,
+                transcript=transcript,
+                discarded_model_calls=len(ready_deferred),
+            )
+            await self._apply_resume_decision(resume_decision)
+            return []
         results: list[dict[str, Any]] = []
         for deferred in ready_deferred:
             value = dict(deferred.get("value") or {})
@@ -1198,6 +2097,7 @@ class RealtimeConversation:
                 self.schedule_function_call(
                     value,
                     turn_id=deferred_turn_id,
+                    utterance_id=committed_utterance_id,
                     user_text=deferred_user_text,
                     assistant_context=deferred_assistant_context,
                     received_at=deferred_received_at,
@@ -1307,6 +2207,17 @@ class RealtimeConversation:
                     if scenario_catalog is not None
                     else None
                 )
+                if self.task_coordinator.state == "idle" and call_id not in self.resume_call_ids:
+                    snapshot = self._snapshot_from_call(
+                        {
+                            "name": name,
+                            "arguments": arguments,
+                        },
+                        started_at=time.monotonic(),
+                    )
+                    if snapshot is not None:
+                        self.task_coordinator.start(snapshot)
+                        self.coordinator_owner_call_id = call_id
                 self.task_state = {
                     "active": True,
                     "planning": False,
@@ -1330,7 +2241,7 @@ class RealtimeConversation:
                             call_user_text,
                             str(call_turn_id),
                             call_assistant_context,
-                            False,
+                            bool(value.get("_coordinator_resume")),
                         )
                     self.logger.write(
                         "skill_dispatch_completed",
@@ -1350,6 +2261,32 @@ class RealtimeConversation:
                         "active_skills": [],
                         "active_procedures": [],
                     }
+        was_preempted = bool(call_id and call_id in self.preempted_call_ids)
+        if was_preempted:
+            self.preempted_call_ids.discard(call_id)
+            final_count, final_elapsed = self._extract_progress_from_result(result)
+            self.task_coordinator.checkpoint_suspended(
+                count=final_count,
+                elapsed_seconds=final_elapsed,
+            )
+            result = {
+                **dict(result),
+                "ok": False,
+                "validation_ok": True,
+                "executed": bool(result.get("executed", True)),
+                "interrupted": True,
+                "mode": "interrupted",
+                "error": "interrupted_by_new_user_task",
+                "spoken_summary": "刚才的任务已经暂停。",
+            }
+        elif (
+            call_id
+            and call_id == self.coordinator_owner_call_id
+            and call_id not in self.resume_call_ids
+            and self.task_coordinator.state == "running"
+        ):
+            self.task_coordinator.complete_active()
+            self.coordinator_owner_call_id = ""
         if call_id and signature and not duplicate:
             self.turn_tool_results[scoped_signature or f"{call_turn_id}:{signature}"] = dict(result)
         if call_id and not duplicate and not self.memory_store.is_tool(name):
@@ -1381,7 +2318,18 @@ class RealtimeConversation:
             flush=True,
         )
         if call_id:
-            if (
+            if was_preempted:
+                model_output = {
+                    **dict(result),
+                    "status": "INTERRUPTED",
+                    "success": False,
+                    "speech_already_delivered": True,
+                    "speech_owner": "task_coordinator",
+                    "next_turn_rule_zh": "旧任务已被用户的新任务打断，不得再播报旧任务的完成或失败总结。",
+                }
+                self.pending_tool_followup_prompts.clear()
+                self.pending_tool_followup = False
+            elif (
                 not result.get("ok")
                 and result.get("validation_ok")
                 and not result.get("executed")
@@ -1404,7 +2352,7 @@ class RealtimeConversation:
                 self.pending_tool_followup_prompts.append(
                     build_tool_reply_instruction(name, result)
                 )
-            if self.skill_event_speaker is not None:
+            if self.skill_event_speaker is not None and not was_preempted:
                 model_output = {
                     **dict(model_output),
                     "speech_already_delivered": True,
@@ -1422,7 +2370,7 @@ class RealtimeConversation:
                         },
                     }
                 )
-            if self.skill_event_speaker is not None:
+            if self.skill_event_speaker is not None and not was_preempted:
                 summary = str(result.get("spoken_summary") or "").strip()
                 if summary:
                     self.skill_event_speaker.submit_from_thread(
@@ -1441,13 +2389,14 @@ class RealtimeConversation:
                         turn_id=call_turn_id,
                         text=summary,
                     )
+                    self._remember_local_assistant_speech(summary)
                 # The result is still written to Qwen's conversation so later
                 # turns can reason over it, but the dedicated event speaker is
                 # the sole owner of this turn's final status.  This prevents a
                 # second model response from guessing or restating the result.
                 self.pending_tool_followup_prompts.clear()
                 self.pending_tool_followup = False
-            else:
+            elif not was_preempted:
                 self.pending_tool_followup = not synthetic_local
                 if self.pending_tool_followup and not self.state.response_active:
                     await self.create_tool_followup_if_needed()
@@ -1537,6 +2486,12 @@ class RealtimeConversation:
             pcm = await asyncio.to_thread(self.audio.read_microphone)
             if not self.local_microphone_enabled:
                 continue
+            health = self.microphone_health_payload()
+            if health["digital_silence"]:
+                raise ServiceError(
+                    "microphone_digital_silence",
+                    "麦克风输入连续三秒只有数字零，重新建立音频会话",
+                )
             if self.external_audio_active:
                 continue
             if not self.audio.microphone_allowed(
@@ -1561,7 +2516,11 @@ class RealtimeConversation:
             if event_type == "input_audio_buffer.speech_started":
                 self.mark_input_speech_started()
             elif event_type == "input_audio_buffer.speech_stopped":
-                self.logger.write("input_speech_stopped")
+                self.logger.write(
+                    "input_speech_stopped",
+                    utterance_id=self.active_input_utterance_id,
+                )
+                self.schedule_transcript_timeout()
             if event_type != "response.audio.delta":
                 self.logger.write("service_event", type=event_type)
             for action in self.state.process(event):
@@ -1577,6 +2536,17 @@ class RealtimeConversation:
                     await self.send({"type": "response.cancel"})
                 elif action.kind == "input_transcript":
                     await self.accept_input_transcript(str(action.value), schedule_deferred=True)
+                elif action.kind == "input_transcription_failed":
+                    self.input_transcription_failed = True
+                    self.logger.write(
+                        "input_transcription_failed",
+                        utterance_id=self.active_input_utterance_id,
+                        **dict(action.value or {}),
+                    )
+                    # speech_stopped normally follows. If the service reports
+                    # failure afterwards, this reschedules with the shorter
+                    # failure grace period.
+                    self.schedule_transcript_timeout()
                 elif action.kind == "output_transcript":
                     if self.model_audio_quarantine:
                         self.quarantined_output_transcripts.append(str(action.value))
@@ -1770,13 +2740,19 @@ class RealtimeConversation:
                 "existing_robot_controller_running",
                 f"检测到其他机器人控制程序（PID {pids}），为避免冲突未打开音频设备",
             )
-        self.audio_resource_guard = RuntimeResourceGuard(self.args.resource_lock_dir)
-        self.audio_resource_guard.acquire()
-        self.audio = AudioEngine(
-            input_device_index=self.args.input_device_index,
-            output_device_index=self.args.output_device_index,
-            chunk_ms=self.args.chunk_ms,
-        )
+        # Keep one PortAudio/PulseAudio engine for the entire resident process.
+        # Only the Qwen websocket session is renewed on an idle timeout.  Closing
+        # and reopening the hardware streams on every cloud reconnect caused a
+        # PortAudio/PulseAudio teardown race and brought down the full project.
+        if self.audio_resource_guard is None:
+            self.audio_resource_guard = RuntimeResourceGuard(self.args.resource_lock_dir)
+            self.audio_resource_guard.acquire()
+        if self.audio is None:
+            self.audio = AudioEngine(
+                input_device_index=self.args.input_device_index,
+                output_device_index=self.args.output_device_index,
+                chunk_ms=self.args.chunk_ms,
+            )
         self.skill_event_speaker = QwenSkillEventSpeaker(
             api_key=self.api_key,
             voice=self.args.voice,
@@ -1827,12 +2803,24 @@ class RealtimeConversation:
                         or not is_reconnectable_service_error(exc.code)
                     ):
                         raise
-                    print(f"千问会话暂时中断（{exc.code}），{backoff:.0f} 秒后恢复持续监听……", flush=True)
+                    # Qwen closes an otherwise healthy idle session after 180
+                    # seconds. Treat this as routine session rotation, not a
+                    # worsening network failure: reconnect almost immediately
+                    # and reset exponential backoff so users do not face a
+                    # growing 1/2/4/8/15-second deaf window every three minutes.
+                    reconnect_delay = 0.2 if exc.code == "response_idle_timeout" else backoff
+                    if exc.code == "response_idle_timeout":
+                        backoff = 1.0
+                    print(
+                        f"千问会话暂时中断（{exc.code}），{reconnect_delay:.1f} 秒后恢复持续监听……",
+                        flush=True,
+                    )
                     try:
-                        await asyncio.wait_for(self.stop_event.wait(), timeout=backoff)
+                        await asyncio.wait_for(self.stop_event.wait(), timeout=reconnect_delay)
                     except asyncio.TimeoutError:
                         pass
-                    backoff = min(15.0, backoff * 2.0)
+                    if exc.code != "response_idle_timeout":
+                        backoff = min(15.0, backoff * 2.0)
                 except Exception as exc:
                     status = getattr(exc, "status_code", None) or getattr(
                         getattr(exc, "response", None), "status_code", None
@@ -1849,6 +2837,25 @@ class RealtimeConversation:
                     backoff = min(15.0, backoff * 2.0)
                 finally:
                     self.connected = False
+                    if self.transcript_timeout_task is not None:
+                        self.transcript_timeout_task.cancel()
+                        await asyncio.gather(
+                            self.transcript_timeout_task,
+                            return_exceptions=True,
+                        )
+                        self.transcript_timeout_task = None
+                    # A tool call belongs to one realtime connection and one
+                    # captured audio utterance.  Carrying either across a
+                    # reconnect can execute an obsolete command after the user
+                    # says something unrelated.
+                    self.awaiting_input_transcript = False
+                    self.input_transcription_failed = False
+                    self.deferred_function_calls.clear()
+                    self.turn_recovery_plan = None
+                    self.turn_had_function_call = False
+                    self.model_audio_quarantine = False
+                    self.quarantined_model_audio.clear()
+                    self.quarantined_output_transcripts.clear()
                     if self.websocket is not None:
                         with contextlib.suppress(Exception):
                             await self.websocket.close()
@@ -1856,16 +2863,19 @@ class RealtimeConversation:
                     if self.skill_event_speaker is not None:
                         await self.skill_event_speaker.close()
                         self.skill_event_speaker = None
-                    if self.audio is not None:
-                        self.audio.close()
-                        self.audio = None
-                    if self.audio_resource_guard is not None:
-                        self.audio_resource_guard.close()
-                        self.audio_resource_guard = None
         finally:
             await self.stop_function_calls()
             if self.skill_bridge is not None:
                 self.skill_bridge.cancel_all()
+            if self.skill_event_speaker is not None:
+                await self.skill_event_speaker.close()
+                self.skill_event_speaker = None
+            if self.audio is not None:
+                self.audio.close()
+                self.audio = None
+            if self.audio_resource_guard is not None:
+                self.audio_resource_guard.close()
+                self.audio_resource_guard = None
             await self.stop_control_server()
             self.logger.write("program_stopped")
 
@@ -1897,6 +2907,12 @@ def parser() -> argparse.ArgumentParser:
     value.add_argument("--echo-mode", default="speaker-safe", choices=("speaker-safe", "full-duplex"))
     value.add_argument("--echo-tail-seconds", type=float, default=0.5)
     value.add_argument("--noise-gate", type=float, default=500.0)
+    value.add_argument(
+        "--transcript-grace-seconds",
+        type=float,
+        default=float(os.environ.get("QWEN_TRANSCRIPT_GRACE_SECONDS", "1.5")),
+        help="speech_stopped 后等待最终转写的宽限；超时后丢弃未确认动作并请用户重说",
+    )
     value.add_argument("--input-device-index", type=int)
     value.add_argument("--output-device-index", type=int)
     value.add_argument(

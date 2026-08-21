@@ -458,6 +458,65 @@ class InterruptibleTaskCoordinator:
             ),
         )
 
+    def checkpoint_suspended(
+        self,
+        *,
+        count: int | None = None,
+        elapsed_seconds: float | None = None,
+    ) -> None:
+        """Update the final checkpoint reported while cancellation settles."""
+
+        if self.suspended is None:
+            return
+        self.suspended = replace(
+            self.suspended,
+            count=(
+                self.suspended.count
+                if count is None
+                else max(self.suspended.count, int(count))
+            ),
+            elapsed_seconds=(
+                self.suspended.elapsed_seconds
+                if elapsed_seconds is None
+                # The worker's final interrupted summary measures the actual
+                # counting clock.  It is more accurate than the coordinator's
+                # wall-clock estimate, which may include navigation, identity
+                # acquisition and projector preparation.
+                else max(0.0, float(elapsed_seconds))
+            ),
+        )
+
+    def complete_active(self) -> None:
+        """Close a normally finished task without creating a resume prompt."""
+
+        if self.state == "running":
+            self._clear()
+
+    def discard(self) -> None:
+        """Forget active/suspended work after an explicit user cancellation."""
+
+        self._clear()
+
+    def continue_interruption(
+        self,
+        name: str,
+        arguments: Mapping[str, Any],
+    ) -> TaskAction:
+        """Replace/extend the inserted task while preserving the old snapshot."""
+
+        if self.state not in {"interrupting", "interruption_session_active"}:
+            raise RuntimeError(f"not_in_interruption:{self.state}")
+        self.interruption_name = str(name)
+        self.interruption_arguments = dict(arguments)
+        self.state = "interrupting"
+        return TaskAction(
+            "execute_interruption",
+            self.interruption_name,
+            self.interruption_arguments,
+            "继续承接用户的新任务，不要丢失之前暂停任务的恢复上下文",
+            "好，我继续处理你刚才的新安排。",
+        )
+
     def interrupt(self, name: str, arguments: Mapping[str, Any]) -> tuple[TaskAction, ...]:
         if self.state != "running" or self.active is None:
             raise RuntimeError("no_interruptible_task")
@@ -497,13 +556,25 @@ class InterruptibleTaskCoordinator:
         if snapshot is None:
             self.state = "idle"
             return ()
+        label = {
+            "push_up": "俯卧撑",
+            "pull_up": "引体向上",
+            "squat": "深蹲",
+            "navigation_goto": "导航",
+            "person_tracking": "人员寻找",
+            "pet_tracking": "宠物寻找",
+        }.get(snapshot.task_name, "任务")
+        if snapshot.task_name in {"push_up", "pull_up", "squat"} and snapshot.count > 0:
+            fallback = f"刚才的{label}做到第{snapshot.count}个时暂停了，还要接着做吗？"
+        else:
+            fallback = f"刚才的{label}暂停了，还要继续吗？"
         return (
             TaskAction(
                 "ask_resume",
                 snapshot.task_name,
                 {"count": snapshot.count, "elapsed_seconds": snapshot.elapsed_seconds},
                 "结合刚才暂停的任务和当前进度，自然询问用户是否继续；一次只问这一件事",
-                "刚才的运动暂停了，你还想从刚才的进度继续吗？",
+                fallback,
             ),
         )
 
@@ -522,13 +593,26 @@ class InterruptibleTaskCoordinator:
                 ),
             )
         arguments = dict(snapshot.arguments)
-        arguments.update(
-            {
-                "initial_count": snapshot.count,
-                "initial_elapsed_seconds": snapshot.elapsed_seconds,
-                "resume_from_interrupt": True,
-            }
-        )
+        arguments["resume_from_interrupt"] = True
+        if snapshot.task_name in {"push_up", "pull_up", "squat"}:
+            arguments.update(
+                {
+                    "initial_count": snapshot.count,
+                    "initial_elapsed_seconds": snapshot.elapsed_seconds,
+                }
+            )
+            try:
+                requested_duration = float(arguments.get("duration") or 0.0)
+            except (TypeError, ValueError):
+                requested_duration = 0.0
+            if requested_duration > 0.0:
+                # Fitness workers interpret duration as this invocation's
+                # runtime.  Resume only the unfinished portion so a 30-second
+                # session does not become 30 seconds plus all previous work.
+                arguments["duration"] = max(
+                    1.0,
+                    requested_duration - snapshot.elapsed_seconds,
+                )
         actions: list[TaskAction] = []
         if snapshot.location:
             actions.append(TaskAction("navigate_back", "navigation_goto", {"point": snapshot.location}))
@@ -539,7 +623,13 @@ class InterruptibleTaskCoordinator:
                 snapshot.task_name,
                 arguments,
                 "说明将从保存的进度继续，不要声称重新计数",
-                f"好，我回到刚才的位置，从第{snapshot.count}个之后继续。",
+                (
+                    f"好，我回到刚才的位置，从第{snapshot.count}个之后继续。"
+                    if snapshot.count > 0 and snapshot.location
+                    else f"好，我从第{snapshot.count}个之后继续。"
+                    if snapshot.count > 0
+                    else "好，我继续刚才的任务。"
+                ),
             )
         )
         self.active = replace(snapshot, arguments=arguments)

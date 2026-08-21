@@ -33,6 +33,8 @@ class ScenarioCatalogTests(unittest.TestCase):
             "哈喽理想同学，我下班回来了": "homecoming_welcome",
             "哈喽理想同学": "homecoming_welcome",
             "来陪我运动吧": "push_up_companion",
+            "我想做运动了": "push_up_companion",
+            "你陪我做运动吧": "push_up_companion",
             "我要开会了": "meeting_projection",
             "把会议投影关掉吧": "meeting_projection_stop",
             "豆豆该吃饭了，你去看看": "find_and_feed_doudou",
@@ -43,6 +45,14 @@ class ScenarioCatalogTests(unittest.TestCase):
         for text, expected in cases.items():
             with self.subTest(text=text):
                 self.assertEqual(self.catalog.match(text), expected)
+
+    def test_observed_douer_asr_alias_requires_pet_action_context(self):
+        self.assertEqual(
+            self.catalog.match("帮我看看豆儿，他该吃饭了"),
+            "find_and_feed_doudou",
+        )
+        self.assertEqual(self.catalog.match("豆儿现在在哪儿"), "find_pet")
+        self.assertIsNone(self.catalog.match("我今天买了些豆儿"))
 
     def test_model_schema_hides_parallel_light_convenience_scene(self):
         schema = self.catalog.tool_schema["function"]["parameters"]["properties"]["scenario"]["enum"]
@@ -343,7 +353,7 @@ class ScenarioExecutorTests(unittest.TestCase):
     def setUp(self):
         self.catalog = ScenarioCatalog(CATALOG)
 
-    def test_scene_emits_start_and_stage_speech_without_changing_step_order(self):
+    def test_scene_keeps_one_short_start_speech_without_narrating_internal_steps(self):
         calls: list[tuple[str, dict]] = []
         events: list[dict] = []
 
@@ -363,10 +373,8 @@ class ScenarioExecutorTests(unittest.TestCase):
             ["navigation_goto", "head_control", "projector_control"],
         )
         self.assertEqual(events[0]["kind"], "acknowledgement")
-        self.assertIn("先去书房", events[0]["text"])
-        self.assertEqual([item["kind"] for item in events[1:]], ["progress", "progress"])
-        self.assertIn("调整", events[1]["text"])
-        self.assertIn("会议投影", events[2]["text"])
+        self.assertIn("会议", events[0]["text"])
+        self.assertEqual(len(events), 1)
 
     def test_scene_announcement_can_be_suppressed_inside_a_larger_sequence(self):
         events: list[dict] = []
@@ -383,7 +391,38 @@ class ScenarioExecutorTests(unittest.TestCase):
 
         self.assertTrue(result["ok"])
         self.assertNotIn("acknowledgement", [item["kind"] for item in events])
-        self.assertEqual([item["kind"] for item in events], ["progress", "progress"])
+        self.assertEqual(events, [])
+
+    def test_homecoming_says_welcome_once_and_is_silent_after_success(self):
+        events: list[dict] = []
+        result = ScenarioExecutor(
+            self.catalog,
+            lambda _skill, _arguments: {
+                "ok": True,
+                "validation_ok": True,
+                "executed": True,
+                "error": None,
+            },
+            progress_callback=events.append,
+        ).execute("homecoming_welcome", {})
+
+        self.assertTrue(result["ok"])
+        self.assertEqual([item["text"] for item in events], ["欢迎回家。"]) 
+        self.assertEqual(result["spoken_summary"], "")
+
+    def test_meeting_success_wording_varies_but_stays_short(self):
+        executor = ScenarioExecutor(
+            self.catalog,
+            lambda _skill, _arguments: {
+                "ok": True,
+                "validation_ok": True,
+                "executed": True,
+                "error": None,
+            },
+        )
+        results = [executor.execute("meeting_projection", {})["spoken_summary"] for _ in range(3)]
+        self.assertEqual(len(set(results)), 3)
+        self.assertTrue(all(len(text) <= 14 for text in results))
 
     def test_dry_run_validates_complete_meeting_without_execution(self):
         calls = []
@@ -485,7 +524,7 @@ class ScenarioExecutorTests(unittest.TestCase):
         navigate = next(item for item in result["steps"] if item["id"] == "navigate")
         self.assertTrue(navigate["intentional_skip"])
         self.assertEqual(result["outcome_groups"][0]["matched_outcome"], "all_success_here")
-        self.assertIn("当前位置", events[0]["text"])
+        self.assertTrue(any(marker in events[0]["text"] for marker in ("当前位置", "这里", "原地")))
         self.assertNotIn("书房", events[0]["text"])
 
     def test_default_meeting_projection_still_navigates_to_study(self):
@@ -713,6 +752,57 @@ class ScenarioBridgeBoundaryTests(unittest.TestCase):
             self.assertIn("navigation_goto", names)
             self.assertNotIn("projector_control", names)
             self.assertNotIn("push_up", names)
+
+    def test_ambiguous_scene_call_asks_one_specific_question_without_execution(self):
+        with tempfile.TemporaryDirectory() as directory:
+            bridge = self.make_bridge(Path(directory))
+            with patch.object(bridge.scenario_executor, "execute") as execute:
+                result = bridge.invoke(
+                    "run_robot_scenario",
+                    {"scenario": "push_up_companion"},
+                    "我现在想做辅导",
+                )
+            self.assertFalse(result["executed"])
+            self.assertTrue(result["clarification_required"])
+            self.assertEqual(result["suggested_scenario"], "push_up_companion")
+            self.assertIn("俯卧撑", result["spoken_summary"])
+            self.assertIn("吗", result["spoken_summary"])
+            execute.assert_not_called()
+
+    def test_short_affirmation_recovers_only_the_specific_prior_question(self):
+        with tempfile.TemporaryDirectory() as directory:
+            bridge = self.make_bridge(Path(directory))
+            plan = bridge.recover_contextual_plan(
+                "是的",
+                "我听到的内容有点像俯卧撑。你是想让我陪你做俯卧撑吗？",
+            )
+            self.assertEqual(
+                plan,
+                {
+                    "name": "run_robot_scenario",
+                    "arguments": {"scenario": "push_up_companion"},
+                },
+            )
+            self.assertIsNone(
+                bridge.recover_contextual_plan("是的", "今天阳光不错，你觉得呢？")
+            )
+            self.assertIsNone(
+                bridge.recover_contextual_plan(
+                    "不是",
+                    "你是想让我陪你做俯卧撑吗？",
+                )
+            )
+
+    def test_navigation_destination_answer_can_complete_only_a_navigation_question(self):
+        with tempfile.TemporaryDirectory() as directory:
+            bridge = self.make_bridge(Path(directory))
+            plan = bridge.recover_contextual_plan(
+                "书房",
+                "我听到了导航，但目的地没听清。你要去原点、客厅白墙，还是书房？",
+            )
+            self.assertEqual(plan["name"], "navigation_goto")
+            self.assertEqual(plan["arguments"]["point"], "study_projection")
+            self.assertIsNone(bridge.recover_contextual_plan("书房", "你喜欢书房吗？"))
 
     def test_sequence_keeps_a_protected_scene_whole_then_runs_next_atomic_task(self):
         with tempfile.TemporaryDirectory() as directory:

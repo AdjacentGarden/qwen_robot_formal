@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+readonly CONTAINER="android_0"
+readonly HOST_VIDEO="/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/welcome_projection/assets/welcome_home.mp4"
+readonly HOST_DIGEST="/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/welcome_projection/assets/welcome_home.sha256"
+readonly VIDEO="/sdcard/Movies/welcome_home.mp4"
+readonly STORAGE_VIDEO="/data/media/0/Movies/welcome_home.mp4"
+readonly PACKAGE="android.rk.RockVideoPlayer"
+
+expected_sha() {
+  /usr/bin/awk 'NR == 1 {print $1}' "$HOST_DIGEST"
+}
+
+host_sha() {
+  /usr/bin/sha256sum "$HOST_VIDEO" | /usr/bin/awk '{print $1}'
+}
+
+container_sha() {
+  /usr/bin/docker exec "$CONTAINER" sha256sum "$VIDEO" 2>/dev/null | /usr/bin/awk '{print $1}'
+}
+
+prepare_media() {
+  test -s "$HOST_VIDEO"
+  test -s "$HOST_DIGEST"
+  local expected actual_host actual_container
+  expected="$(expected_sha)"
+  actual_host="$(host_sha)"
+  [[ "$actual_host" == "$expected" ]] || { echo "welcome source checksum mismatch" >&2; exit 1; }
+  /usr/bin/docker exec "$CONTAINER" mkdir -p /data/media/0/Movies
+  actual_container="$(container_sha || true)"
+  if [[ "$actual_container" != "$expected" ]]; then
+    /usr/bin/docker cp "$HOST_VIDEO" "$CONTAINER:$STORAGE_VIDEO.codex-new"
+    /usr/bin/docker exec "$CONTAINER" mv "$STORAGE_VIDEO.codex-new" "$STORAGE_VIDEO"
+  fi
+  actual_container="$(container_sha || true)"
+  [[ "$actual_container" == "$expected" ]] || { echo "welcome container checksum mismatch after copy" >&2; exit 1; }
+}
+
+verify_media() {
+  test -s "$HOST_VIDEO"
+  test -s "$HOST_DIGEST"
+  local expected actual_host actual_container
+  expected="$(expected_sha)"
+  actual_host="$(host_sha)"
+  actual_container="$(container_sha || true)"
+  [[ "$actual_host" == "$expected" ]] || { echo "welcome source checksum mismatch" >&2; exit 1; }
+  [[ "$actual_container" == "$expected" ]] || { echo "welcome container checksum mismatch" >&2; exit 1; }
+  echo "welcome projection media is ready"
+}
+
+case "${1:-status}" in
+  verify) verify_media ;;
+  prepare) prepare_media ;;
+  start)
+    prepare_media
+    pid="$(/usr/bin/pidof surfaceflinger | /usr/bin/awk '{print $1}')"
+    test -n "$pid"
+    /usr/bin/nsenter -t "$pid" -m -p -- /system/bin/settings put system accelerometer_rotation 0
+    /usr/bin/nsenter -t "$pid" -m -p -- /system/bin/settings put system user_rotation 2
+    /usr/bin/nsenter -t "$pid" -m -p -- /system/bin/cmd window user-rotation lock 2
+    /usr/bin/nsenter -t "$pid" -m -p -- /system/bin/cmd window fixed-to-user-rotation enabled
+    /usr/bin/nsenter -t "$pid" -m -p -- /system/bin/cmd window set-ignore-orientation-request true
+    /usr/local/libexec/robot-projection-prep
+    /usr/bin/docker exec "$CONTAINER" sh -c "appops set $PACKAGE MANAGE_EXTERNAL_STORAGE allow 2>/dev/null || true; appops set $PACKAGE READ_EXTERNAL_STORAGE allow 2>/dev/null || true; appops set $PACKAGE READ_MEDIA_VIDEO allow 2>/dev/null || true; appops set $PACKAGE READ_MEDIA_AUDIO allow 2>/dev/null || true; am force-stop $PACKAGE; am start -n $PACKAGE/.VideoPlayActivity -a android.intent.action.VIEW -d file://$VIDEO -t video/mp4"
+    ;;
+  stop) /usr/bin/docker exec "$CONTAINER" am force-stop "$PACKAGE" >/dev/null 2>&1 || true ;;
+  status) /usr/bin/docker exec "$CONTAINER" pidof "$PACKAGE" >/dev/null 2>&1 ;;
+  *) echo "usage: $0 {verify|prepare|start|stop|status}" >&2; exit 2 ;;
+esac

@@ -35,6 +35,8 @@ APP_TOKEN = os.environ.get("ROBOT_APP_TOKEN", "")
 ROBOT_TOKEN = os.environ.get("ROBOT_BRIDGE_TOKEN", "")
 MAX_VIDEO_BYTES = int(os.environ.get("MAX_VIDEO_BYTES", str(80 * 1024 * 1024)))
 MAX_VOICE_BYTES = int(os.environ.get("MAX_VOICE_BYTES", str(4 * 1024 * 1024)))
+ROBOT_STALE_SECONDS = float(os.environ.get("ROBOT_STALE_SECONDS", "4.5"))
+APP_SEND_TIMEOUT_SECONDS = float(os.environ.get("APP_SEND_TIMEOUT_SECONDS", "0.8"))
 
 
 def load_json(path: Path, default: Any) -> Any:
@@ -82,6 +84,7 @@ class Hub:
         self.task: Dict[str, Any] = {"active": False, "planning": False, "queued": 0}
         self.commands: Dict[str, Dict[str, Any]] = {}
         self.voice_streams: Dict[str, Dict[str, Any]] = {}
+        self.last_persist_monotonic = 0.0
 
     def snapshot(self) -> Dict[str, Any]:
         return {
@@ -106,6 +109,11 @@ class Hub:
             "program": self.program,
             "microphone": self.microphone,
         })
+        self.last_persist_monotonic = time.monotonic()
+
+    def persist_if_due(self, force: bool = False) -> None:
+        if force or time.monotonic() - self.last_persist_monotonic >= 1.0:
+            self.persist()
 
     def remember_forwarded(self, command: Dict[str, Any]) -> None:
         command_id = str(command.get("id") or "")[:80]
@@ -183,14 +191,27 @@ class Hub:
 
     async def broadcast(self, payload: Dict[str, Any]) -> None:
         text = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
-        stale = []
-        for client in tuple(self.apps):
+        clients = tuple(self.apps)
+
+        async def send_one(client: WebSocket) -> Optional[WebSocket]:
             try:
-                await asyncio.wait_for(client.send_text(text), timeout=1.5)
+                await asyncio.wait_for(
+                    client.send_text(text),
+                    timeout=APP_SEND_TIMEOUT_SECONDS,
+                )
+                return None
             except Exception:
-                stale.append(client)
-        for client in stale:
+                return client
+
+        # One slow or suspended phone must never hold up telemetry for every
+        # other App client or stop the relay from reading the robot socket.
+        stale = await asyncio.gather(*(send_one(client) for client in clients))
+        for client in (item for item in stale if item is not None):
             self.apps.discard(client)
+            try:
+                await asyncio.wait_for(client.close(code=4003), timeout=0.3)
+            except Exception:
+                pass
 
 
 hub = Hub()
@@ -274,7 +295,15 @@ async def root() -> RedirectResponse:
 
 @app.get("/api/health")
 async def health() -> Dict[str, Any]:
-    return {"ok": True, "robot_online": bool(hub.robot), "app_clients": len(hub.apps), "time": time.time()}
+    now = time.time()
+    last_seen = float(hub.robot_status.get("last_seen") or 0.0)
+    return {
+        "ok": True,
+        "robot_online": bool(hub.robot),
+        "robot_last_seen_age_ms": round(max(0.0, now - last_seen) * 1000.0, 1) if last_seen else None,
+        "app_clients": len(hub.apps),
+        "time": now,
+    }
 
 
 @app.get("/api/state")
@@ -528,6 +557,16 @@ async def robot_socket(ws: WebSocket) -> None:
     hub.robot = ws
     hub.robot_status.update({"online": True, "last_seen": time.time(), "mode": "connected"})
     await hub.broadcast({"type": "robot_status", "robot": dict(hub.robot_status)})
+
+    async def stale_connection_watchdog() -> None:
+        while hub.robot is ws:
+            await asyncio.sleep(0.75)
+            last_seen = float(hub.robot_status.get("last_seen") or 0.0)
+            if time.time() - last_seen > ROBOT_STALE_SECONDS:
+                await ws.close(code=4002, reason="robot_heartbeat_stale")
+                return
+
+    watchdog = asyncio.create_task(stale_connection_watchdog())
     try:
         while True:
             message = await ws.receive_json()
@@ -543,6 +582,23 @@ async def robot_socket(ws: WebSocket) -> None:
                     hub.microphone = dict(message["microphone"])
                 hub.robot_status["mode"] = message.get("mode", "ready")
                 await hub.broadcast({"type": "telemetry", "pose": hub.pose, "robot": dict(hub.robot_status), "program": hub.program, "task": hub.task, "microphone": hub.microphone})
+            elif kind == "link_heartbeat":
+                if message.get("program") is not None:
+                    hub.program = message.get("program")
+                if message.get("task") is not None:
+                    hub.task = message.get("task")
+                if isinstance(message.get("microphone"), dict):
+                    hub.microphone = dict(message["microphone"])
+                hub.robot_status["mode"] = "ready"
+                await hub.broadcast({
+                    "type": "link_heartbeat",
+                    "robot": dict(hub.robot_status),
+                    "program": hub.program,
+                    "task": hub.task,
+                    "microphone": hub.microphone,
+                    "telemetry_age_ms": message.get("telemetry_age_ms"),
+                    "timestamp": message.get("timestamp"),
+                })
             elif kind == "map":
                 import base64
                 encoded = message.get("image_base64")
@@ -570,10 +626,12 @@ async def robot_socket(ws: WebSocket) -> None:
                 if message.get("program") is not None:
                     hub.program = message.get("program")
                 await hub.broadcast({"type": "robot_status", "robot": dict(hub.robot_status)})
-            hub.persist()
+            hub.persist_if_due(force=kind in {"map", "program_status", "event", "command_result", "hello"})
     except WebSocketDisconnect:
         pass
     finally:
+        watchdog.cancel()
+        await asyncio.gather(watchdog, return_exceptions=True)
         if hub.robot is ws:
             hub.robot = None
             hub.task = {"active": False, "planning": False, "queued": 0}

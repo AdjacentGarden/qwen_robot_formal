@@ -191,6 +191,38 @@ class LocalSkillTests(unittest.TestCase):
             with self.subTest(text=text):
                 self.assertIsNone(bridge.recover_explicit_plan(text))
 
+    def test_repeated_explicit_read_only_queries_are_locally_refreshed(self):
+        bridge = self.production_bridge()
+        cases = {
+            "请告诉我现在有哪些导航点": ("navigation_list", {}),
+            "机器人目前可以去哪些位置": ("navigation_list", {}),
+            "我现在都有哪些提醒": ("reminder_query", {}),
+            "查一下闹钟安排了哪些": ("reminder_query", {}),
+            "今天星期几": ("realtime_information", {"action": "current_time"}),
+            "今天会下雨吗": ("realtime_information", {"action": "weather"}),
+        }
+        for text, (name, arguments) in cases.items():
+            with self.subTest(text=text):
+                plan = bridge.recover_explicit_plan(text)
+                self.assertIsNotNone(plan)
+                self.assertEqual(plan["name"], name)
+                self.assertEqual(plan["arguments"], arguments)
+
+    def test_read_only_recovery_does_not_steal_navigation_or_general_questions(self):
+        bridge = self.production_bridge()
+        destination = bridge.recover_explicit_plan("导航到书房")
+        self.assertIsNotNone(destination)
+        self.assertEqual(destination["name"], "navigation_goto")
+        for text in (
+            "你会导航吗",
+            "书房有哪些书",
+            "公司有哪些地点",
+            "手机在哪里",
+            "提醒功能怎么用",
+        ):
+            with self.subTest(text=text):
+                self.assertIsNone(bridge.recover_explicit_plan(text))
+
     def test_navigation_rejection_explains_destination_without_claiming_motion(self):
         bridge = self.production_bridge()
         result = bridge._invoke_atomic(
@@ -434,9 +466,8 @@ class LocalSkillTests(unittest.TestCase):
             self.assertTrue(result["ok"])
             self.assertEqual([item[0] for item in calls], ["navigation_goto", "light_control"])
             self.assertEqual(events[0]["kind"], "acknowledgement")
-            self.assertIn("先去客厅白墙", events[0]["text"])
-            self.assertEqual(events[1]["kind"], "progress")
-            self.assertIn("打开灯光", events[1]["text"])
+            self.assertEqual(len(events), 1)
+            self.assertIn("顺序", events[0]["text"])
             self.assertIn("已到达客厅", result["spoken_summary"])
             self.assertIn("客厅灯已经打开", result["spoken_summary"])
 
@@ -497,10 +528,10 @@ class LocalSkillTests(unittest.TestCase):
                 {"name": "feeder_control", "arguments": {"action": "feed"}},
             ]
         )
-        self.assertIn("先去书房", text)
-        self.assertIn("再启动投食", text)
+        self.assertTrue(any(marker in text for marker in ("顺序", "依次", "先")))
         self.assertNotIn("已经到达", text)
         self.assertNotIn("已经投食", text)
+        self.assertLessEqual(len(text), 16)
 
     def test_navigation_start_and_arrival_wording_varies_without_changing_destination(self):
         starts = [
@@ -534,10 +565,10 @@ class LocalSkillTests(unittest.TestCase):
 
         executor = SimpleNamespace(speech_policy=Policy())
         cases = (
-            ("reminder_schedule", {"action": "schedule", "content": "喝水"}, "到了时间我叫你"),
+            ("reminder_schedule", {"action": "schedule", "content": "喝水"}, "提醒"),
             ("navigation_list", {"action": "list"}, "原点、客厅白墙和书房投影点"),
-            ("person_tracking", {"action": "check"}, "随时可以开始"),
-            ("push_up", {"action": "check"}, "计数已经准备好了"),
+            ("person_tracking", {"action": "check"}, "跟随"),
+            ("push_up", {"action": "check"}, "计数"),
             ("projector_control", {"action": "status"}, "当前状态已经查到了"),
         )
         for skill, arguments, expected in cases:

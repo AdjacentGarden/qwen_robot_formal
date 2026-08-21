@@ -37,7 +37,11 @@ assert.ok(agent.includes("send_external_audio"));
 assert.ok(agent.includes("if not self.local_microphone_enabled"));
 assert.ok(agent.includes('"app_voice_enabled": True'));
 assert.ok(agent.includes("save_microphone_enabled"));
-assert.ok(service.includes('run.sh" --execute-skills'));
+assert.ok(
+  service.includes('run.sh" --execute-skills') ||
+  (service.includes("run_args=(--execute-skills)") && service.includes('"${run_args[@]}"')),
+  "resident service must launch the complete --execute-skills runtime",
+);
 assert.ok(bridge.includes('"busy_policy": busy_policy'));
 assert.ok(bridge.includes('elif action == "voice_audio"'));
 assert.ok(bridge.includes('message.get("task")') || bridge.includes('"task": self.task_state'));

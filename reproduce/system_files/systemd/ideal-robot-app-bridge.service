@@ -1,0 +1,22 @@
+[Unit]
+Description=Ideal Robot Qwen Realtime Android App bridge
+Wants=network-online.target tailscaled.service
+After=network-online.target tailscaled.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=test
+Group=test
+WorkingDirectory=/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test
+Environment=ROBOT_PROJECT=/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test
+ExecStart=/bin/bash /home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/android_app/robot_bridge/robot_bridge.sh foreground
+Restart=always
+RestartSec=800ms
+TimeoutStopSec=10s
+KillMode=control-group
+StandardOutput=append:/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/android_app/robot_bridge/runtime/bridge.log
+StandardError=append:/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/android_app/robot_bridge/runtime/bridge.log
+
+[Install]
+WantedBy=multi-user.target

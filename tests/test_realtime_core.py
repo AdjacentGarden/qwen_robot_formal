@@ -3,6 +3,8 @@ from __future__ import annotations
 import base64
 import asyncio
 import json
+import queue
+import threading
 import tempfile
 import unittest
 from pathlib import Path
@@ -14,6 +16,7 @@ from realtime_core import (
     pcm_rms,
 )
 from realtime_chat import (
+    AudioEngine,
     RECONNECTABLE_SERVICE_ERRORS,
     RealtimeConversation,
     is_benign_service_error,
@@ -23,6 +26,46 @@ from realtime_chat import (
 
 
 class RealtimeCoreTests(unittest.TestCase):
+    def test_audio_close_aborts_streams_without_restart_race(self):
+        calls = []
+
+        class Stream:
+            def __init__(self, name):
+                self.name = name
+
+            def abort_stream(self):
+                calls.append((self.name, "abort"))
+
+            def stop_stream(self):
+                calls.append((self.name, "stop"))
+
+            def close(self):
+                calls.append((self.name, "close"))
+
+        class Worker:
+            def join(self, timeout):
+                calls.append(("worker", "join", timeout))
+
+        class Interface:
+            def terminate(self):
+                calls.append(("interface", "terminate"))
+
+        audio = AudioEngine.__new__(AudioEngine)
+        audio.closed = threading.Event()
+        audio.generation = 0
+        audio.output_queue = queue.Queue(maxsize=4)
+        audio.input_stream = Stream("input")
+        audio.output_stream = Stream("output")
+        audio.worker = Worker()
+        audio.interface = Interface()
+
+        audio.close()
+
+        self.assertTrue(audio.closed.is_set())
+        self.assertEqual(audio.generation, 1)
+        self.assertLess(calls.index(("output", "abort")), calls.index(("worker", "join", 5.0)))
+        self.assertNotIn(("output", "start"), calls)
+
     def test_microphone_preference_is_atomic_persistent_and_defaults_safe(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "microphone_state.json"
@@ -134,6 +177,20 @@ class RealtimeCoreTests(unittest.TestCase):
         )
         self.assertEqual(user[0].kind, "input_transcript")
         self.assertEqual(assistant[0].kind, "output_transcript")
+
+    def test_transcription_failure_is_visible_to_the_conversation_guard(self) -> None:
+        state = ConversationState()
+        actions = state.process(
+            {
+                "type": "conversation.item.input_audio_transcription.failed",
+                "item_id": "audio-17",
+                "error": {"code": "asr_failed", "message": "no final transcript"},
+            }
+        )
+        self.assertEqual(len(actions), 1)
+        self.assertEqual(actions[0].kind, "input_transcription_failed")
+        self.assertEqual(actions[0].value["item_id"], "audio-17")
+        self.assertEqual(actions[0].value["code"], "asr_failed")
 
     def test_speech_started_cancels_response_and_suppresses_stale_audio(self) -> None:
         state = ConversationState()

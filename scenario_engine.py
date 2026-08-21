@@ -37,9 +37,9 @@ SCENARIO_TOPIC_TERMS = {
     ),
     "pull_up_companion": ("引体向上", "引体", "单杠"),
     "squat_companion": ("深蹲", "下蹲", "蹲起"),
-    "find_pet": ("豆豆", "小狗", "宠物", "找狗", "毛孩子", "小家伙"),
-    "find_pet_at": ("豆豆", "小狗", "宠物", "找狗", "毛孩子", "小家伙"),
-    "find_pet_here": ("豆豆", "小狗", "宠物", "找狗", "毛孩子", "小家伙"),
+    "find_pet": ("豆豆", "豆儿", "小狗", "宠物", "找狗", "毛孩子", "小家伙"),
+    "find_pet_at": ("豆豆", "豆儿", "小狗", "宠物", "找狗", "毛孩子", "小家伙"),
+    "find_pet_here": ("豆豆", "豆儿", "小狗", "宠物", "找狗", "毛孩子", "小家伙"),
     "find_and_feed_doudou": (
         "喂饭", "喂食", "吃饭", "饿了", "狗粮", "开饭", "加餐", "添粮",
     ),
@@ -60,50 +60,86 @@ SHORT_AFFIRMATIONS = {
 }
 SCENARIO_START_SPEECH = {
     "homecoming_welcome": (
-        "欢迎回家。我先调整投影角度，马上播放欢迎画面。",
-        "欢迎回来，我现在准备欢迎画面。",
+        "欢迎回家。",
     ),
     "push_up_companion": (
-        "来吧，我先去客厅白墙，准备好后陪你做俯卧撑。",
-        "好，我们活动一下。我先去客厅白墙准备俯卧撑计数。",
+        "好，我们开始运动。",
+        "来吧，活动一下。",
+        "好，准备做俯卧撑。",
     ),
     "pull_up_companion": (
-        "来吧，我先去客厅白墙，准备好后陪你做引体向上。",
-        "好，我先到客厅白墙准备引体向上计数。",
+        "好，我们开始运动。",
+        "来吧，准备做引体向上。",
     ),
     "squat_companion": (
-        "来吧，我先去客厅白墙，准备好后陪你做深蹲。",
-        "好，我先到客厅白墙准备深蹲计数。",
+        "好，我们开始运动。",
+        "来吧，准备做深蹲。",
     ),
     "find_pet": (
-        "收到，我现在去找豆豆，找到后马上告诉你。",
-        "好，我去各个保存的位置找找豆豆，有结果就告诉你。",
+        "好，我去找豆豆。",
+        "我去看看豆豆在哪儿。",
+        "收到，这就去找豆豆。",
     ),
-    "find_pet_at": ("收到，我去你指定的地方找找豆豆。", "好，我只去你说的地点找豆豆。"),
-    "find_pet_here": ("收到，我先在当前位置找找豆豆。", "好，我就在这里转一圈找找豆豆。"),
+    "find_pet_at": ("好，我去那里找豆豆。", "收到，我去指定地点看看。"),
+    "find_pet_here": ("好，我就在这里找。", "收到，我在原地看看。"),
     "find_and_feed_doudou": (
-        "收到，我先去找豆豆，找到后再给它投食。",
-        "明白，我先找豆豆，确认找到后再投食。",
+        "好，我去找豆豆，找到就喂它。",
+        "收到，我去看看豆豆。",
     ),
     "meeting_projection": (
-        "收到，我先去书房，到了就为你准备会议投影。",
-        "好，我现在前往书房，随后准备会议内容。",
+        "好，我去准备会议投影。",
+        "收到，开始准备会议。",
+        "好，会议投影马上准备。",
     ),
     "meeting_projection_here": (
-        "收到，我就在当前位置抬头并准备会议投影。",
-        "好，我不移动位置，现在为你调整角度并打开会议内容。",
+        "好，就在这里开始投影。",
+        "收到，我在当前位置准备会议。",
     ),
     "meeting_projection_stop": (
-        "收到，我现在结束会议投影并恢复平视。",
-        "好，我来关闭会议投影，然后让头部回到水平。",
+        "好，我来关闭投影。",
+        "好的，结束投影。",
     ),
     "rest_lighting": (
-        "你先休息一下，我现在去客厅并把灯光调好。",
-        "好，你放松一会儿，我去客厅调整灯光。",
+        "好，你先休息，我来调整。",
+        "你放松一下，交给我吧。",
     ),
     "living_room_light_service": (
-        "收到，我现在去客厅，同时帮你调整灯光。",
-        "好，我去客厅并把灯光一起调好。",
+        "好，我去客厅调灯。",
+        "收到，我来处理客厅灯光。",
+    ),
+}
+
+# Successful results may vary in tone, but every option carries exactly the
+# same device facts.  Failures stay catalog-driven so their reason can never
+# be softened, omitted, or accidentally changed by stylistic variation.
+SCENARIO_OUTCOME_SPEECH = {
+    ("homecoming_welcome", "completed"): ("",),
+    ("meeting_projection", "all_success_here"): (
+        "会议内容投好了。", "投影准备好了。", "会议画面已经出来了。",
+    ),
+    ("meeting_projection", "all_success"): (
+        "会议内容投好了。", "投影准备好了。", "会议画面已经出来了。",
+    ),
+    ("meeting_projection_stop", "all_success"): (
+        "投影关好了。", "会议投影已经结束。", "好，投影已关闭。",
+    ),
+    ("rest_lighting", "success"): (
+        "灯光调好了，休息一会儿吧。", "已经调好了，你放松一下。", "灯光好了，安心休息吧。",
+    ),
+    ("find_pet", "found_living"): (
+        "找到豆豆了，在客厅，视频正传到手机。", "豆豆在客厅，已经找到啦，视频正在同步。",
+    ),
+    ("find_pet", "found_study"): (
+        "找到豆豆了，在书房，视频正传到手机。", "豆豆在书房，已经找到啦，视频正在同步。",
+    ),
+    ("find_pet", "found_dining"): (
+        "找到豆豆了，在餐厅，视频正传到手机。", "豆豆在餐厅，已经找到啦，视频正在同步。",
+    ),
+    ("find_pet_at", "found"): (
+        "找到豆豆了，视频正传到手机。", "豆豆在这里，视频正在同步。",
+    ),
+    ("find_pet_here", "found"): (
+        "找到豆豆了，视频正传到手机。", "豆豆就在这里，视频正在同步。",
     ),
 }
 POINT_SPOKEN_NAMES = {
@@ -637,7 +673,7 @@ class ScenarioCatalog:
         if name == "find_and_feed_doudou":
             pet = any(
                 _contains_term(transcript, term)
-                for term in ("豆豆", "小狗", "宠物", "狗", "毛孩子", "小家伙")
+                for term in ("豆豆", "豆儿", "小狗", "宠物", "狗", "毛孩子", "小家伙")
             )
             feeding = any(_contains_term(transcript, term) for term in terms)
             return pet and feeding
@@ -876,7 +912,9 @@ class ScenarioCatalog:
         # Location- and feeding-specific pet requests must outrank generic
         # authored examples such as “找一下豆豆”.  Otherwise a longer utterance
         # like “只去书房找一下豆豆” is incorrectly widened to all rooms.
-        pet = "豆豆" in text or "狗" in text or "宠物" in text
+        # “豆儿”是实际日志中“豆豆”的稳定 ASR 别名，但只在
+        # 找/看/位置/喂食语境中接受，避免一个名词单独触发硬件。
+        pet = "豆豆" in text or "豆儿" in text or "狗" in text or "宠物" in text
         if pet and not feeding_negated and any(word in text for word in ("喂", "吃饭", "吃东西", "该吃", "饿了", "狗粮", "开饭")):
             return "find_and_feed_doudou"
         if pet and not pet_search_negated and any(word in text for word in ("找", "看看", "在哪")):
@@ -1027,9 +1065,18 @@ class ScenarioExecutor:
         options = SCENARIO_START_SPEECH.get(name)
         if not options:
             return fallback
-        count = self._speech_variant_counts.get(name, 0)
-        self._speech_variant_counts[name] = count + 1
+        return self._cycle_speech(f"start:{name}", options)
+
+    def _cycle_speech(self, key: str, options: tuple[str, ...]) -> str:
+        count = self._speech_variant_counts.get(key, 0)
+        self._speech_variant_counts[key] = count + 1
         return options[count % len(options)]
+
+    def _scenario_outcome_speech(self, scenario: str, outcome: str, fallback: str) -> str:
+        options = SCENARIO_OUTCOME_SPEECH.get((scenario, outcome))
+        if not options:
+            return fallback
+        return self._cycle_speech(f"outcome:{scenario}:{outcome}", options)
 
     @staticmethod
     def _argument_condition(condition: Any, arguments: dict[str, Any]) -> bool:
@@ -1069,6 +1116,13 @@ class ScenarioExecutor:
         index: int,
     ) -> str:
         if index == 0:
+            return ""
+        # Most scenes already have one acknowledgement, one authoritative
+        # result, and (for fitness) realtime count/attention events. Narrating
+        # hidden head, projector, light and cleanup steps makes the robot sound
+        # mechanical and can delay the useful result. Only long pet searches
+        # announce meaningful location changes.
+        if scenario not in {"find_pet", "find_pet_at", "find_pet_here", "find_and_feed_doudou"}:
             return ""
         skill = str(step.get("skill") or "")
         action = str(step.get("action") or arguments.get("action") or "").lower()
@@ -1130,7 +1184,7 @@ class ScenarioExecutor:
                         str(arguments.get("point")),
                         str(arguments.get("point")),
                     )
-                    fallback = f"收到，我先去{point}，到了就为你准备会议投影。"
+                    fallback = f"好，我去{point}准备会议投影。"
                 self._emit_progress(
                     name,
                     "acknowledgement",
@@ -1209,7 +1263,11 @@ class ScenarioExecutor:
             executed = any(bool((item.get("result") or {}).get("executed")) for item in step_values)
             all_succeeded = all(item.get("succeeded") for item in step_values)
             if selected:
-                spoken = selected["text"]
+                spoken = self._scenario_outcome_speech(
+                    name,
+                    str(selected.get("name") or ""),
+                    selected["text"],
+                )
             else:
                 visible = [
                     str((item.get("result") or {}).get("spoken_summary") or "").strip()
@@ -1226,7 +1284,11 @@ class ScenarioExecutor:
                 and spoken
                 and "喝口水" not in spoken
             ):
-                spoken = spoken.rstrip("。！!") + "。辛苦啦，先喝口水缓一缓。"
+                care = self._cycle_speech(
+                    f"care:{name}",
+                    ("辛苦了，喝口水吧。", "完成得不错，先补点水。", "做完啦，歇一下再喝口水。"),
+                )
+                spoken = spoken.rstrip("。！!") + "。" + care
             dry_run = validation_ok and not executed
             return {
                 "ok": bool(all_succeeded and executed),

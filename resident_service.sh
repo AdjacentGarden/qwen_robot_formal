@@ -31,7 +31,7 @@ PY
 }
 
 case "$ACTION" in
-  start)
+  start|start-voice-only)
     mkdir -p "$STATE" "$ROOT/runtime"
     if alive && [[ -S "$CONTROL_SOCKET" ]]; then
       status="$(control_status 2>/dev/null || true)"
@@ -41,7 +41,11 @@ case "$ACTION" in
       fi
     fi
     rm -f "$PID_FILE" "$CONTROL_SOCKET"
-    nohup setsid bash "$ROOT/run.sh" --execute-skills >>"$LOG_FILE" 2>&1 </dev/null &
+    run_args=(--execute-skills)
+    if [[ "$ACTION" == "start-voice-only" ]]; then
+      run_args+=(--no-auto-robot-stack)
+    fi
+    nohup setsid bash "$ROOT/run.sh" "${run_args[@]}" >>"$LOG_FILE" 2>&1 </dev/null &
     pid=$!
     echo "$pid" >"$PID_FILE"
     deadline=$((SECONDS + 180))
@@ -53,7 +57,13 @@ case "$ACTION" in
       fi
       if [[ -S "$CONTROL_SOCKET" ]]; then
         status="$(control_status 2>/dev/null || true)"
-        if [[ "$status" == *'"connected": true'* ]]; then
+        # A cloud websocket alone is not enough: when the local microphone is
+        # enabled, wait until the audio stream has read a real non-zero signal.
+        # A deliberately disabled local mic remains a valid ready state because
+        # App voice must continue to work.
+        if [[ "$status" == *'"connected": true'* ]] \
+          && { [[ "$status" == *'"accepting_local_voice": true'* ]] \
+            || [[ "$status" == *'"enabled": false'* ]]; }; then
           echo "$status"
           exit 0
         fi
@@ -98,7 +108,7 @@ case "$ACTION" in
     tail -n "${2:-160}" "$LOG_FILE"
     ;;
   *)
-    echo "usage: bash $0 {start|stop|restart|status|log [lines]}" >&2
+    echo "usage: bash $0 {start|start-voice-only|stop|restart|status|log [lines]}" >&2
     exit 2
     ;;
 esac

@@ -140,6 +140,18 @@ class ConversationState:
             if transcript:
                 self.input_transcripts.append(transcript)
                 actions.append(Action("input_transcript", transcript))
+        elif event_type == "conversation.item.input_audio_transcription.failed":
+            error = event.get("error") or {}
+            actions.append(
+                Action(
+                    "input_transcription_failed",
+                    {
+                        "item_id": str(event.get("item_id") or ""),
+                        "code": str(error.get("code") or "input_transcription_failed"),
+                        "message": str(error.get("message") or "语音转写失败"),
+                    },
+                )
+            )
         elif event_type == "response.audio_transcript.done":
             transcript = str(event.get("transcript") or "").strip()
             if transcript:

@@ -1,0 +1,4321 @@
+{
+  "version": 2,
+  "speaker": "zh_female_xiaohe_jupiter_bigtts",
+  "sample_rate": 24000,
+  "channels": 1,
+  "format": "pcm_s16le",
+  "items": [
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了一个。",
+      "file": "5f93b37292382b4b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了七个。",
+      "file": "141bda7492c1b65d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了三个。",
+      "file": "246325c944516975.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了三十个。",
+      "file": "cfc26a1090be950f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了九个。",
+      "file": "86e53561841f1355.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了二个。",
+      "file": "12585dae84c5d4a2.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了二十一个。",
+      "file": "0ce347333041ef0b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了二十七个。",
+      "file": "d2e583ac50194cef.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了二十三个。",
+      "file": "54a9c9bae3a19f4f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了二十个。",
+      "file": "5e298bba43452afb.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了二十九个。",
+      "file": "ef903b2a385af54f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了二十二个。",
+      "file": "9f88080435ce26b7.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了二十五个。",
+      "file": "ea0f0187225b857e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了二十八个。",
+      "file": "5c16b48c632b614e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了二十六个。",
+      "file": "261be9c8483e6a42.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了二十四个。",
+      "file": "ada4ece148a4b616.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了五个。",
+      "file": "e37504f932a3e009.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了八个。",
+      "file": "a40b3331bebd34da.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了六个。",
+      "file": "2bd5bb3f61df3a1d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了十一个。",
+      "file": "0595473131b668ae.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了十七个。",
+      "file": "e28c3d3c323340df.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了十三个。",
+      "file": "85c636da9b9fd229.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了十个。",
+      "file": "865cd614e7da37fc.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了十九个。",
+      "file": "9b7214bc1d7617e8.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了十二个。",
+      "file": "7319fb049595bfa0.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了十五个。",
+      "file": "c99f9259a5a9cdde.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了十八个。",
+      "file": "57031c2bb834f752.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了十六个。",
+      "file": "dd1787549f5a5666.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了十四个。",
+      "file": "a95bd26437bae5b1.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次俯卧撑计数结束，共做了四个。",
+      "file": "59798c9593382338.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了一个。",
+      "file": "6e6c0f4d56b62f34.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了七个。",
+      "file": "f1b4a8803baf4ccb.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了三个。",
+      "file": "f644554f767cc7db.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了三十个。",
+      "file": "291c6aa4f20d124e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了九个。",
+      "file": "bcfd148a909268e1.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了二个。",
+      "file": "7d8a51f8f03590bc.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了二十一个。",
+      "file": "deb9820bd17b9650.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了二十七个。",
+      "file": "05762f4b0cac4dc0.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了二十三个。",
+      "file": "f9d009fb071ada38.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了二十个。",
+      "file": "120bca5c8d5db819.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了二十九个。",
+      "file": "3be1c3c4ffea4b52.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了二十二个。",
+      "file": "f4f9c9b452c0397e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了二十五个。",
+      "file": "dd0a3cf526d9c1c7.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了二十八个。",
+      "file": "42f9c47ede52d6fb.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了二十六个。",
+      "file": "e442df468a4c5f3b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了二十四个。",
+      "file": "fa30931707989728.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了五个。",
+      "file": "ce555737c6722cbc.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了八个。",
+      "file": "64b8230a5cd0c243.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了六个。",
+      "file": "e77a11c0584c246d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了十一个。",
+      "file": "94e5999d2400902d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了十七个。",
+      "file": "62cc7f71f40731d0.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了十三个。",
+      "file": "72336a557a7dae93.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了十个。",
+      "file": "a65af231cc92261d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了十九个。",
+      "file": "91211f6380a1224f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了十二个。",
+      "file": "75d5a02868b21019.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了十五个。",
+      "file": "f1f283c6af7d9e37.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了十八个。",
+      "file": "fc18a88c2cf1ccbd.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了十六个。",
+      "file": "f2dd99c95d50edfa.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了十四个。",
+      "file": "cacc80b917453855.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次引体向上计数结束，共做了四个。",
+      "file": "4d25b3d247daec72.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了一个。",
+      "file": "75dd7c8cc9670e89.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了七个。",
+      "file": "4ab002372b3b8c6d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了三个。",
+      "file": "b44f6324ba9a5f91.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了三十个。",
+      "file": "0181c34223f05078.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了九个。",
+      "file": "f7b8b0e435b69787.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了二个。",
+      "file": "4cbf46856ecb91c3.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了二十一个。",
+      "file": "9b1c3d666c5230b9.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了二十七个。",
+      "file": "c23bdcc0d55c4702.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了二十三个。",
+      "file": "b7b829e7ad1ece6e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了二十个。",
+      "file": "f08dacfdc9c8da36.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了二十九个。",
+      "file": "6704e75ac823a960.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了二十二个。",
+      "file": "73b0202cd6fdd8eb.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了二十五个。",
+      "file": "33f9597881644e4a.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了二十八个。",
+      "file": "517551396e4949a6.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了二十六个。",
+      "file": "136bc5d7ad18546a.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了二十四个。",
+      "file": "4e56ea5518f90386.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了五个。",
+      "file": "d69365d65f2bae2d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了八个。",
+      "file": "0f067715005f321b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了六个。",
+      "file": "6545e0e7f31d4b1f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了十一个。",
+      "file": "59cd640614356fb3.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了十七个。",
+      "file": "9d571772fcd55889.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了十三个。",
+      "file": "95d128990090e568.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了十个。",
+      "file": "193ce575abf78bf8.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了十九个。",
+      "file": "fcf2217a3931ef27.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了十二个。",
+      "file": "d02a4c7643b44cb9.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了十五个。",
+      "file": "80a7fd1118dfb9bf.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了十八个。",
+      "file": "9e793a12e8bc8875.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了十六个。",
+      "file": "bb322130bd88a1fc.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了十四个。",
+      "file": "791cc26b58573d9a.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "三十秒已到，本次深蹲计数结束，共做了四个。",
+      "file": "738d0905e134d816.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "不支持的搜索状态指令",
+      "file": "b1ab1ca0e7f3fb07.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "不支持的设备类型",
+      "file": "5f9f46de85b11d54.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "不支持的遥控指令",
+      "file": "9f8bca4cf0aee0b9.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "二次语音识别工具调用已捕获",
+      "file": "0beebddf1455fd2f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "人脸识别刚才出了点问题，等一下我们再试。",
+      "file": "533c1ee3f2ca7853.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "任务异常，已停止。",
+      "file": "d627c0779c790ede.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "你好，我在这里",
+      "file": "11b6b666bdea2c30.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "你好，我是基于 Matcha 架构的语音助理。Nice to meet you!",
+      "file": "a0dee18434fa5324.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "俯卧撑计数已开始，时长三十秒。",
+      "file": "04c1ccb7b1cd9b79.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "停止",
+      "file": "aeaa3030748bb013.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "前进",
+      "file": "ee188594dd302913.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "参数缺失或不支持的设备指令",
+      "file": "bed0620b814a43ac.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "参数缺失或不支持的遥控指令",
+      "file": "5e56fb3b55e752e5.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "右转",
+      "file": "659e7d89ef86b4ae.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "后退",
+      "file": "14f0a857181c81e9.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "好的 我现在就帮你录入，请您站远一点并正视摄像头。",
+      "file": "e686995bf9fea354.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "好的，我在这里。",
+      "file": "0670cef5d6107ed8.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "好的，我要开始帮你数下蹲了，请准备好，3，2，1，开始。",
+      "file": "336d4c046338a737.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "好的，我要开始帮你数俯卧撑了，请准备好，3，2，1，开始。",
+      "file": "cf8ddbd1fe50de55.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "好的，我要开始帮你数引体向上了，请准备好，3，2，1，开始。",
+      "file": "a58c5cb113e53983.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "好的，我要开始记住你了。",
+      "file": "a0346c01c9acbadd.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "好的，让我看看这是谁。",
+      "file": "4ebff33b5f02e170.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "好的，需要时再叫我。",
+      "file": "829c95412bd584d9.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "好，我带你去开阔一点的位置。",
+      "file": "ca7f74e4d9911823.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "家电控制失败。",
+      "file": "50f4b3390ac19aa6.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "家电控制已完成。",
+      "file": "9155379a9a3e1236.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "对不起，我没找到宠物",
+      "file": "ba8e89dbdce6205b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "导航启动失败。",
+      "file": "18b19103184b5f33.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "导航启动异常，已执行停止保护。",
+      "file": "50939df4851614cf.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "导航异常，已执行停止保护。",
+      "file": "bcb08d37819e6f25.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "导航系统还没有启动，请先确认三个导航终端已经正常运行。",
+      "file": "5ff2cffb021d9098.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "导航超时，已停止。",
+      "file": "869b8e9607ab3bf2.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "工具调用无法解析",
+      "file": "49d782e771bffcb2.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "左转",
+      "file": "e6c5a30d2427dd99.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已为您完成人脸录入，请问您怎么称呼。",
+      "file": "64bb4248fe84b546.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已停止导航。",
+      "file": "17695cfe906d6c9b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已停止投影。",
+      "file": "1686b37774dcb85b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已停止运动引导。",
+      "file": "ebfcef8f1ecc46b6.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已关闭台灯。",
+      "file": "0c7014c33104d0c2.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已关闭风扇。",
+      "file": "1198826ebc82080d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已取消投影。",
+      "file": "f50759d3cdc76a99.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已启动投食机。",
+      "file": "5f2ba50295d8927d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已开始人脸注册",
+      "file": "28a531cf5a2579fc.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已开始人脸识别",
+      "file": "d706481558508f68.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已开始宠物追踪",
+      "file": "9b06350b605df3a6.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已开始导航",
+      "file": "7359a33915c83a71.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已开始导航宠物追踪",
+      "file": "7da49e5596b55190.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已开始建图",
+      "file": "6db40dc7eb978d5a.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已开始投影",
+      "file": "c14396b0f3ff90d9.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已开始运动计数",
+      "file": "d7949484258e924d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已打开台灯。",
+      "file": "be7a2de6ecb7ff7d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已打开风扇。",
+      "file": "cc9d949d482d1e9a.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已经到达目标点。",
+      "file": "72a255c10529464b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "已请求停止当前任务。",
+      "file": "bcb846337d46f637.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "建图启动失败。",
+      "file": "4f69789fef0fd691.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "建图已停止。",
+      "file": "6d366c407d462d9f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "引体向上计数已开始，时长三十秒。",
+      "file": "a3828ed8bb8de7ed.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "当前已有任务正在运行",
+      "file": "fb8b62ab24cecf55.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "当前没有可以停止的任务。",
+      "file": "69bcbe7d6b2bf3b1.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "当前没有正在进行的运动计数。",
+      "file": "ffc2a4a2cf004563.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我不懂这是指令还是日常对话，请重新唤醒下指令。",
+      "file": "29700b634268280c.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我先回到刚才的运动位置。",
+      "file": "b0a2b829f7a363d9.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我可以带路、找豆豆、认人脸、陪你做运动计数、打开投影，也能控制投食机、灯和风扇。要不要我先展示一个？我可以演示找豆豆，也可以演示投影。",
+      "file": "877e50d8d3d6d16e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我在",
+      "file": "bb1675d6d7dbc7a7.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我在。",
+      "file": "58f08b46e8bb4879.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我在哟",
+      "file": "4d4f624f05c07f88.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我在，正在导航。要停的话直接说停下来。",
+      "file": "9760faa7052d0e36.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我在，正在帮你计数。我能告诉你现在几个，也能先停下，或者先去找豆豆。",
+      "file": "b624c36194f758e0.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我在，正在建图。要停的话直接说停下来。",
+      "file": "b5f904b0da78d2c6.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我在，正在找豆豆。要停的话直接说停下来。",
+      "file": "015a9843097113a9.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我在，正在投影。要停的话直接说停下来。",
+      "file": "6bdc5960e9c51eb0.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我已经暂停当前任务，但没有拿到可恢复的运动类型。",
+      "file": "98ae67011d186fa6.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我已经记住你了。",
+      "file": "9453c60b58492875.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我带你换个更开阔的位置。",
+      "file": "2916dbf0b0d0fd9f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我把这些地方都看过了，还是没找到豆豆。",
+      "file": "af3fa04a7d59a993.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成10个。",
+      "file": "66791388a703b3ff.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成11个。",
+      "file": "7987e2a0fd555981.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成12个。",
+      "file": "716c7bbfe75330a1.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成13个。",
+      "file": "8af2bc5481ddc168.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成14个。",
+      "file": "a482c964812b0ca8.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成15个。",
+      "file": "a80b6899e2c6ad6f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成16个。",
+      "file": "ab653ad1d89b9163.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成17个。",
+      "file": "e5489c2e44fca7d4.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成18个。",
+      "file": "9b0a7a4cd4cf82c1.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成19个。",
+      "file": "9b87b72e8692502a.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成1个。",
+      "file": "3dff290c328129bb.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成20个。",
+      "file": "2d9fba2496c7c770.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成21个。",
+      "file": "0e1a409f831b1f23.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成22个。",
+      "file": "a8e461fed8fedd47.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成23个。",
+      "file": "de47034fba212fef.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成24个。",
+      "file": "558b7c2ad03c91eb.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成25个。",
+      "file": "1e7be3321fc457f1.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成26个。",
+      "file": "900a3a5c6a242584.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成27个。",
+      "file": "3e894a02f872ca3b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成28个。",
+      "file": "b64d14044a6c4489.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成29个。",
+      "file": "c217f96ddd6d6e73.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成2个。",
+      "file": "f9aef42fde27f4c2.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成30个。",
+      "file": "41a525b761a772d5.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成3个。",
+      "file": "17b8ac7ed3e75547.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成4个。",
+      "file": "c83f51678d6e5130.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成5个。",
+      "file": "a588a6e3c65a7ca6.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成6个。",
+      "file": "386a5165b9f70a7f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成7个。",
+      "file": "64293fa8411341e2.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成8个。",
+      "file": "60a2ca0a56c58bbe.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成9个。",
+      "file": "c6560c3afd190645.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成一个。",
+      "file": "28c2d8fd285c22b3.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成七个。",
+      "file": "ac15ba5d3488e9dd.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成三个。",
+      "file": "bef1594a576b57f0.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成三十个。",
+      "file": "ca65a0f0378778fe.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成九个。",
+      "file": "eba0322ed3399635.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成二个。",
+      "file": "c28d47c86b516545.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成二十一个。",
+      "file": "1fee3c3c6f3d9052.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成二十七个。",
+      "file": "d9959dce1b9372a4.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成二十三个。",
+      "file": "fb8f85cf0dc054a7.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成二十个。",
+      "file": "917c9852887c3c4c.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成二十九个。",
+      "file": "61acd8cf4e25a9a2.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成二十二个。",
+      "file": "89484c5b60107180.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成二十五个。",
+      "file": "48cd90865832f222.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成二十八个。",
+      "file": "45791814f73c408f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成二十六个。",
+      "file": "b11ea2de1b19baaa.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成二十四个。",
+      "file": "6b9dcf607e137473.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成五个。",
+      "file": "c0987dfc67fa1800.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成八个。",
+      "file": "5e5bd38e2748ac9b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成六个。",
+      "file": "511e489b87bf7bdd.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成十一个。",
+      "file": "6a01bd4f8591fe8f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成十七个。",
+      "file": "c9587f808b0d88f2.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成十三个。",
+      "file": "3cda802968421000.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成十个。",
+      "file": "c3e972ed105ac261.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成十九个。",
+      "file": "ab18bdc89022c4da.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成十二个。",
+      "file": "1809f2abeb6a18a7.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成十五个。",
+      "file": "aca5b36a93612dc3.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成十八个。",
+      "file": "1f8e667256f31c25.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成十六个。",
+      "file": "457961c06459f24c.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成十四个。",
+      "file": "5814cb119785565d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次下蹲先到这里，一共完成四个。",
+      "file": "badb408f6dbb7414.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成10个。",
+      "file": "ac9dba47c9c2ad23.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成11个。",
+      "file": "2dd78c59ddd7ff75.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成12个。",
+      "file": "c70102169eb3cbe5.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成13个。",
+      "file": "857d3ecb7331353f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成14个。",
+      "file": "93131fbf1455cf81.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成15个。",
+      "file": "ae7a14c4f514b307.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成16个。",
+      "file": "a6bee24e0270ee50.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成17个。",
+      "file": "7d6567e2a708cee4.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成18个。",
+      "file": "5c82b50a9e546ba2.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成19个。",
+      "file": "9e2c92fcee6a187f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成1个。",
+      "file": "6163ff76ede3800c.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成20个。",
+      "file": "c5d432269ff2e59f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成21个。",
+      "file": "3833fb62e77340ca.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成22个。",
+      "file": "9ec47f116ac8a58b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成23个。",
+      "file": "739bc7b89a260067.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成24个。",
+      "file": "2c9ec813e1dd8bb5.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成25个。",
+      "file": "cfbfecbe625934a2.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成26个。",
+      "file": "40f96d6017ac38dd.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成27个。",
+      "file": "dd976f148155c690.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成28个。",
+      "file": "e572ebf6a00e792e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成29个。",
+      "file": "f40bd233207b2484.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成2个。",
+      "file": "dcb492510d062727.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成30个。",
+      "file": "2d8ad0c166f8d375.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成3个。",
+      "file": "ec380062049dadba.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成4个。",
+      "file": "a3936d01f7c00123.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成5个。",
+      "file": "c1c94a1ceb4c6b74.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成6个。",
+      "file": "6ec95a04e212f4b7.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成7个。",
+      "file": "f1d43fd45c61f97c.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成8个。",
+      "file": "223493d02fb65d42.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成9个。",
+      "file": "557fd765d9c4f539.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成一个。",
+      "file": "a88fc4dba095f645.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成七个。",
+      "file": "671e96ade8d9b24d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成三个。",
+      "file": "37b3360fd8b639f4.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成三十个。",
+      "file": "cbb0c34c425e2703.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成九个。",
+      "file": "bcc66dbe6b153f77.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成二个。",
+      "file": "287c14601ffc0ee6.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成二十一个。",
+      "file": "0e9dba0260338faa.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成二十七个。",
+      "file": "75bc78820dc2e20d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成二十三个。",
+      "file": "fc3bee5ce54298b2.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成二十个。",
+      "file": "4ae2d3100754edcf.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成二十九个。",
+      "file": "c7c5990de23e4d27.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成二十二个。",
+      "file": "9bca2da28f801de8.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成二十五个。",
+      "file": "efac62ce2d280e28.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成二十八个。",
+      "file": "34287126fb3391a1.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成二十六个。",
+      "file": "616d65b2cbdb0efd.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成二十四个。",
+      "file": "b262bd61a46bc2e6.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成五个。",
+      "file": "f64f6bf1402382d3.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成八个。",
+      "file": "6df46e39fda2ad8f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成六个。",
+      "file": "0cfaabeccf009ff6.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成十一个。",
+      "file": "f534740ef5fb8246.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成十七个。",
+      "file": "52af1c526be36e08.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成十三个。",
+      "file": "bd7d42f8f6b37767.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成十个。",
+      "file": "7335e93ad41bbb0b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成十九个。",
+      "file": "2aa8ebe4a144037a.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成十二个。",
+      "file": "d6629e7ca9010822.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成十五个。",
+      "file": "2d8031df50baea40.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成十八个。",
+      "file": "3b22397bd28eb918.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成十六个。",
+      "file": "f436f5a12abbc0ea.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成十四个。",
+      "file": "7d565285a3ba8ae7.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次俯卧撑先到这里，一共完成四个。",
+      "file": "62afd9ae26af3f91.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成10个。",
+      "file": "f9a0dcd99e6856c5.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成11个。",
+      "file": "e9988649b534b5a0.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成12个。",
+      "file": "8541ecee576d7ab4.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成13个。",
+      "file": "12222efd01b432fb.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成14个。",
+      "file": "972a9d4f68664aa8.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成15个。",
+      "file": "4519508279165971.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成16个。",
+      "file": "dbbec0ff287dbb7b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成17个。",
+      "file": "8f8f16c203951ef5.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成18个。",
+      "file": "5b688f79e3394930.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成19个。",
+      "file": "357dc2fd4cde270b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成1个。",
+      "file": "94f2a3f0db6c711b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成20个。",
+      "file": "ae2bea0d0ef86afb.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成21个。",
+      "file": "a95a43030d9bee21.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成22个。",
+      "file": "aec0266026fcd18b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成23个。",
+      "file": "98de72e8aff75729.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成24个。",
+      "file": "13dfd9f5251280af.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成25个。",
+      "file": "93a38d7e4b1e14ee.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成26个。",
+      "file": "4656fa62727c3283.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成27个。",
+      "file": "45785dcabeb11f1f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成28个。",
+      "file": "69d2a926037bb3ea.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成29个。",
+      "file": "005bec8bb57aea82.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成2个。",
+      "file": "9f547900e8e040ef.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成30个。",
+      "file": "616a10937203a597.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成3个。",
+      "file": "b41c7b34a66b5e54.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成4个。",
+      "file": "6f9413d500b51cde.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成5个。",
+      "file": "3ca77ffc240e0aa9.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成6个。",
+      "file": "104ed325ac7ec63f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成7个。",
+      "file": "b22b46025bca704a.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成8个。",
+      "file": "327f50b342ec5edd.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成9个。",
+      "file": "c582cc8f30e9d12d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成一个。",
+      "file": "adb18149a48f0735.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成七个。",
+      "file": "894af652384d26db.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成三个。",
+      "file": "866ac51a480a3163.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成三十个。",
+      "file": "1cf430f84226cabc.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成九个。",
+      "file": "8620a9d5d703e42c.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成二个。",
+      "file": "3676a3068b5d554c.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成二十一个。",
+      "file": "f3d8a3f77c1081ab.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成二十七个。",
+      "file": "0bc0096835c0663b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成二十三个。",
+      "file": "eab6bcd8193613bd.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成二十个。",
+      "file": "82c6440b47c72f65.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成二十九个。",
+      "file": "779ecfb52ec07aa2.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成二十二个。",
+      "file": "8438ed5ef26317e5.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成二十五个。",
+      "file": "25e3336af237c9b4.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成二十八个。",
+      "file": "20ab7a5548284b74.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成二十六个。",
+      "file": "8620a762cdb5eefa.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成二十四个。",
+      "file": "48a260bf32a1914e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成五个。",
+      "file": "425796476d57a391.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成八个。",
+      "file": "e2fa5f302f89a449.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成六个。",
+      "file": "7b2bb92d4b11553f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成十一个。",
+      "file": "83ab59df1600876e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成十七个。",
+      "file": "c6ebfa11e54c2558.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成十三个。",
+      "file": "a5a2d23b70b25ef1.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成十个。",
+      "file": "9251af5e3bd131d9.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成十九个。",
+      "file": "d154e2c82f2a485b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成十二个。",
+      "file": "2fe6cf4e48241703.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成十五个。",
+      "file": "6c75273877ed6f35.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成十八个。",
+      "file": "9bd886f03e9eebdd.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成十六个。",
+      "file": "71dc62dbc6ad8a79.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成十四个。",
+      "file": "8bd9e83c55207dc2.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我有一会儿没看到新动作了，这次引体向上先到这里，一共完成四个。",
+      "file": "e4f343c597a4ac56.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在听你说话。",
+      "file": "dc4527085aff8f30.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在听清你的意思。",
+      "file": "ca1beb292ddce18d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在导航，要停的话直接叫我停下来。",
+      "file": "beb21950d516ff00.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在导航，这条指令先不处理。",
+      "file": "3adfb11d7d1e2786.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在帮你计数。我能告诉你现在几个，也能先停下，或者先去找豆豆。",
+      "file": "b23bbaab38d93ff8.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在帮你计数。现在能问个数、停下，或者先去找豆豆。",
+      "file": "3b9b2433d056f0dd.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在建图，要停的话直接叫我停下来。",
+      "file": "a392cc947d256243.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在建图，这条指令先不处理。",
+      "file": "c7c68207761e1a59.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在录入人脸，稍等一下。",
+      "file": "b1b5ec66d536fdc8.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在恢复状态，稍等一下。",
+      "file": "1b5126881d018eb7.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在想怎么处理。",
+      "file": "ec90140371d87883.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在找豆豆，要停的话直接叫我停下来。",
+      "file": "8e5e93ed51f351ca.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在找豆豆，这条指令先不处理。",
+      "file": "5c5a7a9183775ccb.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在投影，要停的话直接叫我停下来。",
+      "file": "7053702e0df8915e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在投影，这条指令先不处理。",
+      "file": "efe6ab3e1964bf61.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在控制设备，稍等一下。",
+      "file": "bce3f5a37e73258c.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在收尾，稍等一下。",
+      "file": "20925d6b3b51f1d1.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在识别人脸，稍等一下。",
+      "file": "e843322217f7a98f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我正在说话，稍等一下。",
+      "file": "b84950814e96ec71.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我没听到声音。",
+      "file": "fa432b282bb7cd6b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我没听懂这条指令。",
+      "file": "5074876f4ca5abc8.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我没听清位置，先按就在这里开始。",
+      "file": "791ef3c350e9a6c5.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我没听清，先不开投影，直接开始计数。",
+      "file": "cce42a0b7e6bfabc.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我没听清，这次运动先到这里。",
+      "file": "b91778d67e867710.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我没看清人脸，你面对我再试一次。",
+      "file": "964d246aaf1a91b8.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我现在有点忙，稍等一下。",
+      "file": "3448a121fb682f25.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我现在还不会数仰卧起坐。俯卧撑、引体向上和深蹲我都可以帮你数。",
+      "file": "2c976ae5b8aa94e9.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我现在还不认识任何人，可以先让我记住你。",
+      "file": "45f3f8a7a7843aa3.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我看到人脸了，但还不认识这个人。",
+      "file": "96fb7d34052570e6.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我认识你。",
+      "file": "50ca983951815beb.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我还不知道怎么称呼你，告诉我你的名字吧。",
+      "file": "a61610d4db4ca6c0.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我这次没找到小狗。",
+      "file": "29b970f08fc8ff10.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我这次没找到小猫。",
+      "file": "957df0d682b96157.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我这次没找到豆豆。",
+      "file": "0a64ed757de5da30.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我这次没看清人脸，你正对着我再试一次。",
+      "file": "b14f9c4c206bd73c.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我醒啦",
+      "file": "2463ab9c1bc91cc7.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "我需要先知道你要做哪项运动。俯卧撑、引体向上和深蹲我都能数。",
+      "file": "6b57b8c28b79ff94.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "找到小狗了。",
+      "file": "a483577395ca8b66.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "找到小猫了。",
+      "file": "26914bb03281fc71.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "找到豆豆了。",
+      "file": "ce084ba2076d22e7.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "投影图片不存在",
+      "file": "a3fa0dd364cd6e9d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "投影图片接收成功",
+      "file": "d7da86d912ef802a.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "投影已停止",
+      "file": "c133bd9f842cb190.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "投影已启动",
+      "file": "7e5ea1e10106c909.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "投影我已经打开了。",
+      "file": "ab537b891eca99f3.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "暂停记录里没有可恢复的运动类型。",
+      "file": "e228d3e56ee5af77.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "机器人编码不匹配",
+      "file": "d90b602ebb7712b1.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "没有成功暂停当前运动计数。",
+      "file": "932224ae6d4b2ae6.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "没有找到暂停的运动记录。",
+      "file": "0994e4a85d473397.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "没有找到这个目标点。",
+      "file": "6bb8b96ef1e30682.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "没有找到这个目标点，请先检查配置文件里的坐标。",
+      "file": "7b1a5314146a54cf.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "深蹲计数已开始，时长三十秒。",
+      "file": "28adca44b1207df5.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "照片已就绪",
+      "file": "1d27087dd3917978.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "状态查询成功",
+      "file": "256a8f1cf71f2457.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是10个。",
+      "file": "f4c01b6eeb97eece.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是11个。",
+      "file": "349b21d7e1349106.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是12个。",
+      "file": "17e48ca750c8276e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是13个。",
+      "file": "fd9a982f2e409dd3.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是14个。",
+      "file": "b17009b128d535bb.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是15个。",
+      "file": "ba4ad3c67df6f4e8.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是16个。",
+      "file": "e3365db7f6bd831e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是17个。",
+      "file": "7e0fe02cb7c7cbf1.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是18个。",
+      "file": "24a89b73e116fe63.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是19个。",
+      "file": "c1205ead73b7228d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是1个。",
+      "file": "5a40c5c55aef808b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是20个。",
+      "file": "bf0bfca187bb6d6b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是21个。",
+      "file": "033090aaadd6a597.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是22个。",
+      "file": "5b9e5cb62ed8f5bc.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是23个。",
+      "file": "d39b59ff790caecd.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是24个。",
+      "file": "9b5bdae2c86e99b0.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是25个。",
+      "file": "cce125a2fc30f7d7.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是26个。",
+      "file": "79cd3fa32bb8dc6d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是27个。",
+      "file": "824bcfcfb5c48874.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是28个。",
+      "file": "4af409f3e1756149.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是29个。",
+      "file": "aa250bef60f672e6.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是2个。",
+      "file": "cbdabf2cb733aa5d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是30个。",
+      "file": "051f6fe58f3b3b7a.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是3个。",
+      "file": "e312c9ea432cd926.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是4个。",
+      "file": "0fc4292ba19de44f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是5个。",
+      "file": "75bd9eb9c2ef3ffb.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是6个。",
+      "file": "f44ae4f79ae8ec2e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是7个。",
+      "file": "1a27b7c710b23a02.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是8个。",
+      "file": "555d7936a2330364.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "现在是9个。",
+      "file": "e4627e85c0b8f40b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第10个",
+      "file": "1898e8623ada6b50.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第11个",
+      "file": "ab89e8cbd16d1ab8.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第12个",
+      "file": "acc290c54957ef26.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第13个",
+      "file": "603fc730c238f06f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第14个",
+      "file": "34b859d67cca27d4.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第15个",
+      "file": "960cdf885b57137f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第16个",
+      "file": "fbc8677f527e7177.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第17个",
+      "file": "a777bdc8aea8f3ff.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第18个",
+      "file": "4f8200a1363848ce.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第19个",
+      "file": "2c19622f3b64ab62.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第1个",
+      "file": "07568a2e69d50e3c.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第20个",
+      "file": "9181eb98b0a4560d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第21个",
+      "file": "054403a695055916.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第22个",
+      "file": "99731e2e5d0c0cbe.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第23个",
+      "file": "e05d6272787be4a5.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第24个",
+      "file": "93740351eba71493.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第25个",
+      "file": "e0f350f8bf49e6ab.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第26个",
+      "file": "64f39834d9e55636.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第27个",
+      "file": "9097575ea7ba79b8.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第28个",
+      "file": "d50b8b268e85938e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第29个",
+      "file": "e0c8601d4bdd4d0d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第2个",
+      "file": "03f998c8a538e37b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第30个",
+      "file": "4f005034d24f5945.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第3个",
+      "file": "7935078fc60139b4.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第4个",
+      "file": "d5ecb4ad396b9b7b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第5个",
+      "file": "d84cc53490f41448.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第6个",
+      "file": "59a6cac18d92f2b3.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第7个",
+      "file": "2437496ffc3b5afb.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第8个",
+      "file": "2a64b7b464144ad2.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第9个",
+      "file": "b9fee6721acbda02.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第一个",
+      "file": "74bd543b4114a628.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第七个",
+      "file": "00cc8acc573cf832.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第三个",
+      "file": "d8a42b24c76f5465.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第三十个",
+      "file": "984cb51b76d1f9e5.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第九个",
+      "file": "17b0dc5132571fd2.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第二个",
+      "file": "883b594c56d4d32d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第二十一个",
+      "file": "d3ad5d74871d263d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第二十七个",
+      "file": "e0fe16fd0f5267b9.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第二十三个",
+      "file": "f2e0b29082090662.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第二十个",
+      "file": "56a3a563d2a81a49.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第二十九个",
+      "file": "09e6808c85f5a79e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第二十二个",
+      "file": "0d9cb7fcbfd70747.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第二十五个",
+      "file": "cd935d987562e309.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第二十八个",
+      "file": "e9b38167ad0e3c30.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第二十六个",
+      "file": "d424df4185fd7eb0.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第二十四个",
+      "file": "2929d53c06b6d8b3.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第五个",
+      "file": "d4b8378138fa3886.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第八个",
+      "file": "2867aefa14a10bf1.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第六个",
+      "file": "8c1372fc44ac1f99.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第十一个",
+      "file": "24784448667db654.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第十七个",
+      "file": "1c67801d1560e951.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第十三个",
+      "file": "39077f8c40f135bb.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第十个",
+      "file": "62880bcb0559e40b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第十九个",
+      "file": "e4aa832a037f3995.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第十二个",
+      "file": "249e3610713ff22e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第十五个",
+      "file": "e84f311db90a87c9.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第十八个",
+      "file": "952ef7b82eb658fe.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第十六个",
+      "file": "a11109a95d5db1ee.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第十四个",
+      "file": "622a5b1571d6def0.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "第四个",
+      "file": "5b4e3cd4cc7754e8.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "缺少上传文件",
+      "file": "9d0919087c5bb143.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "获取搜索状态成功",
+      "file": "2216864320282435.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "要继续运动，还是先到这里？",
+      "file": "f9147b1d684a6937.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数任务已经在后台运行中",
+      "file": "6ca8dbcbd0754741.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成10个。",
+      "file": "7a0d4934f3e7f633.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成11个。",
+      "file": "6e1cb67a78e304d8.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成12个。",
+      "file": "a8acd5890fe98818.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成13个。",
+      "file": "03ba98ea8f04f58e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成14个。",
+      "file": "58100397c3e070c9.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成15个。",
+      "file": "66b32723c42dfee1.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成16个。",
+      "file": "66313dd661534464.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成17个。",
+      "file": "ac38ba42b5f927c1.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成18个。",
+      "file": "3f02b5f4577a258e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成19个。",
+      "file": "906280e48ce5cf3f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成1个。",
+      "file": "1b61fcb314f640ca.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成20个。",
+      "file": "52b48a6142d9878b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成21个。",
+      "file": "82980a0c6ee1e513.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成22个。",
+      "file": "6a28b72deba7546a.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成23个。",
+      "file": "38d1d0498ed72bbc.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成24个。",
+      "file": "8d3489c5ce14997d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成25个。",
+      "file": "bc80f93559599f30.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成26个。",
+      "file": "3e52baac2ad4197b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成27个。",
+      "file": "a6519da57ee53427.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成28个。",
+      "file": "38b5c0e298239e76.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成29个。",
+      "file": "a35c3c770f7fc32a.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成2个。",
+      "file": "fd9f4ad9b80cae61.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成30个。",
+      "file": "6be9f78e64a22330.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成3个。",
+      "file": "86c1df53214917fc.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成4个。",
+      "file": "79b2c62f0e402288.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成5个。",
+      "file": "b5c4d64be182b86b.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成6个。",
+      "file": "9ff509cc718d9ea8.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成7个。",
+      "file": "c282d35863710ded.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成8个。",
+      "file": "ada11a2c29f33e71.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "计数结束，一共完成9个。",
+      "file": "3aa5e44297a640f2.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "设备编码不匹配",
+      "file": "7b179c33cad52cf6.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "设备编码不能为空",
+      "file": "e0fd2fd780fed6e3.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "语音服务还没准备好，请再叫我一次。",
+      "file": "2c89648760d466b7.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "语音监听出错了，请稍后再试。",
+      "file": "c668f9686f94af3c.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "运动引导流程异常，已经执行保护停止。",
+      "file": "6d40632a8e62825e.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "运动计数启动失败。",
+      "file": "2ca9c5d2ba0c477d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "运动计数还没有完全暂停，请稍后再试。",
+      "file": "129fbde39b7eab83.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "这次人脸识别没拿到结果，等一下我们再试。",
+      "file": "f654e94292063fc3.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "这次人脸识别没有完成，等一下我们再试。",
+      "file": "54231d8b3a635d53.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "这里不太适合运动，我带你换个地方。",
+      "file": "d7eac2d9aa1befbe.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "这里可以运动，不过不适合投影，我直接开始帮你计数。",
+      "file": "18becdc38ba3de7a.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "这项运动我还没学会。现在我能数俯卧撑、引体向上和深蹲。",
+      "file": "42766c50231924d4.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "这项运动我还没学会。现在我能数俯卧撑、深蹲和引体向上。",
+      "file": "cc1dce6bfea86ac5.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "遥控模块未初始化",
+      "file": "ac3d2d3b72e6ba15.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "麦克风正在被占用，请稍后再试。",
+      "file": "4fbd0a123065ea8d.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    },
+    {
+      "text": "麦克风没有打开成功，请检查录音设备。",
+      "file": "1cd7719d2272af5f.pcm",
+      "sample_rate": 24000,
+      "channels": 1,
+      "format": "pcm_s16le",
+      "speaker": "zh_female_xiaohe_jupiter_bigtts"
+    }
+  ]
+}

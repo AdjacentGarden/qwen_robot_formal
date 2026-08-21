@@ -29,6 +29,6 @@ print(f"export BACK_CAMERA_ID={shlex.quote(str(back))}")
 PY
 )"
 
-: "${MODELSCOPE_SDK_TOKEN:?Set MODELSCOPE_SDK_TOKEN before starting this legacy skill}"
-export MODELSCOPE_SDK_TOKEN
+# ! modelscope api key
+export MODELSCOPE_SDK_TOKEN="${MODELSCOPE_SDK_TOKEN:-replace_me}"
 exec python3 "$DIR/run.py" "$@"

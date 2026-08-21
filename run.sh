@@ -15,6 +15,34 @@ if [[ -f runtime/config.env ]]; then
   set +a
 fi
 
+# This robot exposes two digital microphone inputs.  dmic0 can remain present
+# and report RUNNING while delivering only digital zeroes; the front microphone
+# used for conversation is dmic1.  Select it for this process without changing
+# the desktop-wide PulseAudio default, while still allowing config.env to
+# override PULSE_SOURCE on different hardware.
+# Commands launched by the system-level App bridge do not inherit the desktop
+# session's PulseAudio variables.  Point only this child process at test's
+# existing Pulse runtime so App-start and terminal-start use the same input.
+if [[ -z "${XDG_RUNTIME_DIR:-}" ]]; then
+  pulse_runtime="/run/user/$(id -u)"
+  if [[ -d "$pulse_runtime" ]]; then
+    export XDG_RUNTIME_DIR="$pulse_runtime"
+  fi
+fi
+if [[ -z "${PULSE_SERVER:-}" && -S "${XDG_RUNTIME_DIR:-/nonexistent}/pulse/native" ]]; then
+  export PULSE_SERVER="unix:${XDG_RUNTIME_DIR}/pulse/native"
+fi
+if [[ -z "${PULSE_SOURCE:-}" ]]; then
+  preferred_source="${QWEN_MICROPHONE_SOURCE:-alsa_input.platform-dmic1.stereo-fallback}"
+  if command -v pactl >/dev/null 2>&1 \
+    && pactl list short sources 2>/dev/null | awk '{print $2}' | grep -Fxq "$preferred_source"; then
+    export PULSE_SOURCE="$preferred_source"
+  else
+    echo "[audio] 首选麦克风 $preferred_source 不存在，使用系统默认输入" >&2
+  fi
+fi
+echo "[audio] 麦克风输入：${PULSE_SOURCE:-system-default}"
+
 KEY_ARGS=()
 if [[ -z "${DASHSCOPE_API_KEY:-}" && -f runtime/api_key ]]; then
   KEY_ARGS=(--api-key-file runtime/api_key)

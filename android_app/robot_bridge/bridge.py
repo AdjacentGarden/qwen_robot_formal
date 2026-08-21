@@ -36,6 +36,10 @@ APP_CONTROL_SOCKET = PROJECT / "runtime/app_control.sock"
 APP_VOICE_RUNTIME = PROJECT / "runtime/app_voice"
 MICROPHONE_STATE_FILE = PROJECT / "runtime/microphone_state.json"
 MAX_APP_VOICE_BYTES = 4 * 1024 * 1024
+TELEMETRY_INTERVAL_SEC = 0.25
+LINK_HEARTBEAT_INTERVAL_SEC = 0.75
+ASYNC_STATUS_TIMEOUT_SEC = 1.5
+WEBSOCKET_SEND_TIMEOUT_SEC = 2.0
 
 
 def load_microphone_state() -> Dict[str, Any]:
@@ -330,6 +334,21 @@ class ProgramController:
         except Exception:
             return False
 
+    def wait_for_voice_ready(self, timeout: float = 10.0) -> bool:
+        """Wait through a short Qwen idle-session reconnect.
+
+        The realtime provider rotates an otherwise healthy idle session after
+        180 seconds. App voice may arrive in that brief window, so rejecting it
+        as if the whole robot program were stopped produces a false failure.
+        """
+        deadline = time.monotonic() + max(0.0, float(timeout))
+        while True:
+            if self._qwen_voice_connected():
+                return True
+            if time.monotonic() >= deadline:
+                return False
+            time.sleep(0.20)
+
     def status(self) -> Dict[str, Any]:
         if self.dry_run:
             return {"state": "dry_run", "components": {name: True for name in self.COMPONENT_NAMES}}
@@ -369,8 +388,49 @@ class ProgramController:
                 return {"status": "dry_run", "operation": "start", "program": before}
             if before["state"] == "running" and before["components"].get("voice"):
                 return {"status": "already_running", "program": before}
-            service = self._run(["bash", str(self.project / "resident_service.sh"), "start"], 240.0)
-            return {"status": "started", "program": self.status(), "service": service}
+            # A previous degraded start intentionally leaves voice available.
+            # Stop that process before retrying the complete robot stack;
+            # resident_service itself otherwise treats a live control socket as
+            # already started and would never retry navigation.
+            if before["state"] == "partial" and before["components"].get("voice"):
+                self._run(["bash", str(self.project / "resident_service.sh"), "stop"], 120.0)
+            try:
+                # A cold boot can legitimately consume roughly 30 s for a
+                # base retry plus two 75 s navigation readiness attempts.
+                # The previous 240 s bridge timeout could kill only the
+                # supervising shell mid-retry and leave orphaned ROS launch
+                # processes behind.  Keep the App request alive long enough
+                # for resident_service's own bounded retries to finish.
+                service = self._run(
+                    ["bash", str(self.project / "resident_service.sh"), "start"],
+                    420.0,
+                )
+            except Exception:
+                # Always use the project's ownership-aware stop path after an
+                # interrupted/failed start so the next button press begins
+                # from a deterministic state.
+                with contextlib.suppress(Exception):
+                    self._run(
+                        ["bash", str(self.project / "resident_service.sh"), "stop"],
+                        120.0,
+                    )
+                raise
+            program = self.status()
+            components = program.get("components") or {}
+            missing = [name for name in self.COMPONENT_NAMES if not components.get(name)]
+            if program.get("state") != "running" or missing:
+                # The App's start button means complete robot startup. Never
+                # report success for a voice-only or otherwise partial stack.
+                # Roll back survivors so the next press starts deterministically.
+                with contextlib.suppress(Exception):
+                    self._run(
+                        ["bash", str(self.project / "resident_service.sh"), "stop"],
+                        120.0,
+                    )
+                raise RuntimeError(
+                    "program_incomplete_after_start: missing=" + ",".join(missing)
+                )
+            return {"status": "started", "program": program, "service": service}
 
     def stop(self) -> Dict[str, Any]:
         with self.lock:
@@ -398,6 +458,7 @@ class Bridge:
         self.task_state: Dict[str, Any] = {"active": False, "planning": False, "queued": 0}
         self.microphone_state: Dict[str, Any] = load_microphone_state()
         self.command_lock = asyncio.Lock()
+        self.last_telemetry_monotonic = 0.0
 
     @staticmethod
     def qwen_control_request(request: Dict[str, Any], timeout: float = 150.0) -> Dict[str, Any]:
@@ -484,6 +545,40 @@ class Bridge:
             "microphone": self.microphone_state,
         }
 
+    @staticmethod
+    def app_command_intent_text(command: Dict[str, Any]) -> str:
+        """Describe an authenticated App control without bypassing intent guards.
+
+        App buttons are explicit user actions, but the bridge previously sent
+        all of them to the shared skill layer as the opaque text ``App 控制``.
+        The speech-side semantic safety guard therefore rejected map
+        navigation because the text contained no navigation evidence.  Keep
+        the guard and provide a faithful description of the button the user
+        actually pressed instead.
+        """
+
+        action = str(command.get("action") or "")
+        if action == "navigate":
+            return (
+                "App 地图导航到坐标 "
+                f"x={float(command['x']):.3f}, y={float(command['y']):.3f}, "
+                f"yaw={float(command.get('yaw', 0.0)):.3f}"
+            )
+        if action == "light":
+            return "App 按键打开灯光" if str(command.get("state")) == "on" else "App 按键关闭灯光"
+        if action == "feed":
+            return f"App 按键启动投食器，投食{int(command['grams'])}克"
+        if action == "manual_move":
+            labels = {
+                "forward": "向前移动",
+                "backward": "向后移动",
+                "left": "向左转",
+                "right": "向右转",
+                "stop": "停止移动",
+            }
+            return "App 按键" + labels.get(str(command.get("direction") or ""), "控制机器人")
+        return "App 控制"
+
     def execute_app_plan(self, command: Dict[str, Any]) -> Dict[str, Any]:
         action = str(command.get("action") or "")
         arguments: Dict[str, Any]
@@ -525,7 +620,7 @@ class Bridge:
                 "skill": skill,
                 "arguments": {"action": step_action, **arguments},
                 "busy_policy": busy_policy,
-                "user_text": "App 控制",
+                "user_text": self.app_command_intent_text(command),
             },
             timeout=155.0,
         )
@@ -615,7 +710,10 @@ class Bridge:
 
     async def send(self, payload: Dict[str, Any]) -> None:
         if self.websocket is not None:
-            await self.websocket.send(json.dumps(payload, ensure_ascii=False))
+            await asyncio.wait_for(
+                self.websocket.send(json.dumps(payload, ensure_ascii=False)),
+                timeout=WEBSOCKET_SEND_TIMEOUT_SEC,
+            )
 
     async def execute_command(self, command: Dict[str, Any]) -> None:
         command_id, action = command.get("id"), command.get("action")
@@ -688,43 +786,106 @@ class Bridge:
                     raise RuntimeError("robot_program_not_running")
                 result = {"status": "dry_run", "grams": command["grams"]} if self.dry_run else await asyncio.to_thread(self.execute_app_plan, command)
             elif action == "voice_audio":
-                if self.program.status()["state"] != "running":
-                    raise RuntimeError("robot_program_not_running")
-                result = (
-                    {"status": "dry_run", "duration_ms": int(command.get("duration_ms") or 0)}
-                    if self.dry_run
-                    else await asyncio.to_thread(self.execute_app_voice, command)
-                )
+                if self.dry_run:
+                    result = {"status": "dry_run", "duration_ms": int(command.get("duration_ms") or 0)}
+                else:
+                    voice_ready = await asyncio.to_thread(self.program.wait_for_voice_ready, 10.0)
+                    if not voice_ready:
+                        raise RuntimeError("qwen_realtime_unavailable")
+                    result = await asyncio.to_thread(self.execute_app_voice, command)
             elif action == "request_state":
                 result = {"status": "ready"}
             else:
                 raise ValueError("unsupported_action")
             await self.send({"type": "command_result", "id": command_id, "action": result_action, "ok": True, "result": result, "timestamp": time.time()})
         except Exception as exc:
+            if action == "program_start":
+                with contextlib.suppress(Exception):
+                    self.program_state = await asyncio.to_thread(self.program.status)
+                    await self.send({
+                        "type": "program_status",
+                        "program": self.program_state,
+                        "timestamp": time.time(),
+                    })
             await self.send({"type": "command_result", "id": command_id, "action": result_action, "ok": False, "error": f"{type(exc).__name__}: {exc}", "timestamp": time.time()})
 
     async def telemetry_loop(self) -> None:
         next_program_check = 0.0
         next_task_check = 0.0
         while True:
-            await asyncio.to_thread(self.ros.update_pose)
-            if time.monotonic() >= next_program_check:
-                self.program_state = await asyncio.to_thread(self.program.status)
-                next_program_check = time.monotonic() + 1.0
-            if time.monotonic() >= next_task_check:
-                self.task_state = (
-                    {"active": False, "planning": False, "queued": 0, "dry_run": True}
-                    if self.dry_run else await asyncio.to_thread(self.qwen_realtime_status)
+            errors: Dict[str, str] = {}
+            try:
+                await asyncio.wait_for(
+                    asyncio.to_thread(self.ros.update_pose),
+                    timeout=ASYNC_STATUS_TIMEOUT_SEC,
                 )
-                next_task_check = time.monotonic() + 0.8
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                errors["pose"] = f"{type(exc).__name__}: {exc}"
+            now = time.monotonic()
+            if now >= next_program_check:
+                try:
+                    self.program_state = await asyncio.wait_for(
+                        asyncio.to_thread(self.program.status),
+                        timeout=ASYNC_STATUS_TIMEOUT_SEC,
+                    )
+                except asyncio.CancelledError:
+                    raise
+                except Exception as exc:
+                    errors["program"] = f"{type(exc).__name__}: {exc}"
+                next_program_check = now + 1.0
+            if now >= next_task_check:
+                try:
+                    self.task_state = (
+                        {"active": False, "planning": False, "queued": 0, "dry_run": True}
+                        if self.dry_run else await asyncio.wait_for(
+                            asyncio.to_thread(self.qwen_realtime_status),
+                            timeout=ASYNC_STATUS_TIMEOUT_SEC,
+                        )
+                    )
+                except asyncio.CancelledError:
+                    raise
+                except Exception as exc:
+                    errors["task"] = f"{type(exc).__name__}: {exc}"
+                next_task_check = now + 0.8
             microphone = self.task_state.get("microphone")
             if isinstance(microphone, dict):
                 self.microphone_state = dict(microphone)
-            await self.send({"type": "telemetry", "pose": self.ros.pose, "mode": "dry_run" if self.dry_run else "ready", "program": self.program_state, "task": self.task_state, "microphone": self.microphone_state})
+            await self.send({
+                "type": "telemetry",
+                "pose": self.ros.pose,
+                "mode": "dry_run" if self.dry_run else "ready",
+                "program": self.program_state,
+                "task": self.task_state,
+                "microphone": self.microphone_state,
+                "status_errors": errors,
+                "timestamp": time.time(),
+            })
+            self.last_telemetry_monotonic = time.monotonic()
             if self.ros.map_message and self.ros.map_signature != self.last_map_signature:
                 await self.send(self.ros.map_message)
                 self.last_map_signature = self.ros.map_signature
-            await asyncio.sleep(0.2)
+            await asyncio.sleep(TELEMETRY_INTERVAL_SEC)
+
+    async def link_heartbeat_loop(self) -> None:
+        """Keep App connectivity observable even when a ROS/status probe is slow."""
+        while True:
+            now = time.monotonic()
+            telemetry_age_ms = (
+                round((now - self.last_telemetry_monotonic) * 1000.0, 1)
+                if self.last_telemetry_monotonic
+                else None
+            )
+            await self.send({
+                "type": "link_heartbeat",
+                "timestamp": time.time(),
+                "program": self.program_state,
+                "task": self.task_state,
+                "microphone": self.microphone_state,
+                "telemetry_age_ms": telemetry_age_ms,
+            })
+            await asyncio.sleep(LINK_HEARTBEAT_INTERVAL_SEC)
 
     def upload_manifest(self, manifest_path: Path) -> Dict[str, Any]:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -789,17 +950,34 @@ class Bridge:
     async def connected(self, websocket) -> None:
         self.websocket = websocket
         await self.send({"type": "hello", "robot": {"name": "理想机器人", "project": PROJECT.name, "dry_run": self.dry_run}, "program": self.program_state})
-        telemetry = asyncio.create_task(self.telemetry_loop())
-        uploads = asyncio.create_task(self.upload_loop())
-        tasks = set()
-        try:
+        self.last_telemetry_monotonic = 0.0
+        command_tasks = set()
+
+        async def receive_loop() -> None:
             async for raw in websocket:
                 command = json.loads(raw)
                 task = asyncio.create_task(self.execute_command(command))
-                tasks.add(task); task.add_done_callback(tasks.discard)
+                command_tasks.add(task)
+                task.add_done_callback(command_tasks.discard)
+
+        receive = asyncio.create_task(receive_loop(), name="app-bridge-receive")
+        telemetry = asyncio.create_task(self.telemetry_loop(), name="app-bridge-telemetry")
+        heartbeat = asyncio.create_task(self.link_heartbeat_loop(), name="app-bridge-heartbeat")
+        uploads = asyncio.create_task(self.upload_loop(), name="app-bridge-uploads")
+        service_tasks = {receive, telemetry, heartbeat, uploads}
+        try:
+            done, _ = await asyncio.wait(service_tasks, return_when=asyncio.FIRST_COMPLETED)
+            stopped = next(iter(done))
+            if stopped.cancelled():
+                raise asyncio.CancelledError
+            error = stopped.exception()
+            if error is not None:
+                raise error
+            raise ConnectionError(f"bridge_task_stopped:{stopped.get_name()}")
         finally:
-            telemetry.cancel(); uploads.cancel()
-            await asyncio.gather(telemetry, uploads, return_exceptions=True)
+            for task in service_tasks:
+                task.cancel()
+            await asyncio.gather(*service_tasks, return_exceptions=True)
             self.websocket = None
 
     async def run(self) -> None:

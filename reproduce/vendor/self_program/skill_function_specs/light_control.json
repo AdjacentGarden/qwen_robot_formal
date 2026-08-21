@@ -1,0 +1,105 @@
+{
+  "name": "light_control",
+  "type": "python_function",
+  "module": "/home/test/self_program/new_self_test.py",
+  "entrypoint": "/home/test/single_function/light_control/run.sh",
+  "single_function_skill": "light_control",
+  "certification_status": "unchecked",
+  "description_zh": "通过米家云控制机器人绑定的落地灯，可打开、关闭或查询当前开关状态。",
+  "domain_tags": ["home_control", "lighting", "mijia", "environment"],
+  "trigger_phrases_zh": ["打开落地灯", "开灯", "房间有点暗", "屋里太黑了", "光线不足", "关闭落地灯", "关灯", "灯现在开着吗"],
+  "allowed_actions": ["on", "off", "status", "check"],
+  "required_slots": ["action"],
+  "optional_slots": [],
+  "slot_questions_zh": {
+    "action": "落地灯需要打开、关闭，还是查看状态？"
+  },
+  "config_defaults": {"action": "status"},
+  "parameters": {
+    "type": "object",
+    "required": ["action"],
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": ["on", "off", "status", "check"],
+        "description": "落地灯操作。"
+      },
+      "dry_run": {
+        "type": "boolean",
+        "default": false,
+        "description": "只校验参数，不控制设备。"
+      }
+    }
+  },
+  "example_function_call": {
+    "name": "light_control",
+    "arguments": {"action": "on"}
+  },
+  "when_to_call_zh": [
+    "用户明确要求打开或关闭落地灯",
+    "用户询问落地灯当前状态",
+    "用户表达环境太暗且语义上是在请求补充照明"
+  ],
+  "planning_notes_zh": [
+    "开关灯使用 action=on/off；查询使用 action=status。",
+    "房间有点暗、屋里太黑、光线不足、这里看不清等环境陈述直接使用 action=on；明确说不用开灯时不得执行。",
+    "不要把投影仪光源控制规划成 light_control。",
+    "灯光开关是可恢复状态，任务中断恢复时可依据 RobotStateSnapshot 恢复。"
+  ],
+  "llm_notes_zh": [
+    "只有用户意图明确指向普通照明或落地灯时调用。",
+    "该 skill 通过 stdout JSON message 交由 new_project 统一播报。"
+  ],
+  "optional_enhancements": [],
+  "composition_affordances": [
+    {
+      "applies_to_domains": ["home_control", "reading", "meeting", "entertainment"],
+      "suggest_when": "当前环境过暗且任务需要普通照明",
+      "effect": "提供环境照明"
+    }
+  ],
+  "resources": ["network", "mijia_cloud", "mijia_floor_lamp"],
+  "side_effects": ["changes_light_state", "network_request"],
+  "recovery": {
+    "captured_in_robot_state": true,
+    "resumable": true,
+    "resume_strategy": "restart_step",
+    "requires_scene_restore": true,
+    "scene_restore_requirements": ["light"],
+    "repeat_safe": true,
+    "progress_schema": {},
+    "resume_argument_mapping": {},
+    "notes_zh": ["开关操作幂等；状态查询不会改变设备。"]
+  },
+  "returns": {
+    "type": "object",
+    "description_zh": "返回 ok、action、message、设备状态及耗时；status 结果包含 power。"
+  },
+  "result_contract": {
+    "success_field": "ok",
+    "message_field": "message",
+    "state_path": "result.power"
+  },
+  "single_function_contract": {
+    "id": "light_control",
+    "name": "light_control",
+    "skill_name": "light_control",
+    "actions": ["on", "off", "status", "check"],
+    "allow_direct_execution": true,
+    "category": "家居控制",
+    "certification_status": "unchecked",
+    "entrypoint": "/home/test/single_function/light_control/run.sh",
+    "resources": ["network", "mijia_cloud", "mijia_floor_lamp"],
+    "scene_id": "home_control",
+    "task_kind": "short",
+    "timeout_sec": 15.0
+  },
+  "speech_contract": {
+    "events_are_spoken_by": "new_project.SkillSpeechRouter",
+    "runtime_owner": "/home/test/new_project",
+    "transport": "stdout",
+    "unbuffered_required": true,
+    "speak": ["json_message"],
+    "version": 1
+  }
+}

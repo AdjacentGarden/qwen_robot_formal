@@ -7,5 +7,5 @@ window.ROBOT_APP_CONFIG = window.ROBOT_APP_CONFIG || {
     "http://100.125.188.94:8765",
     "http://10.249.188.197:8765"
   ],
-  token: "REDACTED_CONFIGURE_LOCALLY"
+  token: "replace_me"
 };

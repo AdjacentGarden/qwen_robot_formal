@@ -1,0 +1,72 @@
+{
+  "name": "realtime_information",
+  "description_zh": "通过联网校时的系统时钟或实时数据源查询当前日期时间、天气、机器人当前粗略地理位置、附近地点和交通状态。回答必须来自本次查询结果，不能凭模型常识猜测。location 只表示机器人，不表示手机、用户或宠物。",
+  "domain_tags": ["live_information", "time", "date", "weather", "location", "nearby", "traffic"],
+  "trigger_phrases_zh": ["现在几点", "今天几号", "今天星期几", "今天天气怎么样", "机器人现在在哪里", "附近有什么好玩的", "现在堵不堵车"],
+  "allowed_actions": ["current_time", "weather", "location", "nearby", "traffic"],
+  "resources": ["network"],
+  "required_slots": [],
+  "optional_slots": ["location", "latitude", "longitude", "radius", "limit"],
+  "query_intents": [
+    {
+      "action": "current_time",
+      "patterns_zh": ["(?:现在|当前)?(?:几点|时间|日期|几号|星期几|年月日)"],
+      "query_argument": "query",
+      "title_zh": "查询当前日期时间",
+      "reason_zh": "当前时钟会持续变化，必须读取联网校时后的本机系统时钟"
+    },
+    {
+      "action": "traffic",
+      "patterns_zh": ["(?:交通|路况|堵车|拥堵|堵不堵|堵吗|车多不多)"],
+      "query_argument": "query",
+      "title_zh": "查询实时交通",
+      "reason_zh": "用户询问会随时间变化的交通状态，必须调用实时数据源"
+    },
+    {
+      "action": "weather",
+      "patterns_zh": ["(?:天气|气温|温度|下雨|降雨|风力)"],
+      "exclude_patterns_zh": ["运动.*温度", "投影.*温度"],
+      "query_argument": "query",
+      "title_zh": "查询实时天气",
+      "reason_zh": "用户询问实时天气，必须调用天气数据源"
+    },
+    {
+      "action": "nearby",
+      "patterns_zh": ["(?:附近|周边).*(?:好玩|景点|公园|吃|餐厅|咖啡|医院|诊所|药店|商场|购物|电影院|有什么|哪里|哪儿)"],
+      "query_argument": "query",
+      "title_zh": "查询附近地点",
+      "reason_zh": "用户询问当前位置周边地点，必须调用实时地图数据源"
+    },
+    {
+      "action": "location",
+      "patterns_zh": ["(?:机器人|你)(?:现在|当前)?(?:在什么地方|在哪里|在哪儿|在哪|位置在哪)"],
+      "exclude_patterns_zh": ["(?:手机|电话|小狗|宠物|人|他|她|它).*(?:在哪里|在哪儿|在哪|定位)"],
+      "query_argument": "query",
+      "title_zh": "查询当前位置",
+      "reason_zh": "用户询问机器人当前所在位置"
+    }
+  ],
+  "planning_notes_zh": [
+    "实时问题必须调用本 skill，不得直接用语言模型常识回答。",
+    "手机、用户、宠物和其他设备的位置不属于本 skill；不得用机器人位置冒充手机位置。",
+    "用户未给地点时，skill 统一使用 realtime_information/config.json 中的位置配置；只有配置缺失时才允许网络粗略定位。",
+    "当前默认位置配置为北京市顺义区；时间使用配置时区，天气、附近地点和交通使用配置坐标。",
+    "网络粗略定位不是 GPS，回答中必须保留精度说明。",
+    "实时交通只有在已配置授权交通数据提供方时可用；未配置时必须如实说明。"
+  ],
+  "result_contract": {
+    "success_field": "ok",
+    "success_values": [true],
+    "message_field": "message",
+    "required_fields": ["ok", "skill", "action", "message", "source", "fetched_at"]
+  },
+  "speech_contract": {
+    "speak_start_ack": false,
+    "speak_progress": false,
+    "speak_final_summary": true,
+    "summary_field": "message",
+    "speak_failure_summary": true,
+    "failure_summary_field": "message",
+    "failure_fallback_zh": "实时信息查询暂时失败，请稍后再试。"
+  }
+}

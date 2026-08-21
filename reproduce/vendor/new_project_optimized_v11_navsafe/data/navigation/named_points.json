@@ -1,0 +1,95 @@
+{
+  "origin": {
+    "name": "origin",
+    "display_name": "书房原点",
+    "aliases": [
+      "原点",
+      "书房原点",
+      "地图原点",
+      "零点",
+      "起始点",
+      "0,0,π",
+      "0，0，π"
+    ],
+    "x": 0.0,
+    "y": 0.0,
+    "yaw": 3.1415926,
+    "frame_id": "map",
+    "configured": true,
+    "room": "study",
+    "purpose": "scene_origin"
+  },
+  "living_room_entry_a": {
+    "name": "living_room_entry_a",
+    "display_name": "客厅A点",
+    "aliases": [
+      "A点",
+      "客厅A点",
+      "客厅入口",
+      "客厅和书房交界处"
+    ],
+    "x": -1.47,
+    "y": -2.0,
+    "yaw": -1.57,
+    "frame_id": "map",
+    "configured": true,
+    "room": "living_room",
+    "purpose": "living_room_light_service",
+    "calibration_note": "请把 x/y/yaw 改为实测值，并在确认 A 点已越过交界障碍物且留有安全余量后将 configured 改为 true。"
+  },
+  "living_room_projection_b": {
+    "name": "living_room_projection_b",
+    "display_name": "客厅B点",
+    "aliases": [
+      "B点",
+      "客厅B点",
+      "客厅投影点",
+      "客厅运动点"
+    ],
+    "x": -1.30,
+    "y": -3.96,
+    "yaw": -0.00,
+    "frame_id": "map",
+    "configured": true,
+    "room": "living_room",
+    "purpose": "fitness_projection",
+    "calibration_note": "请把 x/y/yaw 改为实测值，确认后摄能完整看到运动区域且投影方向正确，再将 configured 改为 true。"
+  },
+  "study_pet_c": {
+    "name": "study_pet_c",
+    "display_name": "书房C点",
+    "aliases": [
+      "C点",
+      "书房C点",
+      "豆豆位置",
+      "豆豆观察点",
+      "狗狗位置"
+    ],
+    "x": -2.0,
+    "y": 0.0,
+    "yaw": 2.3,
+    "frame_id": "map",
+    "configured": true,
+    "room": "study",
+    "purpose": "pet_find_and_feed",
+    "calibration_note": "请把 x/y/yaw 改为豆豆固定位置前方的实测安全位姿，并将 configured 改为 true。"
+  },
+  "study_projection_d": {
+    "name": "study_projection_d",
+    "display_name": "书房D点",
+    "aliases": [
+      "D点",
+      "书房D点",
+      "书房投影点",
+      "书房会议投影点"
+    ],
+    "x": -1.30,
+    "y": 0.0,
+    "yaw": -0.00,
+    "frame_id": "map",
+    "configured": true,
+    "room": "study",
+    "purpose": "meeting_projection",
+    "calibration_note": "请把 x/y/yaw 改为书房会议投影位置的实测值，校准墙面方向后将 configured 改为 true。"
+  }
+}

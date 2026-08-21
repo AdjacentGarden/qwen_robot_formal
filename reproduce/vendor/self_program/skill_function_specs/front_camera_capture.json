@@ -1,0 +1,97 @@
+{
+  "allowed_actions": [],
+  "certification_status": null,
+  "composition_affordances": [],
+  "config_defaults": {
+    "device": "/dev/video22",
+    "fourcc": "mp4v",
+    "fps": 15,
+    "height": 640,
+    "image_path": "/home/test/self_program/front_camera.jpg",
+    "jpeg_quality": 90,
+    "record_seconds": 3,
+    "video_path": "/home/test/self_program/front_camera.mp4",
+    "warmup_frames": 5,
+    "width": 640
+  },
+  "description_zh": "调用前摄像头拍摄一张图片。",
+  "disabled_reason": null,
+  "domain_tags": [
+    "camera",
+    "front_view",
+    "perception",
+    "evidence"
+  ],
+  "entrypoint": null,
+  "example_function_call": {
+    "arguments": {},
+    "name": "front_camera_capture"
+  },
+  "llm_notes_zh": [
+    "优先只填用户明确给出的参数，未给出的参数使用 config_defaults。",
+    "涉及 moves_robot、moves_robot_long_running、opens_camera 的调用需要确认用户确实要求执行硬件动作。",
+    "side_effects 包含 disabled 的 skill 当前仅用于测试禁用返回，不应用于真实硬件控制。"
+  ],
+  "module": "/home/test/self_program/new_self_test.py",
+  "name": "front_camera_capture",
+  "optional_enhancements": [],
+  "optional_slots": [
+    "output_path"
+  ],
+  "parameters": {
+    "properties": {
+      "output_path": {
+        "default_source": "audio_config.json",
+        "description": "图片或视频输出路径。",
+        "python_default": null,
+        "required": false,
+        "type": "string|null"
+      }
+    },
+    "required": [],
+    "type": "object"
+  },
+  "planning_notes_zh": [
+    "用户说前方、前面、机器人看到的方向时，优先选择前摄。",
+    "恢复任务时必须参考 recovery 字段、TaskGroup.resume_context 和 RobotStateSnapshot，不能盲目从头重复已完成 step。"
+  ],
+  "recovery": {
+    "notes_zh": [
+      "感知/拍摄类任务中断后通常重新执行当前 step。"
+    ],
+    "progress_schema": {},
+    "requires_scene_restore": false,
+    "resumable": false,
+    "resume_argument_mapping": {},
+    "resume_strategy": "restart_step",
+    "scene_restore_requirements": [
+      "head",
+      "camera"
+    ]
+  },
+  "required_slots": [],
+  "resources": [
+    "front_camera"
+  ],
+  "returns": {
+    "description_zh": "底层 skill 封装通常返回 subprocess.CompletedProcess；摄像头拍照/录像返回输出文件 Path。",
+    "type": "subprocess.CompletedProcess or pathlib.Path"
+  },
+  "side_effects": [
+    "writes_image_file"
+  ],
+  "single_function_contract": null,
+  "single_function_skill": null,
+  "slot_questions_zh": {},
+  "trigger_phrases_zh": [
+    "拍前面",
+    "看前方",
+    "前摄拍照",
+    "拍一张前方照片"
+  ],
+  "type": "python_function",
+  "when_to_call_zh": [
+    "需要查看机器人前方画面",
+    "需要保存前摄像头当前帧"
+  ]
+}

@@ -1,0 +1,185 @@
+{
+  "paths": {
+    "single_function_dir": "/home/test/single_function"
+  },
+  "runtime": {
+    "subprocess_timeout": null,
+    "check": true
+  },
+  "audio": {
+    "record_command": "arecord",
+    "play_command": "aplay",
+    "quiet": true,
+    "quiet_arg": "-q",
+    "input_device": "plughw:rockchipi2sdm_1",
+    "output_device": "plughw:rockchiptas6424",
+    "pcm_path": "/home/test/self_program/record_test.pcm",
+    "audio_type": "raw",
+    "sample_format": "S16_LE",
+    "sample_rate": 16000,
+    "channels": 1,
+    "seconds": 3
+  },
+  "cameras": {
+    "front": {
+      "device": "/dev/video22",
+      "width": 640,
+      "height": 640,
+      "fps": 15,
+      "warmup_frames": 5,
+      "jpeg_quality": 90,
+      "image_path": "/home/test/self_program/front_camera.jpg",
+      "video_path": "/home/test/self_program/front_camera.mp4",
+      "record_seconds": 3,
+      "fourcc": "mp4v"
+    },
+    "back": {
+      "device": "/dev/video31",
+      "width": 640,
+      "height": 640,
+      "fps": 15,
+      "warmup_frames": 5,
+      "jpeg_quality": 90,
+      "image_path": "/home/test/self_program/back_camera.jpg",
+      "video_path": "/home/test/self_program/back_camera.mp4",
+      "record_seconds": 3,
+      "fourcc": "mp4v"
+    }
+  },
+  "skills": {
+    "environment_perception": {
+      "purpose": "general",
+      "camera": null,
+      "dry_run": false,
+      "json_output": true,
+      "timeout": null,
+      "use_env_proxy": false
+    },
+    "face_recognition": {
+      "camera": null
+    },
+    "face_registration": {
+      "name": "test_user",
+      "camera": null
+    },
+    "fan_control": {
+      "args": []
+    },
+    "feeder_control": {
+      "args": []
+    },
+    "light_control": {
+      "args": []
+    },
+    "head_control": {
+      "action": "level",
+      "angle": null,
+      "topic": null,
+      "wait": null,
+      "repeat": null,
+      "interval": null,
+      "discovery_timeout": null,
+      "service_timeout": null,
+      "call_services": false,
+      "json_output": true
+    },
+    "move_forward": {
+      "speed": null,
+      "angular_speed": null,
+      "duration": null,
+      "topic": null
+    },
+    "move_backward": {
+      "speed": null,
+      "angular_speed": null,
+      "duration": null,
+      "topic": null
+    },
+    "move_left": {
+      "speed": null,
+      "angular_speed": null,
+      "duration": null,
+      "topic": null
+    },
+    "move_right": {
+      "speed": null,
+      "angular_speed": null,
+      "duration": null,
+      "topic": null
+    },
+    "navigation_goto": {
+      "action": "goto",
+      "point": null,
+      "x": null,
+      "y": null,
+      "yaw": null,
+      "frame_id": null,
+      "action_name": null,
+      "timeout": null,
+      "server_wait_timeout": null,
+      "dry_run": false,
+      "json_output": true
+    },
+    "navigation_list": {
+      "action": "list"
+    },
+    "person_tracking": {
+      "action": "track",
+      "camera": null,
+      "duration": null,
+      "backend": null,
+      "cmd_vel_topic": null,
+      "json_output": true
+    },
+    "pet_tracking": {
+      "action": "track",
+      "source": null,
+      "camera": null,
+      "pet": null,
+      "duration": null,
+      "model": null,
+      "backend": null,
+      "cmd_vel_topic": null,
+      "dry_run": false,
+      "json_output": true
+    },
+    "projector_control": {
+      "action": "status",
+      "dry_run": false,
+      "json_output": true,
+      "timeout": null
+    },
+    "pull_up": {
+      "action": "run",
+      "camera": null,
+      "duration": null
+    },
+    "push_up": {
+      "action": "run",
+      "camera": null,
+      "duration": null
+    },
+    "squat": {
+      "action": "run",
+      "camera": null,
+      "duration": null
+    },
+    "reminder_schedule": {
+      "action": "schedule",
+      "content": "reminder",
+      "trigger_time": null,
+      "trigger_condition": null,
+      "dry_run": false
+    },
+    "reminder_query": {
+      "action": "query",
+      "dry_run": false
+    },
+    "reminder_cancel": {
+      "action": "cancel",
+      "reminder_id": null,
+      "query": null,
+      "dry_run": false
+    }
+  }
+}

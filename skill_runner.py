@@ -142,7 +142,15 @@ SKILL_SPOKEN_LABELS = {
     "realtime_information": "实时信息查询",
 }
 
-_NAVIGATION_SUMMARY_COUNTS: dict[str, int] = {}
+_SPEECH_VARIANT_COUNTS: dict[str, int] = {}
+
+
+def cycle_spoken_variant(key: str, options: tuple[str, ...]) -> str:
+    """Cycle natural wording without changing any device fact."""
+
+    count = _SPEECH_VARIANT_COUNTS.get(key, 0)
+    _SPEECH_VARIANT_COUNTS[key] = count + 1
+    return options[count % len(options)]
 
 
 def navigation_arrival_summary(arguments: dict[str, Any]) -> str:
@@ -153,13 +161,68 @@ def navigation_arrival_summary(arguments: dict[str, Any]) -> str:
         "study_projection": "书房",
     }.get(point, point)
     options = (
-        f"我已经到{spoken}了，你想让我接着做什么？",
-        f"{spoken}到了，需要我接下来帮你做什么？",
-        f"我到{spoken}了。要不要继续准备投影或播放内容？",
+        f"到{spoken}了。",
+        f"已经到{spoken}。",
+        f"{spoken}到了，我们接着来。",
     )
-    count = _NAVIGATION_SUMMARY_COUNTS.get(point, 0)
-    _NAVIGATION_SUMMARY_COUNTS[point] = count + 1
-    return options[count % len(options)]
+    return cycle_spoken_variant(f"navigation:{point}", options)
+
+
+def concise_success_summary(
+    skill: str,
+    action: str,
+    arguments: dict[str, Any],
+    parsed: dict[str, Any],
+    fallback: str,
+) -> str:
+    """Render common successful actions briefly and with bounded variety.
+
+    Only facts present in the skill/action/result are used. Unknown and query
+    results keep their authoritative fallback verbatim.
+    """
+
+    key = f"{skill}:{action}"
+    if skill in {"move_forward", "move_backward", "move_left", "move_right", "turn_left", "turn_right"}:
+        label = {
+            "move_forward": "前进", "move_backward": "后退", "move_left": "左移",
+            "move_right": "右移", "turn_left": "左转", "turn_right": "右转",
+        }[skill]
+        return cycle_spoken_variant(key, (f"{label}完成。", f"好了，已经{label}。", f"{label}好了。"))
+    if skill == "head_control":
+        options = {
+            "up": ("已经抬头。", "头部抬好了。", "角度调高了。"),
+            "down": ("已经低头。", "头部调低了。", "低头完成。"),
+            "level": ("已经恢复平视。", "头部回正了。", "已经回到水平。"),
+        }.get(action)
+        if options:
+            return cycle_spoken_variant(key, options)
+    if skill == "projector_control":
+        if action in {"off", "close", "disable"}:
+            return cycle_spoken_variant(key, ("投影关好了。", "已经关闭投影。", "好，投影已关。"))
+        if action in {"meeting_pause", "pause"}:
+            return cycle_spoken_variant(key, ("会议画面已暂停。", "已经暂停投影内容。"))
+        if action in {"meeting_resume", "resume"}:
+            return cycle_spoken_variant(key, ("会议画面继续播放。", "已经恢复投影内容。"))
+        if action in {"meeting_presentation_on", "fitness_video_on", "external_video_on", "on", "open", "enable"}:
+            return cycle_spoken_variant(key, ("投影打开了。", "已经开始投影。", "画面出来了。"))
+    if skill == "light_control" and action not in {"status", "query"}:
+        if action in {"off", "close", "disable"}:
+            return cycle_spoken_variant(key, ("灯关好了。", "已经关灯。", "灯光已关闭。"))
+        return cycle_spoken_variant(key, ("灯打开了。", "已经开灯。", "灯光已打开。"))
+    if skill == "face_recognition":
+        result = parsed.get("result") if isinstance(parsed.get("result"), dict) else {}
+        name = result.get("name") or parsed.get("name")
+        status = str(result.get("status") or parsed.get("status") or "").lower()
+        if name and status == "matched":
+            return cycle_spoken_variant(
+                f"{key}:{name}",
+                (f"看起来是{name}。", f"我认出来了，是{name}。", f"面前这位应该是{name}。"),
+            )
+    if skill in {"front_camera_capture", "back_camera_capture", "camera_capture"}:
+        return cycle_spoken_variant(key, ("照片拍好了。", "已经拍好。", "照片保存好了。"))
+    if skill in {"front_camera_record", "back_camera_record", "camera_record"}:
+        return cycle_spoken_variant(key, ("录像保存好了。", "已经录好了。", "视频录制完成。"))
+    return fallback
 
 
 def humanize_failure_summary(skill: str, raw_reason: str) -> str:
@@ -173,6 +236,9 @@ def humanize_failure_summary(skill: str, raw_reason: str) -> str:
     reason = str(raw_reason or "").strip()
     lowered = reason.lower()
     mappings = (
+        (("localization_node_unavailable", "cartographer_unavailable"), "定位节点当前不可用，所以没有启动导航。"),
+        (("imu_publisher_conflict", "duplicate_imu"), "检测到重复的惯性传感器数据，为避免定位冲突，没有启动导航。"),
+        (("navigation_no_valid_path", "no_valid_path"), "当前规划不出安全路径，所以这次没有继续导航。"),
         (("camera_open_failed", "camera_not_open", "camera_unavailable"), "摄像头这次没能正常打开，所以没有继续。"),
         (("cmd_vel_subscribers_0", "no_cmd_vel_subscriber"), "底盘控制服务还没有准备好，所以这次没有移动。"),
         (("resident_runtime_not_started", "resident_socket"), "机器人执行服务还没有准备好，所以这次没有操作。"),
@@ -201,25 +267,39 @@ def build_spoken_summary(executor: Any, step: Any, result: dict[str, Any]) -> st
     action = str(arguments.get("action") or parsed.get("action") or "").strip().lower()
     if skill == "reminder_schedule":
         content = str(arguments.get("content") or "这件事").strip()
-        return f"提醒设好了，到了时间我叫你：{content}。"
+        return cycle_spoken_variant(
+            f"reminder_schedule:{content}",
+            (f"提醒设好了，到时我叫你：{content}。", f"记下了，时间到了提醒你{content}。", f"好，到点提醒你{content}。"),
+        )
     if skill == "reminder_query":
         reminders = parsed.get("reminders") or (parsed.get("result") or {}).get("reminders")
         if isinstance(reminders, list):
-            return "目前没有待办提醒。" if not reminders else f"目前有{len(reminders)}个提醒。"
-        return "提醒已经查好了。"
+            if not reminders:
+                return cycle_spoken_variant("reminder_query:empty", ("目前没有提醒。", "现在没有待办提醒。"))
+            count = len(reminders)
+            return cycle_spoken_variant(f"reminder_query:{count}", (f"现在有{count}个提醒。", f"查到{count}个提醒。"))
+        return cycle_spoken_variant("reminder_query", ("提醒查好了。", "已经查到提醒信息。"))
     if skill == "reminder_cancel":
-        return "这个提醒已经删掉了。"
+        return cycle_spoken_variant("reminder_cancel", ("提醒删掉了。", "已经取消这个提醒。", "好，这个提醒不再保留。"))
     if skill == "navigation_list":
-        return "我现在认得三个位置：原点、客厅白墙和书房投影点。"
+        return cycle_spoken_variant(
+            "navigation_list",
+            (
+                "我认得三个位置：原点、客厅白墙和书房投影点。",
+                "目前保存了原点、客厅白墙和书房投影点。",
+                "可以去三个保存位置：原点、客厅白墙和书房投影点。",
+                "导航点共有三个：原点、客厅白墙和书房投影点。",
+            ),
+        )
     if skill == "navigation_goto":
         return navigation_arrival_summary(arguments)
     if skill in {"media_player", "realtime_information"} and message:
         return message
     if skill == "person_tracking" and action == "check":
-        return "人员识别和跟随已经准备好了，随时可以开始。"
+        return cycle_spoken_variant("person_tracking:check", ("人员跟随可以开始。", "识别和跟随已经就绪。"))
     if skill in {"push_up", "pull_up", "squat"} and action == "check":
         label = {"push_up": "俯卧撑", "pull_up": "引体向上", "squat": "深蹲"}[skill]
-        return f"{label}识别和计数已经准备好了，随时可以开始。"
+        return cycle_spoken_variant(f"{skill}:check", (f"{label}计数准备好了。", f"可以开始数{label}了。"))
     if skill == "projector_control" and action == "status":
         return "投影设备的当前状态已经查到了。"
     if parsed:
@@ -228,7 +308,7 @@ def build_spoken_summary(executor: Any, step: Any, result: dict[str, Any]) -> st
         except Exception:
             summary = ""
         if isinstance(summary, str) and summary.strip():
-            return summary.strip()
+            return concise_success_summary(skill, action, arguments, parsed, summary.strip())
     return message
 
 

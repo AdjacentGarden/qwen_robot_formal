@@ -13,9 +13,9 @@
     .filter((value) => value && value !== "auto")
     .map(normalizeBase);
   const endpointCandidates = [...new Set([pageOrigin, ...configuredBases].filter(Boolean))];
-  const CONNECT_TIMEOUT_MS = 4500;
-  const TELEMETRY_STALE_MS = 3500;
-  const OFFLINE_GRACE_MS = 12000;
+  const CONNECT_TIMEOUT_MS = 2800;
+  const LINK_STALE_MS = 2600;
+  const OFFLINE_GRACE_MS = 6500;
   const VOICE_UPLOAD_TIMEOUT_MS = 30000;
   let base = endpointCandidates[0] || "";
   const $ = (id) => document.getElementById(id);
@@ -23,7 +23,7 @@
     socket: null, retry: 0, reconnectTimer: null, mapImage: null, mapMeta: null,
     pose: null, target: null, videos: [], feedGrams: 20, pending: new Map(), online: false,
     program: null, programTransition: null, task: null, microphone: null, endpointIndex: 0, endpointAttempts: 0,
-    lastMessageAt: 0, disconnectStartedAt: 0, connectTimer: null, offlineTimer: null,
+    lastMessageAt: 0, lastTelemetryAt: 0, disconnectStartedAt: 0, connectTimer: null, offlineTimer: null,
   };
   const voiceCapture = {
     stream: null, recorder: null, chunks: [], startedAt: 0,
@@ -115,7 +115,7 @@
     const elapsed = state.disconnectStartedAt ? Date.now() - state.disconnectStartedAt : 0;
     const remaining = Math.max(0, OFFLINE_GRACE_MS - elapsed);
     state.offlineTimer = setTimeout(() => {
-      if (!state.socket || state.socket.readyState !== WebSocket.OPEN || Date.now() - state.lastMessageAt > TELEMETRY_STALE_MS) {
+      if (!state.socket || state.socket.readyState !== WebSocket.OPEN || Date.now() - state.lastMessageAt > LINK_STALE_MS) {
         setOnline(false);
       }
     }, remaining);
@@ -407,7 +407,7 @@
       recoverConnection();
       return;
     }
-    if (socket.readyState === WebSocket.OPEN && state.lastMessageAt && Date.now() - state.lastMessageAt > TELEMETRY_STALE_MS) {
+    if (socket.readyState === WebSocket.OPEN && state.lastMessageAt && Date.now() - state.lastMessageAt > LINK_STALE_MS) {
       recoverConnection("状态更新中断，正在自动重新连接");
     }
   }
@@ -432,12 +432,23 @@
         setActivity("系统就绪");
       }
     } else if (message.type === "telemetry") {
+      state.lastTelemetryAt = Date.now();
       state.pose = message.pose || null;
       if (message.program) acceptProgramUpdate(message.program, "telemetry");
       if (message.task) state.task = message.task;
       state.microphone = message.microphone || (state.task && state.task.microphone) || state.microphone;
       setOnline(true); renderPose(); renderProgram(); renderTaskState(); renderMicrophone();
       if (state.mapMeta && !state.mapImage) loadMap(); else drawMap();
+    } else if (message.type === "link_heartbeat") {
+      if (message.program) acceptProgramUpdate(message.program, "heartbeat");
+      if (message.task) state.task = message.task;
+      state.microphone = message.microphone || (state.task && state.task.microphone) || state.microphone;
+      const online = Boolean(message.robot && message.robot.online);
+      setOnline(online);
+      renderProgram(); renderTaskState(); renderMicrophone();
+      if (online && Number(message.telemetry_age_ms || 0) > 2200) {
+        setActivity("连接正常，机器人状态正在刷新");
+      }
     } else if (message.type === "program_status") {
       const incomingState = String(message.program && message.program.state || "");
       if (!state.programTransition && (incomingState === "starting" || incomingState === "stopping")) {

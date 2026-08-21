@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import socket
 import sys
 import uuid
 from pathlib import Path
+
+import pytest
 
 
 APP_ROOT = Path(__file__).resolve().parents[1]
@@ -49,7 +52,7 @@ def test_program_buttons_target_qwen_realtime_resident_service(tmp_path):
     start = RecordingProgramController(project, "start")
     started = start.start()
     assert started["status"] == "started"
-    assert start.calls == [(["bash", str(project / "resident_service.sh"), "start"], 240.0)]
+    assert start.calls == [(["bash", str(project / "resident_service.sh"), "start"], 420.0)]
 
     stop = RecordingProgramController(project, "stop")
     stopped = stop.stop()
@@ -57,9 +60,104 @@ def test_program_buttons_target_qwen_realtime_resident_service(tmp_path):
     assert stop.calls == [(["bash", str(project / "resident_service.sh"), "stop"], 120.0)]
 
 
+def test_app_start_failure_is_not_downgraded_to_voice_only(tmp_path):
+    project = tmp_path / "qwen_audio_3_realtime_flash_scenarios_resident_test"
+
+    class FailedController(ProgramController):
+        def __init__(self):
+            super().__init__(project, dry_run=False)
+            self.calls = []
+
+        def status(self):
+            components = {name: False for name in self.COMPONENT_NAMES}
+            return {"state": "stopped", "components": components}
+
+        def _run(self, argv, timeout):
+            self.calls.append((list(argv), timeout))
+            raise RuntimeError("head_target_unconfirmed")
+
+    controller = FailedController()
+    with pytest.raises(RuntimeError, match="head_target_unconfirmed"):
+        controller.start()
+    assert [call[0][-1] for call in controller.calls] == ["start", "stop"]
+
+
+def test_app_start_rolls_back_if_any_required_component_is_missing(tmp_path):
+    project = tmp_path / "qwen_audio_3_realtime_flash_scenarios_resident_test"
+
+    class PartialController(ProgramController):
+        def __init__(self):
+            super().__init__(project, dry_run=False)
+            self.calls = []
+            self.status_calls = 0
+
+        def status(self):
+            self.status_calls += 1
+            components = {name: True for name in self.COMPONENT_NAMES}
+            if self.status_calls > 1:
+                components["navigation"] = False
+            return {
+                "state": "stopped" if self.status_calls == 1 else "partial",
+                "components": components,
+            }
+
+        def _run(self, argv, timeout):
+            self.calls.append((list(argv), timeout))
+            return {"returncode": 0, "output": "mocked"}
+
+    controller = PartialController()
+    with pytest.raises(RuntimeError, match="program_incomplete_after_start: missing=navigation"):
+        controller.start()
+    assert [call[0][-1] for call in controller.calls] == ["start", "stop"]
+
+
 def test_program_status_matches_the_actual_zhenghang_navigation_launch():
     controller = ProgramController(Path("/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test"), dry_run=False)
     assert controller.process_patterns["navigation"] == "robot_bringup real_robot_nav.launch.py"
+
+
+@pytest.mark.parametrize(
+    ("command", "expected_skill", "expected_evidence"),
+    [
+        (
+            {"action": "navigate", "x": -2.2, "y": 0.1, "yaw": -1.5708},
+            "navigation_goto",
+            "App 地图导航到坐标 x=-2.200, y=0.100, yaw=-1.571",
+        ),
+        ({"action": "light", "state": "on"}, "light_control", "App 按键打开灯光"),
+        ({"action": "light", "state": "off"}, "light_control", "App 按键关闭灯光"),
+        ({"action": "feed", "grams": 20}, "feeder_control", "App 按键启动投食器，投食20克"),
+    ],
+)
+def test_app_explicit_controls_keep_semantic_guard_with_truthful_intent(
+    command, expected_skill, expected_evidence
+):
+    bridge = Bridge.__new__(Bridge)
+    captured = []
+
+    def request(payload, timeout=0.0):
+        captured.append((payload, timeout))
+        return {"ok": True, "status": "accepted"}
+
+    bridge.qwen_control_request = request
+    result = bridge.execute_app_plan(command)
+
+    assert result["ok"] is True
+    assert len(captured) == 1
+    payload, timeout = captured[0]
+    assert payload["op"] == "app_skill"
+    assert payload["skill"] == expected_skill
+    assert payload["user_text"] == expected_evidence
+    assert payload["user_text"] != "App 控制"
+    assert timeout == 155.0
+
+
+def test_app_voice_waits_through_a_short_realtime_reconnect(monkeypatch):
+    controller = ProgramController(Path("/tmp/project"), dry_run=False)
+    samples = iter((False, False, True))
+    monkeypatch.setattr(controller, "_qwen_voice_connected", lambda: next(samples))
+    monkeypatch.setattr(bridge_module.time, "sleep", lambda _seconds: None)
+    assert controller.wait_for_voice_ready(10.0) is True
 
 
 def test_every_app_button_command_has_a_non_hardware_dry_run_result():
@@ -127,6 +225,32 @@ def test_microphone_control_does_not_route_through_ros_or_app_voice():
         await bridge.execute_command({"id": "mic-set-1-abcdefgh", "action": "request_state"})
         assert all('"action": "microphone_set"' in item for item in sent)
         assert all('"ok": true' in item for item in sent)
+
+    asyncio.run(verify())
+
+
+def test_link_heartbeat_is_independent_of_ros_and_carries_live_status(monkeypatch):
+    async def verify():
+        bridge = Bridge(["http://127.0.0.1:9"], "token", dry_run=True)
+        sent = []
+
+        class Socket:
+            async def send(self, payload):
+                sent.append(json.loads(payload))
+
+        bridge.websocket = Socket()
+        bridge.program_state = {"state": "running"}
+        bridge.task_state = {"active": False, "queued": 0}
+        bridge.microphone_state = {"enabled": True, "accepting_local_voice": True}
+        monkeypatch.setattr(bridge_module, "LINK_HEARTBEAT_INTERVAL_SEC", 0.01)
+        task = asyncio.create_task(bridge.link_heartbeat_loop())
+        while len(sent) < 2:
+            await asyncio.sleep(0.005)
+        task.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+        assert all(item["type"] == "link_heartbeat" for item in sent)
+        assert sent[-1]["program"]["state"] == "running"
+        assert sent[-1]["microphone"]["accepting_local_voice"] is True
 
     asyncio.run(verify())
 

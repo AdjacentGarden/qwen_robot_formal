@@ -1,4 +1,5 @@
 import importlib
+import asyncio
 from pathlib import Path
 
 import pytest
@@ -108,6 +109,60 @@ def test_microphone_state_relay_preserves_app_voice_capability(tmp_path, monkeyp
                 assert relayed["action"] == "microphone_set"
                 assert relayed["enabled"] is True
                 assert phone.receive_json()["ok"] is True
+
+
+def test_link_heartbeat_keeps_connection_live_and_carries_cached_status(tmp_path, monkeypatch):
+    client, _ = make_client(tmp_path, monkeypatch)
+    microphone = {
+        "enabled": True,
+        "accepting_local_voice": True,
+        "app_voice_enabled": True,
+    }
+    with client:
+        with client.websocket_connect("/ws/robot?token=robot-test-token") as robot:
+            with client.websocket_connect("/ws/app?token=app-test-token") as phone:
+                assert phone.receive_json()["type"] == "state"
+                robot.send_json({
+                    "type": "link_heartbeat",
+                    "program": {"state": "running"},
+                    "task": {"active": False, "queued": 0},
+                    "microphone": microphone,
+                    "telemetry_age_ms": 230.0,
+                })
+                heartbeat = phone.receive_json()
+                assert heartbeat["type"] == "link_heartbeat"
+                assert heartbeat["robot"]["online"] is True
+                assert heartbeat["program"]["state"] == "running"
+                assert heartbeat["microphone"] == microphone
+
+
+def test_broadcast_slow_client_does_not_delay_healthy_client(tmp_path, monkeypatch):
+    _, module = make_client(tmp_path, monkeypatch)
+
+    class Client:
+        def __init__(self, delay):
+            self.delay = delay
+            self.messages = []
+            self.closed = False
+
+        async def send_text(self, text):
+            await asyncio.sleep(self.delay)
+            self.messages.append(text)
+
+        async def close(self, code):
+            self.closed = True
+
+    async def verify():
+        monkeypatch.setattr(module, "APP_SEND_TIMEOUT_SECONDS", 0.03)
+        fast = Client(0.0)
+        slow = Client(0.2)
+        module.hub.apps = {fast, slow}
+        await module.hub.broadcast({"type": "telemetry"})
+        assert len(fast.messages) == 1
+        assert slow not in module.hub.apps
+        assert slow.closed is True
+
+    asyncio.run(verify())
 
 
 def test_streamed_app_voice_relay_and_empty_audio_branch(tmp_path, monkeypatch):

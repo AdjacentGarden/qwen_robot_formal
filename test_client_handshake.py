@@ -5,6 +5,7 @@ import json
 import sys
 import tempfile
 import threading
+import time
 import types
 import unittest
 from pathlib import Path
@@ -12,6 +13,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from realtime_chat import (
+    AudioEngine,
     DEFAULT_ASSISTANT_INSTRUCTIONS,
     JsonLogger,
     RealtimeConversation,
@@ -36,6 +38,59 @@ class FakeWebSocket:
 
 
 class ClientHandshakeTests(unittest.IsolatedAsyncioTestCase):
+    def test_microphone_status_requires_a_live_stream_and_real_signal(self) -> None:
+        args = SimpleNamespace()
+        with tempfile.TemporaryDirectory() as directory:
+            client = RealtimeConversation(
+                args,
+                "sk-test",
+                JsonLogger(Path(directory) / "events.jsonl"),
+            )
+            client.connected = True
+            client.local_microphone_enabled = True
+            client.audio = SimpleNamespace(
+                microphone_health=lambda: {
+                    "healthy": False,
+                    "stream_active": True,
+                    "signal_detected": False,
+                    "digital_silence": True,
+                    "consecutive_zero_reads": 30,
+                    "reads": 30,
+                    "bytes_read": 96000,
+                    "last_read_age_ms": 20.0,
+                }
+            )
+            unhealthy = client.status_payload()["microphone"]
+            self.assertFalse(unhealthy["accepting_local_voice"])
+            self.assertTrue(unhealthy["digital_silence"])
+
+            client.audio.microphone_health = lambda: {
+                "healthy": True,
+                "stream_active": True,
+                "signal_detected": True,
+                "digital_silence": False,
+                "consecutive_zero_reads": 0,
+                "reads": 31,
+                "bytes_read": 99200,
+                "last_read_age_ms": 10.0,
+            }
+            healthy = client.status_payload()["microphone"]
+            self.assertTrue(healthy["accepting_local_voice"])
+
+    def test_audio_health_rejects_an_active_but_zero_only_stream(self) -> None:
+        engine = AudioEngine.__new__(AudioEngine)
+        engine.input_stream = SimpleNamespace(is_active=lambda: True)
+        engine.chunk_ms = 100
+        engine.microphone_reads = 30
+        engine.microphone_bytes_read = 96000
+        engine.last_microphone_read_at = time.monotonic()
+        engine.microphone_signal_seen = False
+        engine.consecutive_zero_reads = 30
+        engine.zero_read_limit = 30
+        health = engine.microphone_health()
+        self.assertFalse(health["healthy"])
+        self.assertTrue(health["digital_silence"])
+
     def test_default_prompt_covers_memory_warmth_truth_and_no_duplicate_speech(self) -> None:
         for rule in (
             "结合前文理解",

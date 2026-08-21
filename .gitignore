@@ -1,30 +1,28 @@
-# Runtime state, logs, recordings, identities, and credentials
+# Runtime and process state
 runtime/
 robot_skills/runtime/
-robot_skills/face_data/
-backups/
-.codex_backups/
+android_app/runtime/
+**/__pycache__/
+*.py[cod]
 *.log
 *.pid
 *.sock
-*.pcm
-
-# Local secrets. Commit only explicit examples.
-.env
-*.env
-!config.example.env
-!*.env.example
-robot_skills/config/modelscope.env
-
-# Python, Node, Android, and editor build artifacts
-__pycache__/
-*.py[cod]
 .pytest_cache/
-node_modules/
-.gradle/
-android_app/release/
+backups/
+.codex_backups/
+
+# Secrets and personal data
+robot_skills/config/modelscope.env
+robot_skills/face_data/faces.db
+robot_skills/face_data/face_images/
+robot_skills/face_data/identity_event.json
+*.pem
+*.key
+auth.json
+
+# Build/cache directories
+android_app/node_modules/
 android_app/android/.gradle/
 android_app/android/app/build/
-*.apk
+android_app/release/*.apk
 .DS_Store
-._*

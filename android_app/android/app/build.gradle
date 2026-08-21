@@ -9,8 +9,8 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         // Date-based monotonically increasing code avoids Huawei package installer
         // rejecting an update as the same version or a downgrade.
-        versionCode 202608204
-        versionName "2.2.0-microphone-control"
+        versionCode 202608205
+        versionName "2.2.1-realtime-link"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

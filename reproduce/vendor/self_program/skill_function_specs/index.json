@@ -1,0 +1,581 @@
+{
+  "config_file": "/home/test/self_program/audio_config.json",
+  "generated_from": "/home/test/self_program/new_self_test.py",
+  "skill_count": 28,
+  "skills": [
+    {
+      "description_zh": "调用后摄像头拍摄一张图片。",
+      "domain_tags": [
+        "camera",
+        "rear_view",
+        "perception",
+        "evidence"
+      ],
+      "example_function_call": {
+        "arguments": {},
+        "name": "back_camera_capture"
+      },
+      "file": "/home/test/self_program/skill_function_specs/back_camera_capture.json",
+      "name": "back_camera_capture",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "调用后摄像头录制一段视频。",
+      "domain_tags": [
+        "camera",
+        "rear_view",
+        "video",
+        "perception"
+      ],
+      "example_function_call": {
+        "arguments": {},
+        "name": "back_camera_record"
+      },
+      "file": "/home/test/self_program/skill_function_specs/back_camera_record.json",
+      "name": "back_camera_record",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "按 camera_name 选择前摄或后摄拍摄一张图片。",
+      "domain_tags": [
+        "camera",
+        "perception",
+        "evidence"
+      ],
+      "example_function_call": {
+        "arguments": {
+          "camera_name": "front"
+        },
+        "name": "camera_capture"
+      },
+      "file": "/home/test/self_program/skill_function_specs/camera_capture.json",
+      "name": "camera_capture",
+      "optional_enhancements": [],
+      "required_slots": [
+        "camera_name"
+      ]
+    },
+    {
+      "description_zh": "按 camera_name 选择前摄或后摄录制视频。",
+      "domain_tags": [
+        "camera",
+        "video",
+        "perception"
+      ],
+      "example_function_call": {
+        "arguments": {
+          "camera_name": "front",
+          "seconds": 3
+        },
+        "name": "camera_record"
+      },
+      "file": "/home/test/self_program/skill_function_specs/camera_record.json",
+      "name": "camera_record",
+      "optional_enhancements": [],
+      "required_slots": [
+        "camera_name"
+      ]
+    },
+    {
+      "description_zh": "调用前摄图像和视觉模型进行环境、投影或健身空间感知。",
+      "domain_tags": [
+        "vision",
+        "environment",
+        "projection",
+        "fitness",
+        "meeting",
+        "entertainment",
+        "safety"
+      ],
+      "example_function_call": {
+        "arguments": {
+          "purpose": "general"
+        },
+        "name": "environment_perception"
+      },
+      "file": "/home/test/self_program/skill_function_specs/environment_perception.json",
+      "name": "environment_perception",
+      "optional_enhancements": [
+        {
+          "applies_when_zh": "用户提到投影、会议、运动或娱乐，但环境是否适合投影不明确。",
+          "enhancement_id": "projection_readiness_check",
+          "if_yes_task": {
+            "arguments": {
+              "purpose": "projection"
+            },
+            "order": "before_projector",
+            "skill": "environment_perception"
+          },
+          "question_zh": "需要我先看一下环境是否适合投影吗？",
+          "related_skill": "projector_control"
+        }
+      ],
+      "required_slots": []
+    },
+    {
+      "description_zh": "识别当前摄像头画面中的已注册人脸。",
+      "domain_tags": [
+        "identity",
+        "face",
+        "camera",
+        "recognition"
+      ],
+      "example_function_call": {
+        "arguments": {},
+        "name": "face_recognition"
+      },
+      "file": "/home/test/self_program/skill_function_specs/face_recognition.json",
+      "name": "face_recognition",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "为指定姓名注册人脸。",
+      "domain_tags": [
+        "identity",
+        "face",
+        "camera",
+        "registration"
+      ],
+      "example_function_call": {
+        "arguments": {
+          "name": "张三"
+        },
+        "name": "face_registration"
+      },
+      "file": "/home/test/self_program/skill_function_specs/face_registration.json",
+      "name": "face_registration",
+      "optional_enhancements": [],
+      "required_slots": [
+        "name"
+      ]
+    },
+    {
+      "description_zh": "风扇控制占位 skill，当前底层标记为 disabled。",
+      "domain_tags": [
+        "home_control",
+        "disabled"
+      ],
+      "example_function_call": {
+        "arguments": {},
+        "name": "fan_control"
+      },
+      "file": "/home/test/self_program/skill_function_specs/fan_control.json",
+      "name": "fan_control",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "喂食器控制占位 skill，当前底层标记为 disabled。",
+      "domain_tags": [
+        "pet_care",
+        "disabled"
+      ],
+      "example_function_call": {
+        "arguments": {},
+        "name": "feeder_control"
+      },
+      "file": "/home/test/self_program/skill_function_specs/feeder_control.json",
+      "name": "feeder_control",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "调用前摄像头拍摄一张图片。",
+      "domain_tags": [
+        "camera",
+        "front_view",
+        "perception",
+        "evidence"
+      ],
+      "example_function_call": {
+        "arguments": {},
+        "name": "front_camera_capture"
+      },
+      "file": "/home/test/self_program/skill_function_specs/front_camera_capture.json",
+      "name": "front_camera_capture",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "调用前摄像头录制一段视频。",
+      "domain_tags": [
+        "camera",
+        "front_view",
+        "video",
+        "perception"
+      ],
+      "example_function_call": {
+        "arguments": {},
+        "name": "front_camera_record"
+      },
+      "file": "/home/test/self_program/skill_function_specs/front_camera_record.json",
+      "name": "front_camera_record",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "控制机器人头部/云台向上、向下、水平或指定角度。",
+      "domain_tags": [
+        "head",
+        "camera_view",
+        "stepper"
+      ],
+      "example_function_call": {
+        "arguments": {
+          "action": "up"
+        },
+        "name": "head_control"
+      },
+      "file": "/home/test/self_program/skill_function_specs/head_control.json",
+      "name": "head_control",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "灯光控制占位 skill，当前底层标记为 disabled。",
+      "domain_tags": [
+        "home_control",
+        "disabled"
+      ],
+      "example_function_call": {
+        "arguments": {},
+        "name": "light_control"
+      },
+      "file": "/home/test/self_program/skill_function_specs/light_control.json",
+      "name": "light_control",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "控制机器人短暂后退。",
+      "domain_tags": [
+        "movement",
+        "base",
+        "short_action"
+      ],
+      "example_function_call": {
+        "arguments": {
+          "duration": 2
+        },
+        "name": "move_backward"
+      },
+      "file": "/home/test/self_program/skill_function_specs/move_backward.json",
+      "name": "move_backward",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "控制机器人短暂前进。",
+      "domain_tags": [
+        "movement",
+        "base",
+        "short_action"
+      ],
+      "example_function_call": {
+        "arguments": {
+          "duration": 2
+        },
+        "name": "move_forward"
+      },
+      "file": "/home/test/self_program/skill_function_specs/move_forward.json",
+      "name": "move_forward",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "控制机器人原地左转。",
+      "domain_tags": [
+        "movement",
+        "base",
+        "short_action"
+      ],
+      "example_function_call": {
+        "arguments": {
+          "duration": 2
+        },
+        "name": "move_left"
+      },
+      "file": "/home/test/self_program/skill_function_specs/move_left.json",
+      "name": "move_left",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "控制机器人原地右转。",
+      "domain_tags": [
+        "movement",
+        "base",
+        "short_action"
+      ],
+      "example_function_call": {
+        "arguments": {
+          "duration": 2
+        },
+        "name": "move_right"
+      },
+      "file": "/home/test/self_program/skill_function_specs/move_right.json",
+      "name": "move_right",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "发送导航目标点或坐标，让机器人导航到指定位置。",
+      "domain_tags": [
+        "navigation",
+        "location",
+        "base",
+        "long_running"
+      ],
+      "example_function_call": {
+        "arguments": {
+          "point": "a"
+        },
+        "name": "navigation_goto"
+      },
+      "file": "/home/test/self_program/skill_function_specs/navigation_goto.json",
+      "name": "navigation_goto",
+      "optional_enhancements": [],
+      "required_slots": [
+        "point_or_coordinates"
+      ]
+    },
+    {
+      "description_zh": "查询可用导航点位列表。",
+      "domain_tags": [
+        "navigation",
+        "location",
+        "query"
+      ],
+      "example_function_call": {
+        "arguments": {},
+        "name": "navigation_list"
+      },
+      "file": "/home/test/self_program/skill_function_specs/navigation_list.json",
+      "name": "navigation_list",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "使用摄像头寻找、追踪或停止追踪行人。",
+      "domain_tags": [
+        "tracking",
+        "person",
+        "camera",
+        "base",
+        "long_running"
+      ],
+      "example_function_call": {
+        "arguments": {
+          "action": "track",
+          "duration": 10
+        },
+        "name": "person_tracking"
+      },
+      "file": "/home/test/self_program/skill_function_specs/person_tracking.json",
+      "name": "person_tracking",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "使用摄像头寻找、追踪或停止追踪宠物。",
+      "domain_tags": [
+        "tracking",
+        "pet",
+        "camera",
+        "base",
+        "long_running"
+      ],
+      "example_function_call": {
+        "arguments": {
+          "action": "track",
+          "duration": 10,
+          "pet": "dog"
+        },
+        "name": "pet_tracking"
+      },
+      "file": "/home/test/self_program/skill_function_specs/pet_tracking.json",
+      "name": "pet_tracking",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "控制投影仪开关、内部图案或查询状态；投影可用于运动辅助、会议展示和娱乐场景。",
+      "domain_tags": [
+        "projection",
+        "fitness",
+        "meeting",
+        "entertainment",
+        "display"
+      ],
+      "example_function_call": {
+        "arguments": {
+          "action": "status"
+        },
+        "name": "projector_control"
+      },
+      "file": "/home/test/self_program/skill_function_specs/projector_control.json",
+      "name": "projector_control",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "使用摄像头进行引体向上计数、查询或停止。",
+      "domain_tags": [
+        "fitness",
+        "exercise",
+        "pull_up",
+        "camera"
+      ],
+      "example_function_call": {
+        "arguments": {
+          "action": "run",
+          "duration": 30
+        },
+        "name": "pull_up"
+      },
+      "file": "/home/test/self_program/skill_function_specs/pull_up.json",
+      "name": "pull_up",
+      "optional_enhancements": [
+        {
+          "applies_when_zh": "用户要做运动但未说明是否需要投影辅助。",
+          "enhancement_id": "fitness_projection",
+          "if_yes_task": {
+            "arguments": {
+              "action": "internal_on"
+            },
+            "order": "before_current",
+            "skill": "projector_control"
+          },
+          "question_zh": "需要我打开投影辅助训练吗？",
+          "related_skill": "projector_control"
+        }
+      ],
+      "required_slots": []
+    },
+    {
+      "description_zh": "使用摄像头进行俯卧撑计数、查询或停止。",
+      "domain_tags": [
+        "fitness",
+        "exercise",
+        "push_up",
+        "camera"
+      ],
+      "example_function_call": {
+        "arguments": {
+          "action": "run",
+          "duration": 30
+        },
+        "name": "push_up"
+      },
+      "file": "/home/test/self_program/skill_function_specs/push_up.json",
+      "name": "push_up",
+      "optional_enhancements": [
+        {
+          "applies_when_zh": "用户要做运动但未说明是否需要投影辅助。",
+          "enhancement_id": "fitness_projection",
+          "if_yes_task": {
+            "arguments": {
+              "action": "internal_on"
+            },
+            "order": "before_current",
+            "skill": "projector_control"
+          },
+          "question_zh": "需要我打开投影辅助训练吗？",
+          "related_skill": "projector_control"
+        }
+      ],
+      "required_slots": []
+    },
+    {
+      "description_zh": "取消已创建的提醒。",
+      "domain_tags": [
+        "reminder",
+        "cancel"
+      ],
+      "example_function_call": {
+        "arguments": {
+          "query": "喝水"
+        },
+        "name": "reminder_cancel"
+      },
+      "file": "/home/test/self_program/skill_function_specs/reminder_cancel.json",
+      "name": "reminder_cancel",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "查询当前提醒列表。",
+      "domain_tags": [
+        "reminder",
+        "query"
+      ],
+      "example_function_call": {
+        "arguments": {},
+        "name": "reminder_query"
+      },
+      "file": "/home/test/self_program/skill_function_specs/reminder_query.json",
+      "name": "reminder_query",
+      "optional_enhancements": [],
+      "required_slots": []
+    },
+    {
+      "description_zh": "创建一个定时或条件提醒。",
+      "domain_tags": [
+        "reminder",
+        "time",
+        "schedule"
+      ],
+      "example_function_call": {
+        "arguments": {
+          "content": "喝水",
+          "trigger_condition": "5分钟后"
+        },
+        "name": "reminder_schedule"
+      },
+      "file": "/home/test/self_program/skill_function_specs/reminder_schedule.json",
+      "name": "reminder_schedule",
+      "optional_enhancements": [],
+      "required_slots": [
+        "content",
+        "trigger_time_or_condition"
+      ]
+    },
+    {
+      "description_zh": "使用摄像头进行深蹲计数、查询或停止。",
+      "domain_tags": [
+        "fitness",
+        "exercise",
+        "squat",
+        "camera"
+      ],
+      "example_function_call": {
+        "arguments": {
+          "action": "run",
+          "duration": 30
+        },
+        "name": "squat"
+      },
+      "file": "/home/test/self_program/skill_function_specs/squat.json",
+      "name": "squat",
+      "optional_enhancements": [
+        {
+          "applies_when_zh": "用户要做运动但未说明是否需要投影辅助。",
+          "enhancement_id": "fitness_projection",
+          "if_yes_task": {
+            "arguments": {
+              "action": "internal_on"
+            },
+            "order": "before_current",
+            "skill": "projector_control"
+          },
+          "question_zh": "需要我打开投影辅助训练吗？",
+          "related_skill": "projector_control"
+        }
+      ],
+      "required_slots": []
+    }
+  ]
+}

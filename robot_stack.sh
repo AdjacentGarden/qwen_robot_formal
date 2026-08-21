@@ -14,6 +14,8 @@ ODOM_RETRY_DELAY="${QWEN_ODOM_RETRY_DELAY_SEC:-3}"
 NAV_READY_TIMEOUT="${QWEN_NAV_READY_TIMEOUT:-75}"
 NAV_START_ATTEMPTS="${QWEN_NAV_START_ATTEMPTS:-2}"
 NAV_RETRY_DELAY="${QWEN_NAV_RETRY_DELAY_SEC:-3}"
+NAV_LIFECYCLE_REPAIR_ATTEMPTS="${QWEN_NAV_LIFECYCLE_REPAIR_ATTEMPTS:-2}"
+NAV_LIFECYCLE_REPAIR_DELAY="${QWEN_NAV_LIFECYCLE_REPAIR_DELAY_SEC:-5}"
 HEAD_LEVEL_TIMEOUT="${QWEN_HEAD_LEVEL_TIMEOUT:-25}"
 HEAD_STARTUP_TOLERANCE="${QWEN_HEAD_STARTUP_TOLERANCE_DEG:-7}"
 mkdir -p "$RUN_DIR" "$LOG_DIR"
@@ -73,6 +75,10 @@ topic_has_fresh_sample() {
   timeout 3 ros2 topic echo "$1" --once >/dev/null 2>&1
 }
 
+map_has_sample() {
+  timeout 4 ros2 topic echo /map --once --qos-durability transient_local >/dev/null 2>&1
+}
+
 service_exists() {
   local output
   output="$(timeout 4 ros2 service list 2>/dev/null || true)"
@@ -83,6 +89,39 @@ action_exists() {
   local output
   output="$(timeout 4 ros2 action list 2>/dev/null || true)"
   grep -qx "$1" <<<"$output"
+}
+
+lifecycle_state() {
+  local output
+  output="$(timeout 4 ros2 lifecycle get "$1" 2>/dev/null)" || return 1
+  awk 'NF { print $1; exit }' <<<"$output"
+}
+
+lifecycle_is_active() {
+  [[ "$(lifecycle_state "$1" 2>/dev/null || true)" == "active" ]]
+}
+
+repair_map_server_lifecycle() {
+  local state
+  state="$(lifecycle_state /map_server 2>/dev/null || true)"
+  case "$state" in
+    active)
+      return 0
+      ;;
+    unconfigured)
+      echo "[navigation] map_server 尚未配置，执行一次有界 configure 修复"
+      timeout 8 ros2 lifecycle set /map_server configure >/dev/null 2>&1 || return 1
+      ;;
+    inactive)
+      ;;
+    *)
+      echo "[navigation] map_server 当前状态不可修复：${state:-unknown}" >&2
+      return 1
+      ;;
+  esac
+  echo "[navigation] map_server 未激活，执行一次有界 activate 修复"
+  timeout 8 ros2 lifecycle set /map_server activate >/dev/null 2>&1 || return 1
+  lifecycle_is_active /map_server
 }
 
 process_group_has_members() {
@@ -104,6 +143,10 @@ probe_ready() {
       service_exists /map_server/get_state &&
         service_exists /planner_server/get_state &&
         service_exists /bt_navigator/get_state &&
+        lifecycle_is_active /map_server &&
+        lifecycle_is_active /planner_server &&
+        lifecycle_is_active /bt_navigator &&
+        map_has_sample &&
         action_exists /compute_path_to_pose &&
         action_exists /navigate_to_pose
       ;;
@@ -166,7 +209,9 @@ start_component() {
 
 wait_ready() {
   local name="$1" timeout_sec="$2" deadline pid managed_file
+  local lifecycle_repairs=0 next_lifecycle_repair
   deadline=$((SECONDS + timeout_sec))
+  next_lifecycle_repair=$((SECONDS + 6))
   managed_file="$(pid_file "$name")"
   echo "[$name] 等待完整就绪（最多 ${timeout_sec}s）"
   while ((SECONDS < deadline)); do
@@ -179,6 +224,16 @@ wait_ready() {
     elif [[ -s "$managed_file" ]]; then
       echo "[$name] 启动进程已经退出，请检查 $LOG_DIR/$name.log" >&2
       return 1
+    fi
+    if [[ "$name" == "navigation" ]] \
+      && ((lifecycle_repairs < NAV_LIFECYCLE_REPAIR_ATTEMPTS)) \
+      && ((SECONDS >= next_lifecycle_repair)) \
+      && service_exists /map_server/get_state \
+      && service_exists /map_server/change_state; then
+      lifecycle_repairs=$((lifecycle_repairs + 1))
+      echo "[navigation] 生命周期修复尝试 ${lifecycle_repairs}/${NAV_LIFECYCLE_REPAIR_ATTEMPTS}"
+      repair_map_server_lifecycle || true
+      next_lifecycle_repair=$((SECONDS + NAV_LIFECYCLE_REPAIR_DELAY))
     fi
     sleep 0.5
   done
@@ -315,13 +370,18 @@ show_plan() {
      等待：/odom 持续收到新消息
      未就绪：完整停止 odometry 后有限重试（默认 ${ODOM_START_ATTEMPTS} 次）
   4. navigation real_robot_nav.launch.py（关闭 RViz）
-     等待：map/planner/bt_navigator 状态服务、路径规划与导航 action 均可用
+     等待：map/planner/bt_navigator 均为 active、/map 可读取、路径规划与导航 action 均可用
+     map_server 卡在 inactive：有界修复生命周期，仍失败则完整重启 navigation
      未就绪：完整停止 navigation 后有限重试（默认 ${NAV_START_ATTEMPTS} 次）
      发车前：navigation_goto 再执行一次 ComputePathToPose 路径预检
   5. 上述全部就绪后，run.sh 才启动千问持续对话
 停止顺序：navigation -> odometry -> base
 EOF
 }
+
+if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+  return 0
+fi
 
 case "${1:-}" in
   start) start_all ;;

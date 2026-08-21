@@ -1,0 +1,28 @@
+[Unit]
+Description=Robot ROS stack and V8 assistant (NTP-gated strict ordered startup)
+Wants=network-online.target systemd-udev-settle.service systemd-timesyncd.service
+After=network-online.target systemd-udev-settle.service systemd-timesyncd.service sound.target
+Conflicts=robot-stack-v6.service robot-stack-v9.service
+ConditionPathExists=/home/test/new_project_optimized_v11_navsafe/startup/start_robot_stack_v6.sh
+StartLimitIntervalSec=120
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=test
+Group=test
+SupplementaryGroups=adm dialout i2c
+WorkingDirectory=/home/test/new_project_optimized_v11_navsafe
+Environment=HOME=/home/test
+Environment=USER=test
+Environment=PYTHONUNBUFFERED=1
+ExecStartPre=/usr/bin/python3 /home/test/new_project_optimized_v11_navsafe/startup/wait_for_time_sync.py --timeout 300 --stable-seconds 3 --state-file /home/test/new_project_optimized_v11_navsafe/runtime/startup/time_sync_gate.json
+ExecStart=/home/test/new_project_optimized_v11_navsafe/startup/start_robot_stack_v6.sh
+Restart=on-failure
+RestartSec=5
+KillMode=control-group
+TimeoutStartSec=0
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,46 @@
+{
+  "snapshot_date": "2026-08-21",
+  "platform": {
+    "os": "Ubuntu 22.04",
+    "architecture": "aarch64",
+    "python": "3.10.12",
+    "ros": "humble"
+  },
+  "paths": {
+    "project": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test",
+    "car_workspace": "/home/test/car_real_copy_zhenghang",
+    "executor_project": "/home/test/qwen_robot_project",
+    "skill_specs": "/home/test/self_program/skill_function_specs",
+    "reminder_project": "/home/test/new_project",
+    "compatibility_project": "/home/test/new_project_optimized_v11_navsafe",
+    "dry_run_skills": "/home/test/single_function",
+    "fixed_audio": "/home/test/refine_0508/llm/doubao_fixed_audio"
+  },
+  "git_dependencies": {
+    "car_real_copy_zhenghang": {
+      "remote": "git@github.com:AdjacentGarden/car_real_copy_zhenghang.git",
+      "commit": "0a83831ebae3b0c5c52c05d6e652430d830a8ebf"
+    },
+    "qwen_robot_project_base": {
+      "remote": "git@github.com:AdjacentGarden/new_architect_robot_0706.git",
+      "commit": "552594532657749a03c6e2ac44f897d2057654e3",
+      "note": "运行机存在未提交改动，因此本仓库同时保存 vendor 工作树快照。"
+    },
+    "self_program_base": {
+      "remote": "git@github.com:AdjacentGarden/new_architecture_robot.git",
+      "commit": "23a451b808a85696954b26138dbb842f6e450a3f",
+      "note": "实际使用的 skill_function_specs 已保存为 vendor 快照。"
+    },
+    "single_function_base": {
+      "remote": "git@github.com:AdjacentGarden/robot_single_skill.git",
+      "commit": "189eacf9d2eb8fa716b8d63278cc13f408557151",
+      "note": "正式 execute 路径使用本项目 robot_skills；该依赖用于 dry-run 兼容。"
+    }
+  },
+  "checksums": {
+    "reproduce/home_test_root/dian.py": "719a91293f9c32c745356e10ed4b7b3830dc5d66d544ccdff03f123f34a9bb01",
+    "reproduce/home_test_root/start_projection_ppt.sh": "94b9b38cc9d6591a26b940104df6c787ab64d853eb0848a6efe14209ed5502c2",
+    "reproduce/home_test_root/stop_projection_ppt.sh": "2b81ce1c179a725f5fdff731a4a8b610602c7a2964cffe94e01f6e357a015b73",
+    "reproduce/home_test_root/start_projection_video.sh": "2558702aca2fe404ea7ff33f051efa2eca6afe7d6c2e5fe77a72dde64150a640"
+  }
+}

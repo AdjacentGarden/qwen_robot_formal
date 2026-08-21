@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import queue
 import sys
 import tempfile
 import threading
@@ -12,6 +13,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from realtime_chat import (
+    AudioEngine,
     DEFAULT_ASSISTANT_INSTRUCTIONS,
     JsonLogger,
     RealtimeConversation,
@@ -36,6 +38,97 @@ class FakeWebSocket:
 
 
 class ClientHandshakeTests(unittest.IsolatedAsyncioTestCase):
+    async def test_missing_transcript_discards_its_tool_call_and_prompts_retry(self) -> None:
+        spoken: list[dict] = []
+
+        class Speaker:
+            def cancel_pending(self):
+                return None
+
+            def submit_from_thread(self, event):
+                spoken.append(dict(event))
+
+        args = SimpleNamespace(transcript_grace_seconds=0.01)
+        with tempfile.TemporaryDirectory() as directory:
+            client = RealtimeConversation(
+                args,
+                "sk-test",
+                JsonLogger(Path(directory) / "events.jsonl"),
+            )
+            websocket = FakeWebSocket()
+            websocket.events = []
+            client.websocket = websocket
+            client.skill_event_speaker = Speaker()
+            client.mark_input_speech_started()
+            first_utterance = client.active_input_utterance_id
+            await client.handle_or_defer_function_call(
+                {
+                    "call_id": "stale-call",
+                    "name": "navigation_goto",
+                    "arguments": '{"point":"study_projection"}',
+                },
+                utterance_id=first_utterance,
+            )
+            self.assertEqual(len(client.deferred_function_calls), 1)
+            client.schedule_transcript_timeout()
+            await asyncio.sleep(0.25)
+
+            self.assertEqual(client.deferred_function_calls, [])
+            self.assertFalse(client.awaiting_input_transcript)
+            self.assertEqual(spoken[-1]["text"], "我没听清刚才那句话，请再说一遍。")
+            output = websocket.sent[-1]["item"]
+            self.assertEqual(output["type"], "function_call_output")
+            self.assertEqual(output["call_id"], "stale-call")
+            self.assertIn("NOT_EXECUTED", output["output"])
+
+            client.mark_input_speech_started()
+            await client.accept_input_transcript("今天天气怎么样")
+            self.assertEqual(client.deferred_function_calls, [])
+
+    async def test_local_clarification_is_available_to_the_next_short_answer(self) -> None:
+        args = SimpleNamespace()
+        with tempfile.TemporaryDirectory() as directory:
+            client = RealtimeConversation(
+                args,
+                "sk-test",
+                JsonLogger(Path(directory) / "events.jsonl"),
+            )
+            client._remember_local_assistant_speech("你是想让我陪你做俯卧撑吗？")
+            client.mark_input_speech_started()
+            self.assertEqual(
+                client.speech_turn_assistant_context,
+                "你是想让我陪你做俯卧撑吗？",
+            )
+
+    def test_audio_interrupt_does_not_restart_stream_from_non_owner_thread(self) -> None:
+        class Stream:
+            def __init__(self) -> None:
+                self.stop_calls = 0
+                self.start_calls = 0
+
+            def stop_stream(self) -> None:
+                self.stop_calls += 1
+
+            def start_stream(self) -> None:
+                self.start_calls += 1
+
+        audio = AudioEngine.__new__(AudioEngine)
+        audio.generation = 7
+        audio.output_queue = queue.Queue()
+        audio.output_queue.put_nowait((7, b"old audio"))
+        audio.output_stream = Stream()
+        audio.playing = threading.Event()
+        audio.playing.set()
+        audio.last_playback_at = 0.0
+
+        audio.interrupt()
+
+        self.assertEqual(audio.generation, 8)
+        self.assertTrue(audio.output_queue.empty())
+        self.assertFalse(audio.playing.is_set())
+        self.assertEqual(audio.output_stream.stop_calls, 0)
+        self.assertEqual(audio.output_stream.start_calls, 0)
+
     def test_default_prompt_covers_memory_warmth_truth_and_no_duplicate_speech(self) -> None:
         for rule in (
             "结合前文理解",
@@ -56,6 +149,8 @@ class ClientHandshakeTests(unittest.IsolatedAsyncioTestCase):
             "公司”就查询机器人位置",
             "关闭会议，投影导航到客厅去",
             "不能把场景名直接写进 name",
+            "只有高置信的常见转写偏差",
+            "用户回答“是的/对/不是”时必须承接",
         ):
             self.assertIn(rule, DEFAULT_ASSISTANT_INSTRUCTIONS)
 
