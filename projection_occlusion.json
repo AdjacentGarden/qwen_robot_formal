@@ -1,0 +1,22 @@
+{
+  "enabled": true,
+  "model": "qwen3-omni-flash-realtime",
+  "endpoint": "wss://dashscope.aliyuncs.com/api-ws/v1/realtime",
+  "camera": "/dev/video22",
+  "projector_state_file": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/projector/state.json",
+  "roi": [
+    [0.08, 0.08],
+    [0.92, 0.08],
+    [0.92, 0.92],
+    [0.08, 0.92]
+  ],
+  "interval_seconds": 1.0,
+  "state_poll_seconds": 0.5,
+  "blocked_confirmations": 2,
+  "clear_confirmations": 2,
+  "confidence_threshold": 0.7,
+  "immediate_confidence_threshold": 0.92,
+  "repeat_seconds": 12.0,
+  "rotate_after": 3,
+  "timeout_seconds": 15.0
+}

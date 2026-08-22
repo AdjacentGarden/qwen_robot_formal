@@ -31,6 +31,7 @@ if [[ "$INSTALL_SYSTEM_FILES" -eq 1 ]]; then
     exit 1
   fi
   install -m 0755 "$REPRO/system_files/usr_local_libexec/"* /usr/local/libexec/
+  install -m 0755 "$REPRO/system_files/usr_local_sbin/"* /usr/local/sbin/
   install -m 0644 "$REPRO/system_files/systemd/ideal-robot-app-bridge.service" /etc/systemd/system/
   systemctl daemon-reload
   echo "System files installed, but no service was started."

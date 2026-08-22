@@ -5,6 +5,10 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CAR_ROOT="/home/test/car_real_copy_zhenghang"
 RUN_DIR="$ROOT/runtime/robot_stack"
 LOG_DIR="$RUN_DIR/logs"
+HEALTH_MONITOR="$ROOT/ros_health_monitor.py"
+HEALTH_PID_FILE="$RUN_DIR/health_monitor.pid"
+HEALTH_STATE_FILE="$RUN_DIR/health.json"
+HEALTH_LOG_FILE="$LOG_DIR/health_monitor.log"
 BASE_READY_TIMEOUT="${QWEN_BASE_READY_TIMEOUT:-30}"
 BASE_START_ATTEMPTS="${QWEN_BASE_START_ATTEMPTS:-2}"
 BASE_RETRY_DELAY="${QWEN_BASE_RETRY_DELAY_SEC:-3}"
@@ -22,6 +26,7 @@ mkdir -p "$RUN_DIR" "$LOG_DIR"
 
 components=(base odometry navigation)
 started_this_run=()
+health_monitor_started_this_run=0
 
 source_ros() {
   set +u
@@ -59,46 +64,107 @@ component_command() {
   esac
 }
 
-topic_has_publishers() {
-  local output
-  output="$(timeout 3 ros2 topic info "$1" 2>/dev/null || true)"
-  grep -Eq 'Publisher count: [1-9][0-9]*' <<<"$output"
+health_monitor_pid() {
+  local pid cmdline
+  [[ -s "$HEALTH_PID_FILE" ]] || return 1
+  pid="$(<"$HEALTH_PID_FILE")"
+  [[ "$pid" =~ ^[0-9]+$ ]] || return 1
+  kill -0 "$pid" 2>/dev/null || return 1
+  [[ -r "/proc/$pid/cmdline" ]] || return 1
+  cmdline="$(tr '\0' ' ' <"/proc/$pid/cmdline" 2>/dev/null || true)"
+  [[ "$cmdline" == *"$HEALTH_MONITOR"* ]] || return 1
+  printf '%s\n' "$pid"
 }
 
-topic_has_subscribers() {
-  local output
-  output="$(timeout 3 ros2 topic info "$1" 2>/dev/null || true)"
-  grep -Eq 'Subscription count: [1-9][0-9]*' <<<"$output"
+health_component_ready() {
+  local name="$1"
+  [[ -r "$HEALTH_STATE_FILE" ]] || return 1
+  grep -Eq '"ready":\{[^}]*"'"$name"'":true' "$HEALTH_STATE_FILE"
 }
 
-topic_has_fresh_sample() {
-  timeout 3 ros2 topic echo "$1" --once >/dev/null 2>&1
+health_value() {
+  local expression="$1"
+  python3 - "$HEALTH_STATE_FILE" "$expression" <<'PY'
+import json, sys
+try:
+    value = json.load(open(sys.argv[1], encoding="utf-8"))
+    for part in sys.argv[2].split("."):
+        value = value[part]
+    if isinstance(value, bool):
+        print("true" if value else "false")
+    else:
+        print(value)
+except Exception:
+    raise SystemExit(1)
+PY
 }
 
-map_has_sample() {
-  timeout 4 ros2 topic echo /map --once --qos-durability transient_local >/dev/null 2>&1
+health_topic_fresh() {
+  local name="${1#/}" age
+  age="$(health_value "topics_age_sec.$name" 2>/dev/null || true)"
+  [[ "$age" =~ ^[0-9]+([.][0-9]+)?$ ]] || return 1
+  awk -v age="$age" 'BEGIN { exit !(age <= 2.5) }'
 }
 
-service_exists() {
-  local output
-  output="$(timeout 4 ros2 service list 2>/dev/null || true)"
-  grep -qx "$1" <<<"$output"
+ensure_health_monitor() {
+  local pid deadline temporary
+  if pid="$(health_monitor_pid 2>/dev/null)"; then
+    echo "[health] 只读 ROS 健康检查器已运行，PID=$pid"
+    return 0
+  fi
+  rm -f "$HEALTH_PID_FILE" "$HEALTH_STATE_FILE"
+  echo "[health] 启动单一持久化只读 ROS 健康检查器"
+  setsid python3 "$HEALTH_MONITOR" --run-dir "$RUN_DIR" >>"$HEALTH_LOG_FILE" 2>&1 < /dev/null &
+  pid=$!
+  temporary="$HEALTH_PID_FILE.$$.tmp"
+  printf '%s\n' "$pid" >"$temporary"
+  mv -f "$temporary" "$HEALTH_PID_FILE"
+  health_monitor_started_this_run=1
+  deadline=$((SECONDS + 8))
+  while ((SECONDS < deadline)); do
+    if ! kill -0 "$pid" 2>/dev/null; then
+      echo "[health] 健康检查器提前退出" >&2
+      tail -n 60 "$HEALTH_LOG_FILE" >&2 || true
+      rm -f "$HEALTH_PID_FILE"
+      return 1
+    fi
+    [[ -r "$HEALTH_STATE_FILE" ]] && return 0
+    sleep 0.2
+  done
+  echo "[health] 健康检查器未在 8 秒内生成状态" >&2
+  return 1
 }
 
-action_exists() {
-  local output
-  output="$(timeout 4 ros2 action list 2>/dev/null || true)"
-  grep -qx "$1" <<<"$output"
+stop_health_monitor() {
+  local pid deadline
+  if ! pid="$(health_monitor_pid 2>/dev/null)"; then
+    rm -f "$HEALTH_PID_FILE" "$HEALTH_STATE_FILE"
+    return 0
+  fi
+  kill -TERM -- "-$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null || true
+  deadline=$((SECONDS + 5))
+  while kill -0 "$pid" 2>/dev/null && ((SECONDS < deadline)); do sleep 0.1; done
+  if kill -0 "$pid" 2>/dev/null; then
+    kill -KILL -- "-$pid" 2>/dev/null || kill -KILL "$pid" 2>/dev/null || true
+  fi
+  rm -f "$HEALTH_PID_FILE" "$HEALTH_STATE_FILE"
 }
 
 lifecycle_state() {
-  local output
-  output="$(timeout 4 ros2 lifecycle get "$1" 2>/dev/null)" || return 1
-  awk 'NF { print $1; exit }' <<<"$output"
+  health_value "lifecycle.${1#/}" 2>/dev/null
 }
 
 lifecycle_is_active() {
   [[ "$(lifecycle_state "$1" 2>/dev/null || true)" == "active" ]]
+}
+
+wait_lifecycle_active() {
+  local node="$1" deadline=$((SECONDS + 4))
+  while ((SECONDS < deadline)); do
+    lifecycle_is_active "$node" && return 0
+    sleep 0.2
+  done
+  return 1
 }
 
 repair_map_server_lifecycle() {
@@ -121,7 +187,7 @@ repair_map_server_lifecycle() {
   esac
   echo "[navigation] map_server 未激活，执行一次有界 activate 修复"
   timeout 8 ros2 lifecycle set /map_server activate >/dev/null 2>&1 || return 1
-  lifecycle_is_active /map_server
+  wait_lifecycle_active /map_server
 }
 
 process_group_has_members() {
@@ -131,25 +197,7 @@ process_group_has_members() {
 
 probe_ready() {
   case "$1" in
-    base)
-      topic_has_subscribers /cmd_vel &&
-        topic_has_fresh_sample /scan_raw &&
-        topic_has_fresh_sample /imu
-      ;;
-    odometry)
-      topic_has_fresh_sample /odom
-      ;;
-    navigation)
-      service_exists /map_server/get_state &&
-        service_exists /planner_server/get_state &&
-        service_exists /bt_navigator/get_state &&
-        lifecycle_is_active /map_server &&
-        lifecycle_is_active /planner_server &&
-        lifecycle_is_active /bt_navigator &&
-        map_has_sample &&
-        action_exists /compute_path_to_pose &&
-        action_exists /navigate_to_pose
-      ;;
+    base|odometry|navigation) health_component_ready "$1" ;;
     *) return 2 ;;
   esac
 }
@@ -165,7 +213,7 @@ ensure_head_level_for_navigation() {
     echo "[head] 平视结果无效：$output" >&2
     return 1
   fi
-  if ! topic_has_fresh_sample /scan; then
+  if ! health_topic_fresh /scan; then
     echo "[head] 已平视，但 /scan 没有恢复新数据" >&2
     return 1
   fi
@@ -228,8 +276,7 @@ wait_ready() {
     if [[ "$name" == "navigation" ]] \
       && ((lifecycle_repairs < NAV_LIFECYCLE_REPAIR_ATTEMPTS)) \
       && ((SECONDS >= next_lifecycle_repair)) \
-      && service_exists /map_server/get_state \
-      && service_exists /map_server/change_state; then
+      && [[ "$(lifecycle_state /map_server 2>/dev/null || true)" != "unknown" ]]; then
       lifecycle_repairs=$((lifecycle_repairs + 1))
       echo "[navigation] 生命周期修复尝试 ${lifecycle_repairs}/${NAV_LIFECYCLE_REPAIR_ATTEMPTS}"
       repair_map_server_lifecycle || true
@@ -238,6 +285,9 @@ wait_ready() {
     sleep 0.5
   done
   echo "[$name] 在 ${timeout_sec}s 内未达到就绪条件，停止进入下一层" >&2
+  if [[ -r "$HEALTH_STATE_FILE" ]]; then
+    echo "[$name] 最后一次只读健康快照：$(cat "$HEALTH_STATE_FILE")" >&2
+  fi
   return 1
 }
 
@@ -277,6 +327,9 @@ rollback() {
   for ((index=${#started_this_run[@]}-1; index>=0; index--)); do
     stop_component "${started_this_run[index]}" || true
   done
+  if ((health_monitor_started_this_run)); then
+    stop_health_monitor || true
+  fi
 }
 
 start_component_with_retry() {
@@ -308,6 +361,7 @@ start_all() {
   validate_plan
   source_ros
   trap rollback ERR
+  ensure_health_monitor
   start_component_with_retry \
     base "$BASE_READY_TIMEOUT" "$BASE_START_ATTEMPTS" "$BASE_RETRY_DELAY"
   ensure_head_level_for_navigation
@@ -324,12 +378,16 @@ stop_all() {
   for ((index=${#components[@]}-1; index>=0; index--)); do
     stop_component "${components[index]}" || failed=1
   done
+  stop_health_monitor || failed=1
   return "$failed"
 }
 
 status_all() {
   local name pid state
   source_ros
+  if ! health_monitor_pid >/dev/null 2>&1; then
+    echo "[health] not-running（status 不会创建新的 ROS 参与者）"
+  fi
   for name in "${components[@]}"; do
     state="not-ready"
     probe_ready "$name" && state="ready"
@@ -349,6 +407,7 @@ validate_plan() {
     "$CAR_ROOT/install/robot_bringup/share/robot_bringup/launch/real_robot_base.launch.py" \
     "$CAR_ROOT/install/robot_bringup/share/robot_bringup/launch/real_robot_odometry.launch.py" \
     "$CAR_ROOT/install/robot_bringup/share/robot_bringup/launch/real_robot_nav.launch.py" \
+    "$HEALTH_MONITOR" \
     "$ROOT/robot_skills/head_control/run.py"; do
     if [[ ! -f "$required" ]]; then
       echo "缺少启动依赖：$required" >&2

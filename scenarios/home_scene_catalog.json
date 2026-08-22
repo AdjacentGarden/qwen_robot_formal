@@ -12,7 +12,7 @@
   "planner_rules": [
     "所有动作基于千问端到端流式语音会话；不得改走本地ASR、DeepSeek或本地TTS回答链路。",
     "第一次听到‘哈喽/哈啰/Hello理想（同学）’或自然同义问候时执行一次homecoming_welcome；允许语音转写省略‘同学’，但必须同时包含问候词和‘理想’；用户明确要求重播欢迎画面时也执行，普通后续问候不重复播放。",
-    "用户说今天很累、好疲惫、下班太累时先自然关心，再建议看电影；如果用户拒绝久坐，再建议一起运动。只有用户同意或直接要求运动时才执行push_up_companion。",
+    "用户说今天很累、好疲惫、下班太累或表达身体疲劳时，先自然回应并只询问‘那需要放个电影放松一下吗？’，此时不得调用硬件。用户同意看电影时执行movie_projection；用户只拒绝电影且没有提出其他安排时，再询问‘好的，那需要我陪您做运动吗？’，仍不得立即运动；用户同意后才执行push_up_companion。用户拒绝电影时若同时明确说俯卧撑、深蹲、会议等其他安排，直接执行对应任务，不再默认引导运动。",
     "‘不看了、已经坐了一天、今天很累’本身不是休息灯光指令，绝对不能调用rest_lighting；此时只自然建议起身活动，等待用户明确同意后再执行运动。",
     "运动默认播放运动示范视频并使用人脸识别和持续ReID。只有用户明确说不用身份识别、不看脸或不用ReID时，才把identity_policy设为anonymous。",
     "运动结束后在真实计数结果之后自然提醒喝口水；不得再次询问是否记录或上传视频。",
@@ -20,7 +20,7 @@
     "用户明确指定客厅、书房、餐厅或原点找豆豆时使用find_pet_at且只搜索指定点；明确说就在这里时使用find_pet_here且不导航。",
     "用户说豆豆该吃饭了时使用find_and_feed_doudou，按客厅、书房、餐厅顺序寻找；只有找到后才投喂，并如实说明投喂失败原因。",
     "会议投影默认导航到study_projection、抬头并循环播放会议内容；关闭会议投影后默认恢复平视。",
-    "模型不得把欢迎、运动或会议过程拆成导航、头部、投影、计数等原子调用；必须调用完整场景工具。",
+    "模型不得把欢迎、运动、会议或电影投影过程拆成导航、头部、投影、播放器、计数等原子调用；必须调用完整场景工具。",
     "同一事实只播报一次。工具前只做一句简短自然确认，工具后只依据spoken_summary播报，不复述步骤列表。"
   ],
   "skill_resources": {"welcome_projection": ["projector"]},
@@ -44,11 +44,11 @@
       ]
     },
     "push_up_companion": {
-      "description": "在客厅白墙处陪主人进行俯卧撑。默认身份识别、持续ReID、运动示范投影、实时计数和App视频同步，结束后关投影并恢复平视。",
+      "description": "在客厅白墙处陪主人进行俯卧撑。计数默认持续30秒，用户明确指定时长时按用户参数执行；默认身份识别、持续ReID、运动示范投影、实时计数和App视频同步，结束后关投影并恢复平视。",
       "semantic_examples": ["来陪我一起做运动吧", "我想做运动了", "你陪我做运动吧", "陪我做俯卧撑", "帮我数一下俯卧撑", "好啊开始运动吧"],
       "parameters": {"name": {"type": "str", "default": "zhangsan"}, "duration": {"type": "float", "default": 30}, "identity_policy": {"type": "str", "default": "face_and_reid"}},
       "effects": ["robot_at=white_wall", "push_up_session=completed", "fitness_uploaded_to_app=true", "projector=off", "head=level"],
-      "composition_rules": ["只说运动时默认俯卧撑。", "到达white_wall后才能抬头和身份确认。", "默认face_and_reid；明确拒绝身份识别时才anonymous。", "身份准备后默认播放运动示范视频。", "真实数量只由运动技能提供，结束后只补充一次喝水提醒。", "任何结束分支都关闭投影并恢复平视。"],
+      "composition_rules": ["只说运动时默认俯卧撑。", "运动计数默认30秒；用户明确说60秒、一分钟等时长时必须覆盖默认值。", "到达white_wall后才能抬头和身份确认。", "默认face_and_reid；明确拒绝身份识别时才anonymous。", "身份准备后默认播放运动示范视频。", "真实数量只由运动技能提供，结束后只补充一次喝水提醒。", "任何结束分支都关闭投影并恢复平视。"],
       "steps": [
         {"id": "navigate", "skill": "navigation_goto", "action": "goto", "arguments": {"point": "white_wall"}, "depends_on": [], "silent_result": true},
         {"id": "prepare_view", "skill": "head_control", "action": "up", "arguments": {}, "depends_on": ["navigate"], "silent_result": true},

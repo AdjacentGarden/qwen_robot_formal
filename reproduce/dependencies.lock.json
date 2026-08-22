@@ -1,5 +1,5 @@
 {
-  "snapshot_date": "2026-08-21",
+  "snapshot_date": "2026-08-23",
   "platform": {
     "os": "Ubuntu 22.04",
     "architecture": "aarch64",
@@ -19,7 +19,7 @@
   "git_dependencies": {
     "car_real_copy_zhenghang": {
       "remote": "git@github.com:AdjacentGarden/car_real_copy_zhenghang.git",
-      "commit": "0a83831ebae3b0c5c52c05d6e652430d830a8ebf"
+      "commit": "f6f4edd6270f62eeda843885a0236aca12a0d7c5f"
     },
     "qwen_robot_project_base": {
       "remote": "git@github.com:AdjacentGarden/new_architect_robot_0706.git",
@@ -41,6 +41,11 @@
     "reproduce/home_test_root/dian.py": "719a91293f9c32c745356e10ed4b7b3830dc5d66d544ccdff03f123f34a9bb01",
     "reproduce/home_test_root/start_projection_ppt.sh": "94b9b38cc9d6591a26b940104df6c787ab64d853eb0848a6efe14209ed5502c2",
     "reproduce/home_test_root/stop_projection_ppt.sh": "2b81ce1c179a725f5fdff731a4a8b610602c7a2964cffe94e01f6e357a015b73",
-    "reproduce/home_test_root/start_projection_video.sh": "2558702aca2fe404ea7ff33f051efa2eca6afe7d6c2e5fe77a72dde64150a640"
+    "reproduce/home_test_root/start_projection_video.sh": "2558702aca2fe404ea7ff33f051efa2eca6afe7d6c2e5fe77a72dde64150a640",
+    "reproduce/system_files/usr_local_sbin/robot-media-player": "7cfd93db1fbede24095a00d4da1602e39d61fafc78c3bc593111f45fd3ab9a2e",
+    "reproduce/system_files/usr_local_sbin/robot-meeting-projection-v2": "e2e4ca779c6827ede930c0f609fdc9048185121df15cce7c2c75778837a75f00",
+    "reproduce/system_files/usr_local_sbin/robot-start-exercise-projection": "e2e4ca779c6827ede930c0f609fdc9048185121df15cce7c2c75778837a75f00",
+    "reproduce/system_files/usr_local_sbin/robot-welcome-projection": "e2e4ca779c6827ede930c0f609fdc9048185121df15cce7c2c75778837a75f00",
+    "reproduce/system_files/usr_local_libexec/robot-projection-prep": "b2ed66ee1731aee957780f0e6701367bedbce6cc5609185c3f0f9a4191386f3f"
   }
 }

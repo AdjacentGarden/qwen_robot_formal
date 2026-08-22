@@ -52,7 +52,9 @@ assert.ok(appSource.includes('action: "request_state"'), "deployed-relay compati
 assert.ok(appSource.includes('`mic-set-${enabled ? 1 : 0}-'), "microphone compatibility command must encode only the desired boolean state");
 assert.ok(appSource.includes('state.microphone = message.microphone || (state.task && state.task.microphone)'), "microphone telemetry must support old and new relays");
 assert.ok(appSource.includes('message.type === "link_heartbeat"'), "independent robot link heartbeat must update App connectivity");
-assert.ok(appSource.includes('const LINK_STALE_MS = 2600'), "stale-link detection must remain fast");
+assert.ok(appSource.includes('message.type === "server_heartbeat"'), "App-to-relay health must stay independent from robot telemetry");
+assert.ok(appSource.includes('const CONNECT_TIMEOUT_MS = 5000'), "Tailscale connection setup must tolerate normal network latency");
+assert.ok(appSource.includes('const LINK_STALE_MS = 3500'), "server heartbeat loss must still be detected promptly");
 assert.ok(appSource.includes('const OFFLINE_GRACE_MS = 6500'), "brief network jitter must show reconnecting instead of false offline");
 
 console.log(JSON.stringify({ok:true, greetingCases:10, requiredIds:14, actions:5, offlineMap:true, genericLabels:true}));

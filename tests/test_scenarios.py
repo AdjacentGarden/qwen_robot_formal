@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from local_skills import SEQUENCE_TOOL_NAME, LocalSkillBridge
-from scenario_engine import ScenarioCatalog, ScenarioExecutor
+from scenario_engine import ScenarioCatalog, ScenarioError, ScenarioExecutor
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,6 +45,36 @@ class ScenarioCatalogTests(unittest.TestCase):
         for text, expected in cases.items():
             with self.subTest(text=text):
                 self.assertEqual(self.catalog.match(text), expected)
+
+    def test_fatigue_dialogue_routes_only_after_explicit_consent(self):
+        for text in (
+            "理想同学，今天好累啊",
+            "我今天做了好多事，身体好累",
+            "不看了，已经坐了一天了",
+        ):
+            with self.subTest(text=text):
+                self.assertIsNone(self.catalog.match(text))
+        self.assertEqual(self.catalog.match("不看了，我现在想做俯卧撑"), "push_up_companion")
+        self.assertEqual(self.catalog.match("不看了，我现在想做深蹲"), "squat_companion")
+        self.assertEqual(self.catalog.match("不看了，我现在要开个会"), "meeting_projection")
+
+    def test_movie_projection_and_transport_controls_are_protected_scenes(self):
+        cases = {
+            "我想看电影": "movie_projection",
+            "就在这里放电影": "movie_projection",
+            "暂停电影播放": "movie_projection_pause",
+            "继续播放电影": "movie_projection_resume",
+            "结束电影播放": "movie_projection_stop",
+        }
+        for text, expected in cases.items():
+            with self.subTest(text=text):
+                self.assertEqual(self.catalog.match(text), expected)
+
+        default_plan = self.catalog.compile("movie_projection", {})
+        self.assertEqual(default_plan["steps"][0]["arguments"]["point"], "study_projection")
+        self.assertEqual(default_plan["steps"][3]["arguments"]["title"], "大雄兔")
+        here_args = self.catalog.infer_arguments("movie_projection", "就在这里放电影")
+        self.assertEqual(here_args, {"stay_put": True})
 
     def test_observed_douer_asr_alias_requires_pet_action_context(self):
         self.assertEqual(
@@ -262,6 +292,14 @@ class ScenarioCatalogTests(unittest.TestCase):
                 self.assertIsNone(self.catalog.match(text))
         self.assertEqual(self.catalog.match("我要开会了"), "meeting_projection")
         self.assertEqual(self.catalog.match("打开客厅灯"), "living_room_light_service")
+        for scenario, text in (
+            ("meeting_projection", "提醒我十分钟后开会"),
+            ("push_up_companion", "六十秒后提醒我做俯卧撑"),
+        ):
+            with self.subTest(scenario=scenario, text=text):
+                ok, reason = self.catalog.model_scenario_supported(scenario, text)
+                self.assertFalse(ok)
+                self.assertEqual(reason, "reminder_content")
 
     def test_room_name_alone_cannot_authorize_light_scene_in_multi_intent_text(self):
         text = "关闭会议投影然后导航到客厅"
@@ -482,6 +520,45 @@ class ScenarioExecutorTests(unittest.TestCase):
         )
         self.assertEqual(self.catalog.infer_arguments("push_up_companion", "陪我运动"), {})
 
+    def test_fitness_duration_is_inferred_from_explicit_seconds_and_minutes(self):
+        cases = (
+            ("陪我做60秒俯卧撑", 60),
+            ("俯卧撑做60s", 60),
+            ("陪我运动一分钟", 60),
+            ("做一分30秒俯卧撑", 90),
+            ("做一分半俯卧撑", 90),
+            ("做半分钟运动", 30),
+            ("深蹲练一点五分钟", 90),
+            ("引体向上做六十秒", 60),
+        )
+        for text, expected in cases:
+            with self.subTest(text=text):
+                scenario = self.catalog.match(text)
+                self.assertIn(scenario, {"push_up_companion", "pull_up_companion", "squat_companion"})
+                self.assertEqual(self.catalog.infer_arguments(scenario, text)["duration"], expected)
+
+    def test_fitness_duration_does_not_confuse_repetitions_or_future_reminders(self):
+        for text in ("做60个俯卧撑", "六十秒后提醒我做俯卧撑", "陪我运动一会儿"):
+            with self.subTest(text=text):
+                self.assertNotIn(
+                    "duration",
+                    self.catalog.infer_arguments("push_up_companion", text),
+                )
+
+    def test_fitness_duration_flows_to_counter_and_defaults_to_thirty_seconds(self):
+        default_plan = self.catalog.compile("push_up_companion", {})
+        minute_plan = self.catalog.compile("push_up_companion", {"duration": 60})
+        default_count = next(item for item in default_plan["steps"] if item["id"] == "count")
+        minute_count = next(item for item in minute_plan["steps"] if item["id"] == "count")
+        self.assertEqual(default_count["arguments"]["duration"], 30)
+        self.assertEqual(minute_count["arguments"]["duration"], 60)
+
+    def test_fitness_duration_rejects_invalid_model_values(self):
+        for value in (0, -1, 601, float("inf"), "forever"):
+            with self.subTest(value=value):
+                with self.assertRaises(ScenarioError):
+                    self.catalog.compile("push_up_companion", {"duration": value})
+
     def test_find_pet_at_infers_only_the_named_saved_point(self):
         for text, point in (("去书房找豆豆", "study_projection"), ("只去书房找一下豆豆", "study_projection"), ("去客厅找狗", "white_wall"), ("去餐厅看看豆豆", "origin")):
             with self.subTest(text=text):
@@ -541,6 +618,77 @@ class ScenarioExecutorTests(unittest.TestCase):
             ["navigation_goto", "head_control", "projector_control"],
         )
         self.assertEqual(calls[0][1]["point"], "study_projection")
+
+    def test_movie_projection_success_and_stop_keep_protected_order(self):
+        calls = []
+
+        def invoke(skill, arguments):
+            calls.append((skill, dict(arguments)))
+            return {"ok": True, "validation_ok": True, "executed": True}
+
+        executor = ScenarioExecutor(self.catalog, invoke)
+        started = executor.execute("movie_projection", {})
+        self.assertTrue(started["ok"])
+        self.assertEqual(
+            [(skill, args.get("action")) for skill, args in calls],
+            [
+                ("navigation_goto", "goto"),
+                ("head_control", "up"),
+                ("projector_control", "on"),
+                ("media_player", "play_movie"),
+            ],
+        )
+        self.assertEqual(calls[0][1]["point"], "study_projection")
+        self.assertEqual(calls[3][1]["title"], "大雄兔")
+        self.assertEqual(started["outcome_groups"][0]["matched_outcome"], "all_success")
+
+        calls.clear()
+        stopped = executor.execute("movie_projection_stop", {})
+        self.assertTrue(stopped["ok"])
+        self.assertEqual(
+            [(skill, args.get("action")) for skill, args in calls],
+            [
+                ("media_player", "stop"),
+                ("projector_control", "off"),
+                ("head_control", "level"),
+            ],
+        )
+
+    def test_movie_player_failure_cleans_up_but_earlier_failure_does_not_play(self):
+        calls = []
+
+        def fail_player(skill, arguments):
+            calls.append((skill, dict(arguments)))
+            if skill == "media_player":
+                return {"ok": False, "validation_ok": False, "executed": True, "error": "media_file_missing"}
+            return {"ok": True, "validation_ok": True, "executed": True}
+
+        failed = ScenarioExecutor(self.catalog, fail_player).execute("movie_projection", {"stay_put": True})
+        self.assertFalse(failed["ok"])
+        self.assertEqual(
+            [(skill, args.get("action")) for skill, args in calls],
+            [
+                ("head_control", "up"),
+                ("projector_control", "on"),
+                ("media_player", "play_movie"),
+                ("projector_control", "off"),
+                ("head_control", "level"),
+            ],
+        )
+        self.assertEqual(failed["outcome_groups"][0]["matched_outcome"], "play_failed_cleaned")
+
+        calls.clear()
+
+        def fail_head(skill, arguments):
+            calls.append((skill, dict(arguments)))
+            if skill == "head_control" and arguments.get("action") == "up":
+                return {"ok": False, "validation_ok": False, "executed": True, "error": "head_timeout"}
+            return {"ok": True, "validation_ok": True, "executed": True}
+
+        head_failed = ScenarioExecutor(self.catalog, fail_head).execute("movie_projection", {"stay_put": True})
+        self.assertFalse(head_failed["ok"])
+        self.assertEqual(calls, [("head_control", {"action": "up"})])
+        self.assertEqual(head_failed["outcome_groups"][0]["matched_outcome"], "head_failed")
 
     def test_dry_run_validates_every_conditional_pet_branch(self):
         calls = []
@@ -1034,6 +1182,39 @@ class ScenarioBridgeBoundaryTests(unittest.TestCase):
             self.assertTrue(accepted["executed"])
             self.assertEqual(rejected["mode"], "intent_rejected")
             execute.assert_called_once()
+
+    def test_fatigue_offer_short_answers_recover_the_right_scene(self):
+        with tempfile.TemporaryDirectory() as directory:
+            bridge = self.make_bridge(Path(directory))
+            self.assertEqual(
+                bridge.recover_contextual_plan("好的", "那需要放个电影放松一下吗？"),
+                {"name": "run_robot_scenario", "arguments": {"scenario": "movie_projection"}},
+            )
+            self.assertEqual(
+                bridge.recover_contextual_plan("好的", "好的，那需要我陪您做运动吗？"),
+                {"name": "run_robot_scenario", "arguments": {"scenario": "push_up_companion"}},
+            )
+            self.assertIsNone(
+                bridge.recover_contextual_plan("不看了，已经坐了一天了", "那需要放个电影放松一下吗？")
+            )
+
+    def test_short_movie_controls_close_the_whole_projection_session(self):
+        with tempfile.TemporaryDirectory() as directory:
+            bridge = self.make_bridge(Path(directory))
+            scene_result = {
+                "ok": True, "validation_ok": True, "executed": True,
+                "scenario": "movie_projection_stop", "spoken_summary": "电影结束。",
+            }
+            with patch.object(bridge.scenario_executor, "execute", return_value=scene_result) as execute:
+                result = bridge.invoke(
+                    "media_player",
+                    {"action": "stop"},
+                    "不看了",
+                    "turn-movie-stop",
+                    "电影已经开始播放了。",
+                )
+            self.assertTrue(result["executed"])
+            execute.assert_called_once_with("movie_projection_stop", {})
 
 
 if __name__ == "__main__":

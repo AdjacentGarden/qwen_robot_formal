@@ -35,9 +35,18 @@ required = [
     ROOT / "android_app" / "web" / "index.html",
     ROOT / "android_app" / "robot_bridge" / "bridge.py",
     ROOT / "android_app" / "android" / "app" / "build.gradle",
+    ROOT / "projection_occlusion.json",
+    ROOT / "projection_occlusion_observer.py",
+    ROOT / "ros_health_monitor.py",
     ROOT / "reproduce" / "vendor" / "qwen_robot_project" / "new_project" / "executor.py",
     ROOT / "reproduce" / "vendor" / "self_program" / "skill_function_specs",
     ROOT / "reproduce" / "vendor" / "new_project" / "new_project" / "reminder_cli.py",
+    ROOT / "reproduce" / "vendor" / "new_project_optimized_v11_navsafe" / "data" / "pet_profiles.json",
+    ROOT / "reproduce" / "system_files" / "usr_local_libexec" / "robot-projection-prep",
+    ROOT / "reproduce" / "system_files" / "usr_local_sbin" / "robot-media-player",
+    ROOT / "reproduce" / "system_files" / "usr_local_sbin" / "robot-meeting-projection-v2",
+    ROOT / "reproduce" / "system_files" / "usr_local_sbin" / "robot-start-exercise-projection",
+    ROOT / "reproduce" / "system_files" / "usr_local_sbin" / "robot-welcome-projection",
 ]
 
 errors: list[str] = []
@@ -79,6 +88,10 @@ secret_paths = [
 for path in secret_paths:
     if path.exists():
         errors.append(f"private runtime file must not be tracked in snapshot: {path.relative_to(ROOT)}")
+
+web_config = ROOT / "android_app" / "web" / "config.js"
+if web_config.is_file() and 'token: "replace_me"' not in web_config.read_text(encoding="utf-8"):
+    errors.append("android_app/web/config.js must contain only the replace_me token template")
 
 if errors:
     print(json.dumps({"ok": False, "errors": errors}, ensure_ascii=False, indent=2))

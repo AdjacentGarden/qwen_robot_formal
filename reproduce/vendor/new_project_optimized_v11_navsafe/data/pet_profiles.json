@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "default_pet": "豆豆",
+  "pets": [
+    {
+      "name": "豆豆",
+      "type": "dog",
+      "is_default": true,
+      "species": "dog",
+      "home_point": "study_pet_c",
+      "default_feed_grams": 10,
+      "aliases": [
+        "豆豆",
+        "狗狗",
+        "小狗",
+        "它"
+      ]
+    }
+  ]
+}

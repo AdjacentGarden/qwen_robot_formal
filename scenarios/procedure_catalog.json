@@ -1,8 +1,10 @@
 {
-  "version": 1,
+  "version": 2,
   "planner_rules": [
     "始终遵守最小动作范围：只执行用户明确要求且为完成目标所必需的动作。若一个直接技能动作已经完整满足要求，就不得改用会额外增加导航、搜索、投影、识别、拍摄、投喂或运动步骤的复合procedure；只有用户同时表达了该procedure的组合意图时才可调用。",
-    "用户只要求给豆豆喂食或投粮时，直接调用feeder_control.feed，不得调用find_and_feed_doudou；只有用户同时要求查看、寻找或确认豆豆并喂食时，才调用find_and_feed_doudou。"
+    "用户只要求给豆豆喂食或投粮时，直接调用feeder_control.feed，不得调用find_and_feed_doudou；只有用户同时要求查看、寻找或确认豆豆并喂食时，才调用find_and_feed_doudou。",
+    "用户表达疲劳时先询问是否看电影，不得立即移动或播放；同意看电影后调用movie_projection。只拒绝电影且没有提出其他安排时，继续询问是否一起运动；同意后调用push_up_companion。拒绝电影时若同时明确提出俯卧撑、深蹲、会议等任务，直接执行该任务，不再默认引导运动。",
+    "电影播放、暂停、继续和结束分别使用movie_projection、movie_projection_pause、movie_projection_resume、movie_projection_stop，不能拆成导航、头部、投影仪和播放器原子步骤。"
   ],
   "scene": {
     "rooms": [
@@ -23,6 +25,7 @@
     ],
     "points": {
       "origin": "书房原点",
+      "study_projection": "书房投影点",
       "white_wall": "白墙运动与会议投影位置",
       "living_room_entry_a": "客厅入口服务位置",
       "living_room_projection_b": "备用客厅运动投影位置"
@@ -1101,6 +1104,175 @@
           },
           "text": "刚才没有完整关闭会议投影。"
         }
+      ]
+    },
+    "movie_projection": {
+      "description": "电影投影。默认导航到书房投影点，抬头、打开投影光源并播放本地合法授权影片；用户明确要求原地时跳过导航。",
+      "semantic_examples": [
+        "我想看电影",
+        "放个电影吧",
+        "播放一部电影",
+        "就在这里放电影"
+      ],
+      "parameters": {
+        "point": {
+          "type": "string",
+          "enum": ["origin", "white_wall", "study_projection"],
+          "default": "study_projection"
+        },
+        "stay_put": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "effects": [
+        "robot_at=study_projection",
+        "movie_projection=playing",
+        "head=up"
+      ],
+      "composition_rules": [
+        "默认到书房投影点；明确说原地、当前位置或不要导航时跳过导航。",
+        "导航失败不得抬头、开投影或播放电影。",
+        "抬头失败不得开投影或播放电影。",
+        "使用媒体库中已授权的默认电影，不下载或假装播放未提供的影片。",
+        "播放失败时关闭投影并恢复平视。"
+      ],
+      "steps": [
+        {
+          "id": "navigate",
+          "skill": "navigation_goto",
+          "action": "goto",
+          "arguments": {"point": {"$arg": "point", "default": "study_projection"}},
+          "enabled_if": {"argument": "stay_put", "equals": false},
+          "depends_on": [],
+          "silent_result": true
+        },
+        {
+          "id": "head_up",
+          "skill": "head_control",
+          "action": "up",
+          "arguments": {},
+          "depends_on": ["navigate"],
+          "silent_result": true
+        },
+        {
+          "id": "projector_on",
+          "skill": "projector_control",
+          "action": "on",
+          "arguments": {},
+          "depends_on": ["head_up"],
+          "silent_result": true
+        },
+        {
+          "id": "play",
+          "skill": "media_player",
+          "action": "play_movie",
+          "arguments": {"title": "大雄兔"},
+          "depends_on": ["projector_on"],
+          "silent_result": true
+        },
+        {
+          "id": "cleanup_projector",
+          "skill": "projector_control",
+          "action": "off",
+          "arguments": {},
+          "depends_on": ["play"],
+          "dependency_policy": "completion",
+          "run_if": {"any_executed_failed": ["play"]},
+          "silent_result": true
+        },
+        {
+          "id": "cleanup_level",
+          "skill": "head_control",
+          "action": "level",
+          "arguments": {},
+          "depends_on": ["cleanup_projector"],
+          "dependency_policy": "completion",
+          "run_if": {"any_executed_failed": ["play"]},
+          "silent_result": true
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "all_success_here",
+          "when": {
+            "all_ok": ["navigate", "head_up", "projector_on", "play"],
+            "field": {"step": "navigate", "path": "intentional_skip", "equals": true}
+          },
+          "text": "电影已经在当前位置播放了。"
+        },
+        {
+          "name": "all_success",
+          "when": {"all_ok": ["navigate", "head_up", "projector_on", "play"]},
+          "text": "已经到书房并开始播放电影了。"
+        },
+        {
+          "name": "navigation_failed",
+          "when": {"any_failed": ["navigate"]},
+          "text": "我没能到达书房投影点，所以没有抬头或播放电影。"
+        },
+        {
+          "name": "head_failed",
+          "when": {"any_failed": ["head_up"]},
+          "text": "头部没有抬到投影角度，所以没有打开投影或播放电影。"
+        },
+        {
+          "name": "projector_failed",
+          "when": {"any_failed": ["projector_on"]},
+          "text": "投影光源没有正常打开，所以没有开始播放电影。"
+        },
+        {
+          "name": "play_failed_cleaned",
+          "when": {"any_executed_failed": ["play"], "all_ok": ["cleanup_projector", "cleanup_level"]},
+          "text": "电影没有正常播放，我已经关闭投影并恢复平视。"
+        },
+        {
+          "name": "play_failed_cleanup_failed",
+          "when": {"any_executed_failed": ["play", "cleanup_projector", "cleanup_level"]},
+          "text": "电影没有正常播放，投影或头部状态也没有完全恢复。"
+        }
+      ]
+    },
+    "movie_projection_pause": {
+      "description": "暂停当前电影，保持投影和抬头状态。",
+      "semantic_examples": ["暂停电影", "电影先停一下", "暂停电影播放"],
+      "parameters": {},
+      "effects": ["movie_projection=paused"],
+      "steps": [
+        {"id": "pause", "skill": "media_player", "action": "pause", "arguments": {}, "depends_on": [], "silent_result": true}
+      ],
+      "outcomes": [
+        {"name": "all_success", "when": {"all_ok": ["pause"]}, "text": "电影已经暂停了。"},
+        {"name": "failed", "when": {"any_failed": ["pause"]}, "text": "电影这次没有成功暂停。"}
+      ]
+    },
+    "movie_projection_resume": {
+      "description": "继续播放已暂停的电影，保持投影和抬头状态。",
+      "semantic_examples": ["继续播放电影", "恢复电影播放", "接着看电影"],
+      "parameters": {},
+      "effects": ["movie_projection=playing"],
+      "steps": [
+        {"id": "resume", "skill": "media_player", "action": "resume", "arguments": {}, "depends_on": [], "silent_result": true}
+      ],
+      "outcomes": [
+        {"name": "all_success", "when": {"all_ok": ["resume"]}, "text": "电影继续播放了。"},
+        {"name": "failed", "when": {"any_failed": ["resume"]}, "text": "电影这次没有成功继续播放。"}
+      ]
+    },
+    "movie_projection_stop": {
+      "description": "结束电影播放、关闭投影并恢复平视。",
+      "semantic_examples": ["结束电影播放", "停止播放电影", "把电影关掉", "关闭电影投影"],
+      "parameters": {},
+      "effects": ["movie_projection=off", "projector=off", "head=level"],
+      "steps": [
+        {"id": "stop", "skill": "media_player", "action": "stop", "arguments": {}, "depends_on": [], "silent_result": true},
+        {"id": "off", "skill": "projector_control", "action": "off", "arguments": {}, "depends_on": ["stop"], "dependency_policy": "completion", "silent_result": true},
+        {"id": "level", "skill": "head_control", "action": "level", "arguments": {}, "depends_on": ["off"], "dependency_policy": "completion", "silent_result": true}
+      ],
+      "outcomes": [
+        {"name": "all_success", "when": {"all_ok": ["stop", "off", "level"]}, "text": "电影播放已经结束，投影已关闭，头部也恢复平视了。"},
+        {"name": "player_stop_failed", "when": {"any_failed": ["stop"], "all_ok": ["off", "level"]}, "text": "投影已经关闭并恢复平视，不过播放器没有确认停止成功。"},
+        {"name": "cleanup_failed", "when": {"any_failed": ["off", "level"]}, "text": "电影已停止，但投影或头部状态没有完全恢复。"}
       ]
     }
   }

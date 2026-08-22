@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+name="$(basename "$0")"
+qwen="/usr/local/libexec/${name}-qwen"
+formal="/usr/local/libexec/${name}-formal"
+if /usr/bin/pgrep -f '^python3 /home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime_server.py$' >/dev/null 2>&1; then
+  exec "$qwen" "$@"
+fi
+exec "$formal" "$@"

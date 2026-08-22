@@ -38,8 +38,9 @@ MICROPHONE_STATE_FILE = PROJECT / "runtime/microphone_state.json"
 MAX_APP_VOICE_BYTES = 4 * 1024 * 1024
 TELEMETRY_INTERVAL_SEC = 0.25
 LINK_HEARTBEAT_INTERVAL_SEC = 0.75
+MAP_SEND_MIN_INTERVAL_SEC = 2.0
 ASYNC_STATUS_TIMEOUT_SEC = 1.5
-WEBSOCKET_SEND_TIMEOUT_SEC = 2.0
+WEBSOCKET_SEND_TIMEOUT_SEC = 8.0
 
 
 def load_microphone_state() -> Dict[str, Any]:
@@ -299,6 +300,7 @@ class ProgramController:
 
     def __init__(self, project: Path, dry_run: bool = False) -> None:
         self.project = project
+        self.service_state_file = project / "runtime/resident_service/service_state.json"
         self.dry_run = dry_run
         self.lock = threading.Lock()
         self.process_patterns = {
@@ -318,6 +320,14 @@ class ProgramController:
             stderr=subprocess.DEVNULL,
             check=False,
         ).returncode == 0
+
+    @staticmethod
+    def _pid_matches(pid: int, pattern: str) -> bool:
+        try:
+            cmdline = Path(f"/proc/{pid}/cmdline").read_bytes().replace(b"\0", b" ").decode("utf-8", "replace")
+            return pattern in cmdline
+        except OSError:
+            return False
 
     @staticmethod
     def _qwen_voice_connected() -> bool:
@@ -357,8 +367,21 @@ class ProgramController:
         # so an absolute pgrep pattern can report a false negative. The local
         # control socket is the authoritative readiness check used by the App.
         components["voice"] = self._qwen_voice_connected()
+        service_transition = None
+        try:
+            service_state = json.loads(self.service_state_file.read_text(encoding="utf-8"))
+            transition = str(service_state.get("state") or "")
+            service_pid = int(service_state.get("pid") or 0)
+            if transition in {"starting", "stopping"} and service_pid > 0:
+                os.kill(service_pid, 0)
+                if self._pid_matches(service_pid, str(self.project / "run.sh")):
+                    service_transition = transition
+        except (OSError, ValueError, TypeError):
+            pass
         required = [components[name] for name in self.COMPONENT_NAMES]
-        if all(required):
+        if service_transition is not None:
+            state = service_transition
+        elif all(required):
             state = "running"
         elif not any(components.values()):
             state = "stopped"
@@ -388,6 +411,10 @@ class ProgramController:
                 return {"status": "dry_run", "operation": "start", "program": before}
             if before["state"] == "running" and before["components"].get("voice"):
                 return {"status": "already_running", "program": before}
+            if before["state"] == "starting":
+                return {"status": "already_starting", "program": before}
+            if before["state"] == "stopping":
+                raise RuntimeError("program_stop_in_progress")
             # A previous degraded start intentionally leaves voice available.
             # Stop that process before retrying the complete robot stack;
             # resident_service itself otherwise treats a live control socket as
@@ -458,7 +485,9 @@ class Bridge:
         self.task_state: Dict[str, Any] = {"active": False, "planning": False, "queued": 0}
         self.microphone_state: Dict[str, Any] = load_microphone_state()
         self.command_lock = asyncio.Lock()
+        self.send_lock = asyncio.Lock()
         self.last_telemetry_monotonic = 0.0
+        self.last_map_sent_monotonic = 0.0
 
     @staticmethod
     def qwen_control_request(request: Dict[str, Any], timeout: float = 150.0) -> Dict[str, Any]:
@@ -709,11 +738,18 @@ class Bridge:
             pcm_path.unlink(missing_ok=True)
 
     async def send(self, payload: Dict[str, Any]) -> None:
-        if self.websocket is not None:
-            await asyncio.wait_for(
-                self.websocket.send(json.dumps(payload, ensure_ascii=False)),
-                timeout=WEBSOCKET_SEND_TIMEOUT_SEC,
-            )
+        websocket = self.websocket
+        if websocket is not None:
+            # Telemetry, heartbeats and command results are produced by separate
+            # tasks. Serialize writes so one large map frame cannot corrupt or
+            # race a small heartbeat frame on the same WebSocket.
+            async with self.send_lock:
+                if self.websocket is not websocket:
+                    return
+                await asyncio.wait_for(
+                    websocket.send(json.dumps(payload, ensure_ascii=False)),
+                    timeout=WEBSOCKET_SEND_TIMEOUT_SEC,
+                )
 
     async def execute_command(self, command: Dict[str, Any]) -> None:
         command_id, action = command.get("id"), command.get("action")
@@ -863,9 +899,14 @@ class Bridge:
                 "timestamp": time.time(),
             })
             self.last_telemetry_monotonic = time.monotonic()
-            if self.ros.map_message and self.ros.map_signature != self.last_map_signature:
+            if (
+                self.ros.map_message
+                and self.ros.map_signature != self.last_map_signature
+                and time.monotonic() - self.last_map_sent_monotonic >= MAP_SEND_MIN_INTERVAL_SEC
+            ):
                 await self.send(self.ros.map_message)
                 self.last_map_signature = self.ros.map_signature
+                self.last_map_sent_monotonic = time.monotonic()
             await asyncio.sleep(TELEMETRY_INTERVAL_SEC)
 
     async def link_heartbeat_loop(self) -> None:
@@ -978,6 +1019,9 @@ class Bridge:
             for task in service_tasks:
                 task.cancel()
             await asyncio.gather(*service_tasks, return_exceptions=True)
+            for task in command_tasks:
+                task.cancel()
+            await asyncio.gather(*command_tasks, return_exceptions=True)
             self.websocket = None
 
     async def run(self) -> None:
@@ -986,8 +1030,18 @@ class Bridge:
             for server in self.servers:
                 self.server = server
                 uri = server.replace("http://", "ws://").replace("https://", "wss://") + "/ws/robot?token=" + self.token
+                established = False
                 try:
-                    async with websockets.connect(uri, ping_interval=15, ping_timeout=15, max_size=16 * 1024 * 1024) as websocket:
+                    async with websockets.connect(
+                        uri,
+                        open_timeout=4,
+                        close_timeout=2,
+                        ping_interval=10,
+                        ping_timeout=25,
+                        max_size=16 * 1024 * 1024,
+                        max_queue=64,
+                    ) as websocket:
+                        established = True
                         delay = 0.5
                         print(json.dumps({"event": "bridge_connected", "server": server}, ensure_ascii=False), flush=True)
                         await self.connected(websocket)
@@ -1000,6 +1054,11 @@ class Bridge:
                         "error": f"{type(exc).__name__}: {exc}",
                         "next_server": True,
                     }, ensure_ascii=False), flush=True)
+                    # A link that was healthy moments ago is more likely to
+                    # recover than an unreachable LAN-only backup. Retry it
+                    # first instead of paying the backup's connection timeout.
+                    if established:
+                        break
             await asyncio.sleep(delay)
             delay = min(10.0, delay * 1.7)
 
@@ -1007,15 +1066,16 @@ class Bridge:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--server", default="", help="single relay URL (backward compatible)")
-    parser.add_argument("--servers", default=os.environ.get("ROBOT_RELAY_URLS", ""), help="comma-separated relay URLs")
+    parser.add_argument("--servers", default="", help="comma-separated relay URLs")
     parser.add_argument("--token", default=os.environ.get("ROBOT_BRIDGE_TOKEN", ""))
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     if not args.token:
         raise SystemExit("ROBOT_BRIDGE_TOKEN is required")
     configured = (
-        args.servers
-        or args.server
+        args.server
+        or args.servers
+        or os.environ.get("ROBOT_RELAY_URLS", "")
         or os.environ.get("ROBOT_RELAY_URL", "")
         or "http://100.125.188.94:8765,http://10.249.188.197:8765"
     )

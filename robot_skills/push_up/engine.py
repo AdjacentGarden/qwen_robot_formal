@@ -2335,7 +2335,6 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
         seek(capture, float(getattr(args, "start", 0.0) or 0.0))
         source_frames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
         if identity_policy == "face_and_reid":
-            _skill_event("progress", "请面向摄像头确认身份", state="identity_acquiring", name=args.name)
             _write_state(
                 state_file,
                 state="identity_acquiring",

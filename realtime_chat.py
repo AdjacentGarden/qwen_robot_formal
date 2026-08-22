@@ -29,6 +29,10 @@ from local_skills import (
 from memory_store import MemoryStore
 from skill_runner import running_controller_conflicts
 from skill_event_audio import QwenSkillEventSpeaker
+from projection_occlusion_observer import (
+    DEFAULT_CONFIG_PATH as DEFAULT_PROJECTION_OCCLUSION_CONFIG,
+    ProjectionOcclusionObserver,
+)
 from runtime_supervisor import (
     InterruptibleTaskCoordinator,
     TaskAction,
@@ -82,7 +86,7 @@ DEFAULT_ASSISTANT_INSTRUCTIONS = """你是家庭陪伴机器人“理想同学�
 
 日常交流原则：
 1. 结合前文理解代词、省略、追问和情绪。用户连续问相近问题时保持事实一致，但根据上一轮自然承接，避免机械重复；可以轻轻提到“你刚才也问到了这个”，不要责怪用户。
-2. 不要把“好的、当然可以、很高兴为你服务、抱歉、还有什么需要吗”当成固定开头或结尾。能直接回答就直接回答，句式和用词随语境变化；统一称呼用户为“你”，不要忽然改用“您”。
+2. 不要把“好的、当然可以、很高兴为你服务、抱歉、还有什么需要吗”当成固定开头或结尾。能直接回答就直接回答，句式和用词随语境变化；通常称呼用户为“你”。唯一例外是第18A条明确规定的疲劳演示追问，其中必须按指定台词使用“您”。
 3. 用户表达疲惫、开心、失落或犹豫时，先用一句具体而克制的话接住情绪，再回应事情本身。不要说空泛鸡汤，不假装自己有人的身体和感受，也不夸大陪伴、学习或记忆能力。
 4. 查询时间、天气、位置等信息时先说结论；只有确实有帮助时再补一句简短建议。用户让你在几个选项间推荐时，即使信息不完整也先给出一个可改变的明确倾向和简短理由，例如“我更偏向面，省事也暖胃；特别饿再选米饭”，不要只复述选项或把选择原样推回给用户。
 5. 讲笑话时直接说一个短梗，通常不超过八十个汉字，不加“我来讲一个”“希望你会心一笑”等前后客套。讲故事时才可按用户要求适当展开；普通闲聊不要先解释自己准备怎么回答。
@@ -117,6 +121,7 @@ E. 否定短语是约束，不是待执行动作。“我不想开灯，导航�
 16. 身份、时间和位置必须守住能力边界：用户问“你知道我是谁吗、我是谁、认得我吗”时调用 face_recognition，不用记忆猜人脸；询问现在几点、年月日、星期几时调用 realtime_information(action=current_time)，不得用模型训练知识猜时钟。realtime_information(action=location) 只表示机器人的粗略地理位置，绝不能拿它回答手机、用户、宠物或其他设备在哪里。当前没有安全且独立的实时电量读取能力；用户询问机器人电量时直接说明暂时无法读取，不调用任何工具，不猜百分比。
 17. 当前没有手机定位、打电话和发送消息能力。用户找手机或要求定位手机时不要调用任何位置工具，也不得假装正在查找。根据问法自然回应：用户说手机找不到或请求帮忙时，先明确自己不能定位，再建议使用手机厂商的查找设备功能；用户直接问手机在哪里时，说明自己没有手机定位权限，因此查不到当前位置。两种问法不要回复成完全相同的一句话。
 18. 音乐和娱乐视频统一调用 media_player。用户只说“想听歌、放点音乐、听歌放松”时用 play_music 且不强迫用户先选歌；用户只说“想看好看的/娱乐视频”时用 play_video。选歌、换歌、暂停、继续、结束、查询列表或状态均调用对应 action。播放器本身不等于投影场景，不得顺带移动底盘或头部。
+18A. “电影”是需要投到墙上的受保护场景，不等同于普通娱乐视频。用户表达今天很累、身体疲惫或做了很多事很累，但没有同时提出其他任务时，只用一句简短关心承接，然后必须以“那需要放个电影放松一下吗？”结束；这一轮不得调用任何工具。用户明确同意看电影后调用 movie_projection；默认去书房，明确说原地时保留 stay_put=true。用户只拒绝电影、没有提出其他安排时，必须只说“好的，那需要我陪您做运动吗？”，仍不得调用工具；用户同意后调用 push_up_companion。这里的“您”是该演示话术的唯一称呼例外。若用户在拒绝电影的同一句话中直接提出俯卧撑、深蹲、会议或其他任务，立即按实际任务执行，不再默认询问运动。电影的暂停、继续和结束分别调用 movie_projection_pause、movie_projection_resume、movie_projection_stop；结束必须同时关闭投影并恢复平视。
 19. 表达可以有稳定的个性，但不能像抽签一样突兀，也不能机械套模板。输出前先对照上一条自己的回复：如果整句或主要句式相同，必须在不改变事实的前提下换一个自然说法；相邻两轮不要复用完全相同的开头、结尾或整句。根据任务类型、目的地、执行结果和刚才的对话换说法。变化只发生在措辞层，不能改变工具结果、条件、数量、地点或失败原因。
 20. 工具和场景参数遵循“显式优先、默认兜底”：用户明确说出的地点、时长、数量、对象、摄像头、原地执行、抬头、低头、暂停或继续等参数必须原样保留；用户没有提到的可选参数应省略，让本地 Skill 使用经过测试的默认值，禁止模型自行猜测。场景不是固定口令：语义明确即可触发完整场景；会议投影默认前往书房，明确说原地/当前位置/不要导航时设置 stay_put=true，明确指定其他已保存点时填写 point。不得因为开放了参数就绕过场景的依赖、安全检查或失败播报。
 21. 回复长度按信息价值分级，不按动作数量机械展开：问候和简单成功确认通常只说一句短话；复合任务成功只概括用户关心的最终结果，不逐项讲导航、头部、投影、清理等内部步骤；只有失败、部分完成、存在风险、需要用户配合或用户明确追问时，才用一到两句说清原因和下一步。能用十几个字说清楚就不要扩成三四句，不要习惯性追加“还有什么需要吗”。“欢迎回家”场景只说一次“欢迎回家”，随后安静播放画面；成功后不再补充说明。
@@ -599,6 +604,7 @@ class RealtimeConversation:
         )
         self.control_server: asyncio.AbstractServer | None = None
         self.skill_event_speaker: QwenSkillEventSpeaker | None = None
+        self.projection_occlusion_observer: ProjectionOcclusionObserver | None = None
         self.external_audio_queue: asyncio.Queue[bytes] = asyncio.Queue(maxsize=8)
         self.external_audio_active = False
         self.task_state: dict[str, Any] = {
@@ -608,6 +614,28 @@ class RealtimeConversation:
             "active_skills": [],
             "active_procedures": [],
         }
+        if bool(getattr(args, "projection_occlusion", True)):
+            try:
+                self.projection_occlusion_observer = ProjectionOcclusionObserver(
+                    api_key,
+                    config_path=Path(
+                        getattr(
+                            args,
+                            "projection_occlusion_config",
+                            DEFAULT_PROJECTION_OCCLUSION_CONFIG,
+                        )
+                    ),
+                    event_callback=self.handle_projection_occlusion_event,
+                    log=self.logger.write,
+                )
+            except Exception as exc:
+                # Projection observation is an auxiliary safety/comfort feature.
+                # A bad optional configuration must not make voice, projection
+                # shutdown, or the rest of the robot unavailable.
+                self.logger.write(
+                    "projection_occlusion_init_error",
+                    error=f"{type(exc).__name__}:{exc}",
+                )
         if getattr(args, "local_skills", False):
             enabled_skills = getattr(args, "enable_skill", None) or list(DEFAULT_ENABLED_SKILLS)
             self.skill_bridge = LocalSkillBridge(
@@ -676,6 +704,23 @@ class RealtimeConversation:
                 kind=payload.get("kind"),
                 turn_id=event_turn_id,
             )
+
+    def handle_projection_occlusion_event(self, event: dict[str, Any]) -> bool:
+        """Route observer alerts through the existing interruptible speech queue."""
+
+        text = str(event.get("text") or "").strip()
+        if not text or self.skill_event_speaker is None:
+            self.logger.write(
+                "projection_occlusion_speech_deferred",
+                reason="speaker_unavailable",
+                text=text,
+            )
+            return False
+        payload = dict(event)
+        payload["turn_id"] = str(self.user_turn_id)
+        self.handle_skill_event_from_thread(payload)
+        self._remember_local_assistant_speech(text)
+        return True
 
     @staticmethod
     def _call_arguments(value: dict[str, Any]) -> dict[str, Any]:
@@ -853,9 +898,9 @@ class RealtimeConversation:
             return transition
         if name == "run_robot_scenario":
             scenario = str(arguments.get("scenario") or "")
-            if scenario == "meeting_projection":
+            if scenario in {"meeting_projection", "movie_projection"}:
                 return "start", "projector"
-            if scenario == "meeting_projection_stop":
+            if scenario in {"meeting_projection_stop", "movie_projection_stop"}:
                 return "end", "projector"
         if name == "projector_control":
             action = str(arguments.get("action") or "").lower()
@@ -869,7 +914,7 @@ class RealtimeConversation:
             action = str(arguments.get("action") or "").lower()
             if action in {"stop", "end", "close"}:
                 return "end", "media"
-            if action in {"play_music", "play_video", "play", "resume"}:
+            if action in {"play_music", "play_video", "play_movie", "play", "resume"}:
                 return "start", "media"
         return "none", ""
 
@@ -2765,6 +2810,11 @@ class RealtimeConversation:
             cache_dir=Path(__file__).with_name("runtime") / "skill_speech_cache",
         )
         await self.skill_event_speaker.start()
+        if (
+            self.projection_occlusion_observer is not None
+            and bool(getattr(self.args, "execute_skills", False))
+        ):
+            await self.projection_occlusion_observer.start()
         print("持续对话已开始，直接说话即可；按 Ctrl+C 结束。", flush=True)
         if self.args.echo_mode == "speaker-safe":
             print("当前为扬声器安全模式：机器人说话时暂停上行，播完后自动恢复监听。", flush=True)
@@ -2867,6 +2917,8 @@ class RealtimeConversation:
             await self.stop_function_calls()
             if self.skill_bridge is not None:
                 self.skill_bridge.cancel_all()
+            if self.projection_occlusion_observer is not None:
+                await self.projection_occlusion_observer.stop()
             if self.skill_event_speaker is not None:
                 await self.skill_event_speaker.close()
                 self.skill_event_speaker = None
@@ -2934,6 +2986,17 @@ def parser() -> argparse.ArgumentParser:
     value.add_argument("--scenarios", action=argparse.BooleanOptionalAction, default=True)
     value.add_argument("--scenario-catalog", type=Path, default=Path(__file__).with_name("scenarios") / "procedure_catalog.json")
     value.add_argument("--execute-skills", action="store_true", help="真实执行本地 skill；默认只做 dry-run")
+    value.add_argument(
+        "--projection-occlusion",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="会议投影激活时持续使用千问视觉检测人物遮挡",
+    )
+    value.add_argument(
+        "--projection-occlusion-config",
+        type=Path,
+        default=DEFAULT_PROJECTION_OCCLUSION_CONFIG,
+    )
     value.add_argument("--catalog-test", action="store_true", help="逐项 dry-run 全部本地 skill，不联网、不打开硬件")
     value.add_argument("--preflight", action="store_true", help="只检查鉴权和会话配置，不打开音频设备")
     value.add_argument("--tool-test-text", default="", help="用文字测试 Function Calling 和后续语音生成，不打开音频设备")

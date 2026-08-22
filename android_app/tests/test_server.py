@@ -136,6 +136,23 @@ def test_link_heartbeat_keeps_connection_live_and_carries_cached_status(tmp_path
                 assert heartbeat["microphone"] == microphone
 
 
+def test_server_heartbeat_keeps_phone_link_alive_without_robot(tmp_path, monkeypatch):
+    client, module = make_client(tmp_path, monkeypatch)
+    monkeypatch.setattr(module, "SERVER_HEARTBEAT_INTERVAL_SECONDS", 0.03)
+    with client:
+        with client.websocket_connect("/ws/app?token=app-test-token") as phone:
+            assert phone.receive_json()["type"] == "state"
+            heartbeat = phone.receive_json()
+            assert heartbeat["type"] == "server_heartbeat"
+            assert heartbeat["robot"]["online"] is False
+
+
+def test_robot_disconnect_policy_has_reconnect_grace(monkeypatch, tmp_path):
+    _, module = make_client(tmp_path, monkeypatch)
+    assert module.ROBOT_STALE_SECONDS >= 10.0
+    assert module.ROBOT_DISCONNECT_GRACE_SECONDS >= 2.0
+
+
 def test_broadcast_slow_client_does_not_delay_healthy_client(tmp_path, monkeypatch):
     _, module = make_client(tmp_path, monkeypatch)
 

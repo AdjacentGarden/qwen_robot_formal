@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import math
 import re
 import threading
 import time
@@ -49,6 +50,18 @@ SCENARIO_TOPIC_TERMS = {
     ),
     "meeting_projection_stop": (
         "会议", "投屏", "投影", "ppt", "幻灯", "会议画面", "墙上内容", "大屏内容",
+    ),
+    "movie_projection": (
+        "电影", "影片", "看电影", "放电影", "电影投影", "电影画面",
+    ),
+    "movie_projection_pause": (
+        "电影", "影片", "电影投影", "电影画面",
+    ),
+    "movie_projection_resume": (
+        "电影", "影片", "电影投影", "电影画面",
+    ),
+    "movie_projection_stop": (
+        "电影", "影片", "电影投影", "电影画面",
     ),
     "homecoming_welcome": ("回家", "到家", "回来了", "下班", "欢迎回家", "理想同学"),
     "rest_lighting": (
@@ -99,6 +112,17 @@ SCENARIO_START_SPEECH = {
         "好，我来关闭投影。",
         "好的，结束投影。",
     ),
+    "movie_projection": (
+        "好，我来准备电影投影。",
+        "行，我们看会儿电影放松一下。",
+    ),
+    "movie_projection_here": (
+        "好，就在这里播放电影。",
+        "行，我在当前位置准备电影投影。",
+    ),
+    "movie_projection_pause": ("好，电影先暂停。",),
+    "movie_projection_resume": ("好，继续播放电影。",),
+    "movie_projection_stop": ("好，我来结束电影播放。",),
     "rest_lighting": (
         "好，你先休息，我来调整。",
         "你放松一下，交给我吧。",
@@ -122,6 +146,17 @@ SCENARIO_OUTCOME_SPEECH = {
     ),
     ("meeting_projection_stop", "all_success"): (
         "投影关好了。", "会议投影已经结束。", "好，投影已关闭。",
+    ),
+    ("movie_projection", "all_success_here"): (
+        "电影已经在当前位置播放了。", "电影画面已经投出来了。",
+    ),
+    ("movie_projection", "all_success"): (
+        "电影已经开始播放了。", "电影画面已经投好了。",
+    ),
+    ("movie_projection_pause", "all_success"): ("电影已经暂停了。",),
+    ("movie_projection_resume", "all_success"): ("电影继续播放了。",),
+    ("movie_projection_stop", "all_success"): (
+        "电影播放已经结束，投影已关闭。", "电影收好了，头部也恢复平视了。",
     ),
     ("rest_lighting", "success"): (
         "灯光调好了，休息一会儿吧。", "已经调好了，你放松一下。", "灯光好了，安心休息吧。",
@@ -182,6 +217,97 @@ def _normalize_text(text: str) -> str:
     value = unicodedata.normalize("NFKC", str(text or "")).lower()
     value = re.sub(r"[\s，,。.!！?？、;；：:]", "", value)
     return value
+
+
+_SPOKEN_NUMBER = r"(?:\d+(?:\.\d+)?|[零〇一二两俩三四五六七八九十百千点半]+)"
+_FITNESS_WORDS = ("俯卧撑", "引体向上", "引体", "深蹲", "下蹲", "运动", "锻炼", "健身")
+
+
+def _spoken_number_value(value: str) -> float | None:
+    """Parse the compact number forms commonly produced by Mandarin ASR."""
+
+    token = unicodedata.normalize("NFKC", str(value or "")).lower()
+    if not token:
+        return None
+    if token == "半":
+        return 0.5
+    try:
+        return float(token)
+    except ValueError:
+        pass
+    token = token.replace("两", "二").replace("俩", "二").replace("〇", "零")
+    digits = {"零": 0, "一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9}
+    if "点" in token:
+        whole, fraction = token.split("点", 1)
+        whole_value = _spoken_number_value(whole or "零")
+        if whole_value is None or not fraction or any(char not in digits for char in fraction):
+            return None
+        return whole_value + float("0." + "".join(str(digits[char]) for char in fraction))
+    units = {"十": 10, "百": 100, "千": 1000}
+    total = 0
+    pending: int | None = None
+    for char in token:
+        if char in digits:
+            pending = digits[char]
+            continue
+        unit = units.get(char)
+        if unit is None:
+            return None
+        total += (1 if pending is None else pending) * unit
+        pending = None
+    if pending is not None:
+        total += pending
+    return float(total) if total > 0 else None
+
+
+def _fitness_duration_seconds(transcript: str) -> float | None:
+    """Extract only an explicit time duration attached to an exercise request.
+
+    A bare repetition target such as “做六十个俯卧撑” is intentionally not a
+    duration. A future offset such as “六十秒后提醒我运动” is also excluded.
+    """
+
+    text = _normalize_text(transcript)
+    fitness_positions = [
+        match.start()
+        for word in _FITNESS_WORDS
+        for match in re.finditer(re.escape(word), text)
+    ]
+    if not fitness_positions:
+        return None
+    candidates: list[tuple[int, int, float]] = []
+    occupied: list[tuple[int, int]] = []
+    minute_pattern = re.compile(
+        rf"(?P<minutes>{_SPOKEN_NUMBER})(?:分钟|分)(?:(?P<half>半)|(?P<seconds>{_SPOKEN_NUMBER})秒)?"
+    )
+    for match in minute_pattern.finditer(text):
+        if text[match.end():].startswith(("后", "以后", "之后")):
+            continue
+        minutes = _spoken_number_value(match.group("minutes"))
+        seconds = _spoken_number_value(match.group("seconds")) if match.group("seconds") else 0.0
+        if minutes is None:
+            continue
+        duration = minutes * 60.0 + (30.0 if match.group("half") else float(seconds or 0.0))
+        occupied.append(match.span())
+        distance = min(abs(match.start() - position) for position in fitness_positions)
+        candidates.append((distance, match.start(), duration))
+    second_pattern = re.compile(rf"(?P<seconds>{_SPOKEN_NUMBER})(?:秒钟?|s(?:ec(?:ond)?s?)?)")
+    for match in second_pattern.finditer(text):
+        if any(left <= match.start() < right for left, right in occupied):
+            continue
+        if text[match.end():].startswith(("后", "以后", "之后")):
+            continue
+        duration = _spoken_number_value(match.group("seconds"))
+        if duration is None:
+            continue
+        distance = min(abs(match.start() - position) for position in fitness_positions)
+        candidates.append((distance, match.start(), duration))
+    if not candidates:
+        return None
+    duration = min(candidates, key=lambda item: (item[0], item[1]))[2]
+    if not math.isfinite(duration) or not 1.0 <= duration <= 600.0:
+        return None
+    return int(duration) if duration.is_integer() else round(duration, 3)
 
 
 def _phonetic_text(text: str) -> str:
@@ -330,7 +456,12 @@ class ScenarioCatalog:
                             "description": "要执行的完整场景名称。",
                         },
                         "name": {"type": "string", "description": "明确提供的人员名称；未提供则省略。"},
-                        "duration": {"type": "number", "minimum": 1, "maximum": 600},
+                        "duration": {
+                            "type": "number",
+                            "minimum": 1,
+                            "maximum": 600,
+                            "description": "持续时长（秒）。运动计数默认30秒；用户说60秒或一分钟时填60。",
+                        },
                         "grams": {"type": "integer", "minimum": 1, "maximum": 100},
                         "point": {
                             "type": "string",
@@ -399,6 +530,9 @@ class ScenarioCatalog:
         text = _normalize_text(transcript)
         inferred: dict[str, Any] = {}
         if name in {"push_up_companion", "pull_up_companion", "squat_companion"}:
+            duration = _fitness_duration_seconds(text)
+            if duration is not None:
+                inferred["duration"] = duration
             if any(word in text for word in ("不用身份", "不要身份", "不识别人脸", "不用人脸", "不要人脸", "不用reid", "不要reid", "匿名")):
                 inferred["identity_policy"] = "anonymous"
         if name == "find_pet_at":
@@ -408,6 +542,15 @@ class ScenarioCatalog:
                 inferred["point"] = "origin"
             elif _contains_term(text, "客厅") or _contains_term(text, "白墙"):
                 inferred["point"] = "white_wall"
+        if name == "movie_projection" and self._movie_stay_put_requested(text):
+            inferred["stay_put"] = True
+        if name == "movie_projection" and not inferred.get("stay_put"):
+            if _contains_term(text, "书房"):
+                inferred["point"] = "study_projection"
+            elif _contains_term(text, "客厅") or _contains_term(text, "白墙"):
+                inferred["point"] = "white_wall"
+            elif _contains_term(text, "餐厅") or _contains_term(text, "原点"):
+                inferred["point"] = "origin"
         if name == "meeting_projection" and self._meeting_stay_put_requested(text):
             inferred["stay_put"] = True
         if name == "meeting_projection" and not inferred.get("stay_put"):
@@ -418,6 +561,20 @@ class ScenarioCatalog:
             elif _contains_term(text, "餐厅") or _contains_term(text, "原点"):
                 inferred["point"] = "origin"
         return inferred
+
+    @staticmethod
+    def _movie_stay_put_requested(transcript: str) -> bool:
+        text = _normalize_text(transcript)
+        if not re.search(r"电影|影片", text):
+            return False
+        return any(
+            phrase in text
+            for phrase in (
+                "原地", "就在这里", "就在这", "当前位置",
+                "不要导航", "不用导航", "无需导航", "不需要导航", "别导航",
+                "不要去书房", "不用去书房", "别去书房",
+            )
+        )
 
     @staticmethod
     def _meeting_stay_put_requested(transcript: str) -> bool:
@@ -549,6 +706,14 @@ class ScenarioCatalog:
             return self._projection_start_negated(text)
         if name == "meeting_projection_stop":
             return self._meeting_stop_negated(text)
+        if name == "movie_projection":
+            return bool(re.search(r"(?:不看|不要看|别看|不放|不要放|别放|不用放).{0,4}(?:电影|影片)|(?:电影|影片).{0,4}(?:不看|别放|不放)", text))
+        if name == "movie_projection_pause":
+            return bool(re.search(r"(?:不要|别|不用).{0,4}暂停", text))
+        if name == "movie_projection_resume":
+            return bool(re.search(r"(?:不要|别|不用).{0,4}(?:继续|恢复)", text))
+        if name == "movie_projection_stop":
+            return bool(re.search(r"(?:不要|别|不用).{0,4}(?:结束|停止|关闭|关掉)", text))
         if name in {"push_up_companion", "pull_up_companion", "squat_companion"}:
             return self._fitness_negated(text)
         return False
@@ -596,6 +761,13 @@ class ScenarioCatalog:
             "stop_meeting_projection": "meeting_projection_stop",
             "end_meeting_projection": "meeting_projection_stop",
             "start_meeting_projection": "meeting_projection",
+            "start_movie_projection": "movie_projection",
+            "play_movie": "movie_projection",
+            "pause_movie": "movie_projection_pause",
+            "resume_movie": "movie_projection_resume",
+            "continue_movie": "movie_projection_resume",
+            "stop_movie": "movie_projection_stop",
+            "end_movie": "movie_projection_stop",
         }
         candidate = aliases.get(compact, value)
         return candidate if candidate in self.procedures else value
@@ -688,6 +860,19 @@ class ScenarioCatalog:
                 )
             )
             return topic and closing
+        if name in {
+            "movie_projection", "movie_projection_pause", "movie_projection_resume", "movie_projection_stop",
+        }:
+            topic = any(_contains_term(transcript, term) for term in terms)
+            if not topic:
+                return False
+            actions = {
+                "movie_projection": ("看", "放", "播放", "投影", "来一部", "来个"),
+                "movie_projection_pause": ("暂停", "停一下", "先停"),
+                "movie_projection_resume": ("继续", "恢复", "接着播", "接着看"),
+                "movie_projection_stop": ("结束", "停止", "关闭", "关掉", "收起", "不看了"),
+            }[name]
+            return any(_contains_term(transcript, item) for item in actions)
         return any(_contains_term(transcript, term) for term in terms)
 
     def _context_corroborates_model_scene(
@@ -708,7 +893,11 @@ class ScenarioCatalog:
         context = _normalize_text(prior_context)
         if not text or not context or name == "homecoming_welcome":
             return False
-        topic_name = "meeting_projection" if name == "meeting_projection_stop" else name
+        topic_name = (
+            "meeting_projection" if name == "meeting_projection_stop"
+            else "movie_projection" if name.startswith("movie_projection_")
+            else name
+        )
         if not self._has_topic_evidence(topic_name, context):
             return False
         continuation = any(
@@ -723,6 +912,10 @@ class ScenarioCatalog:
                 "不用放", "别播", "取消",
             ),
             "meeting_projection": ("开始", "打开", "播放", "投出来", "放出来", "展示"),
+            "movie_projection": ("开始", "看", "播放", "放", "投影"),
+            "movie_projection_pause": ("暂停", "停一下", "先停"),
+            "movie_projection_resume": ("继续", "恢复", "接着"),
+            "movie_projection_stop": ("关闭", "关掉", "停", "结束", "收起", "不看了"),
             "push_up_companion": ("开始", "来一组", "活动", "锻炼", "练", "数"),
             "pull_up_companion": ("开始", "来一组", "练", "数"),
             "squat_companion": ("开始", "来一组", "练", "数"),
@@ -835,6 +1028,8 @@ class ScenarioCatalog:
         text = _normalize_text(transcript)
         if not text:
             return False, "empty_transcript"
+        if "提醒" in text or "闹钟" in text:
+            return False, "reminder_content"
         if text in {_normalize_text(item) for item in SHORT_AFFIRMATIONS}:
             return False, "context_required"
         if self._explicitly_cancelled(text):
@@ -868,6 +1063,33 @@ class ScenarioCatalog:
             return None
         if self._informational_question(text):
             return None
+        # Movie projection is a stateful protected scene, distinct from the
+        # standalone entertainment-video player.  Resolve explicit transport
+        # controls before the generic projection rule so “原地播放电影” can
+        # never be mistaken for a meeting presentation.
+        movie_topic = bool(re.search(r"电影|影片", text))
+        movie_start_negated = bool(
+            re.search(r"(?:不看|不要看|别看|不放|不要放|别放|不用放).{0,4}(?:电影|影片)", text)
+        )
+        if movie_topic:
+            if re.search(r"暂停|停一下|先停", text) and not re.search(r"(?:不要|别|不用).{0,4}暂停", text):
+                return "movie_projection_pause"
+            if re.search(r"继续|恢复|接着播|接着看", text) and not re.search(r"(?:不要|别|不用).{0,4}(?:继续|恢复)", text):
+                return "movie_projection_resume"
+            explicit_movie_stop = bool(
+                re.search(
+                    r"(?:结束|停止|关闭|关掉|收起).{0,6}(?:电影|影片)|"
+                    r"(?:电影|影片).{0,6}(?:结束|停止|关闭|关掉|收起)",
+                    text,
+                )
+            )
+            if explicit_movie_stop and not re.search(r"(?:不要|别|不用).{0,4}(?:结束|停止|关闭|关掉)", text):
+                return "movie_projection_stop"
+            if (
+                not movie_start_negated
+                and re.search(r"看|放|播放|投影|来一部|来个", text)
+            ):
+                return "movie_projection"
         # “不要导航，直接在这里投影” only negates the navigation stage;
         # it explicitly requests the remaining meeting projection stages.
         if self._meeting_stay_put_requested(text):
@@ -967,7 +1189,7 @@ class ScenarioCatalog:
             return "pull_up_companion"
         if not fitness_negated and ("深蹲" in text or "下蹲" in text):
             return "squat_companion"
-        if not fitness_negated and ("俯卧撑" in text or (("运动" in text or "锻炼" in text) and any(word in text for word in ("陪", "开始", "一起")))):
+        if not fitness_negated and ("俯卧撑" in text or (("运动" in text or "锻炼" in text) and any(word in text for word in ("陪", "开始", "一起", "做", "练")))):
             return "push_up_companion"
         if (
             not projection_start_negated
@@ -996,6 +1218,15 @@ class ScenarioCatalog:
         procedure = self.procedures.get(name)
         if procedure is None:
             raise ScenarioError(f"unknown_scenario:{name}")
+        arguments = dict(arguments)
+        if name in {"push_up_companion", "pull_up_companion", "squat_companion"} and "duration" in arguments:
+            try:
+                duration = float(arguments["duration"])
+            except (TypeError, ValueError) as exc:
+                raise ScenarioError(f"invalid_fitness_duration:{arguments['duration']}") from exc
+            if not math.isfinite(duration) or not 1.0 <= duration <= 600.0:
+                raise ScenarioError(f"invalid_fitness_duration:{arguments['duration']}")
+            arguments["duration"] = int(duration) if duration.is_integer() else duration
         local_steps = list(procedure.get("steps") or [])
         if not local_steps:
             raise ScenarioError(f"scenario_has_no_steps:{name}")
@@ -1120,8 +1351,13 @@ class ScenarioExecutor:
         # Most scenes already have one acknowledgement, one authoritative
         # result, and (for fitness) realtime count/attention events. Narrating
         # hidden head, projector, light and cleanup steps makes the robot sound
-        # mechanical and can delay the useful result. Only long pet searches
-        # announce meaningful location changes.
+        # mechanical and can delay the useful result. Long pet searches and
+        # the one meaningful fitness-location handoff are the exceptions.
+        fitness_scenarios = {"push_up_companion", "pull_up_companion", "squat_companion"}
+        if scenario in fitness_scenarios:
+            if str(step.get("skill") or "") == "head_control" and str(step.get("action") or "") == "up":
+                return "这里比较合适做运动。"
+            return ""
         if scenario not in {"find_pet", "find_pet_at", "find_pet_here", "find_and_feed_doudou"}:
             return ""
         skill = str(step.get("skill") or "")
@@ -1177,20 +1413,24 @@ class ScenarioExecutor:
             if announce:
                 speech_name = name
                 fallback = f"收到，我现在开始{plan['description']}。"
-                if name == "meeting_projection" and arguments.get("stay_put"):
-                    speech_name = "meeting_projection_here"
-                elif name == "meeting_projection" and arguments.get("point"):
+                if name in {"meeting_projection", "movie_projection"} and arguments.get("stay_put"):
+                    if name == "movie_projection":
+                        speech_name = "movie_projection_here"
+                    else:
+                        speech_name = "meeting_projection_here"
+                elif name in {"meeting_projection", "movie_projection"} and arguments.get("point"):
                     point = POINT_SPOKEN_NAMES.get(
                         str(arguments.get("point")),
                         str(arguments.get("point")),
                     )
-                    fallback = f"好，我去{point}准备会议投影。"
+                    purpose = "电影投影" if name == "movie_projection" else "会议投影"
+                    fallback = f"好，我去{point}准备{purpose}。"
                 self._emit_progress(
                     name,
                     "acknowledgement",
                     (
                         fallback
-                        if name == "meeting_projection" and arguments.get("point") and not arguments.get("stay_put")
+                        if name in {"meeting_projection", "movie_projection"} and arguments.get("point") and not arguments.get("stay_put")
                         else self._scenario_start_speech(speech_name, fallback)
                     ),
                     step_count=len(plan["steps"]),
@@ -1222,10 +1462,15 @@ class ScenarioExecutor:
                 )
                 condition_ok = self._condition(step.get("run_if"), records)
                 if not dependency_ok or (not condition_ok and not validation_branch):
+                    intentional_condition_skip = bool(dependency_ok and not condition_ok)
                     records[step["id"]] = {
                         "id": step["id"], "skill": step["skill"], "action": step["action"],
-                        "finished": True, "succeeded": False, "skipped": True,
-                        "error": "prerequisite_not_satisfied",
+                        "finished": True,
+                        "succeeded": intentional_condition_skip,
+                        "skipped": True,
+                        "intentional_skip": intentional_condition_skip,
+                        "skip_reason": "condition_not_met" if intentional_condition_skip else "prerequisite_not_satisfied",
+                        "error": None if intentional_condition_skip else "prerequisite_not_satisfied",
                     }
                     continue
                 call_args = dict(step["arguments"])

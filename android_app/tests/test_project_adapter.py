@@ -116,6 +116,29 @@ def test_program_status_matches_the_actual_zhenghang_navigation_launch():
     assert controller.process_patterns["navigation"] == "robot_bringup real_robot_nav.launch.py"
 
 
+def test_terminal_start_in_progress_is_not_restarted_or_stopped(tmp_path, monkeypatch):
+    project = tmp_path / "qwen_audio_3_realtime_flash_scenarios_resident_test"
+    state_file = project / "runtime/resident_service/service_state.json"
+    state_file.parent.mkdir(parents=True)
+    state_file.write_text(
+        json.dumps({"state": "starting", "pid": 12345, "updated_at": 1}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(bridge_module.os, "kill", lambda _pid, _sig: None)
+
+    controller = ProgramController(project, dry_run=False)
+    monkeypatch.setattr(controller, "_pid_matches", lambda _pid, _pattern: True)
+    monkeypatch.setattr(controller, "_process_running", lambda _pattern: False)
+    monkeypatch.setattr(controller, "_qwen_voice_connected", lambda: False)
+    calls = []
+    monkeypatch.setattr(controller, "_run", lambda argv, timeout: calls.append((argv, timeout)))
+
+    result = controller.start()
+    assert result["status"] == "already_starting"
+    assert result["program"]["state"] == "starting"
+    assert calls == []
+
+
 @pytest.mark.parametrize(
     ("command", "expected_skill", "expected_evidence"),
     [

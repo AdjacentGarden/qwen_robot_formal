@@ -89,7 +89,7 @@ def result(ok: bool, action: str, message: str, **extra) -> int:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Independent robot music and entertainment video player.")
     parser.add_argument("--action", required=True, choices=(
-        "play_music", "play_video", "pause", "resume", "next", "stop", "status", "list"
+        "play_music", "play_video", "play_movie", "pause", "resume", "next", "stop", "status", "list"
     ))
     parser.add_argument("--title", default="")
     parser.add_argument("--dry-run", action="store_true")
@@ -114,7 +114,7 @@ def main(argv=None) -> int:
             return result(True, args.action, f"播放器{verb}《{state.get('title', '当前媒体')}》。", player_state=state)
         return result(True, args.action, "播放器当前没有在播放内容。", player_state={"status": "stopped"})
 
-    if args.action in {"play_music", "play_video"}:
+    if args.action in {"play_music", "play_video", "play_movie"}:
         kind = "music" if args.action == "play_music" else "videos"
         item = find_item(catalog, kind, args.title)
         if item is None:
@@ -128,11 +128,21 @@ def main(argv=None) -> int:
                 error="media_file_unavailable",
                 requested=item,
             )
-        helper_action = "play-audio" if kind == "music" else "play-video"
+        helper_action = (
+            "play-audio" if kind == "music"
+            else "play-video-projection" if args.action == "play_movie"
+            else "play-video"
+        )
         ok, details = helper(helper_action, str(item["id"]))
         if not ok:
             return result(False, args.action, "播放器这次没有成功启动，所以没有开始播放。", error=details.get("error"), helper=details)
-        state = {"status": "playing", "kind": kind, "id": item["id"], "title": item["title"]}
+        state = {
+            "status": "playing",
+            "kind": kind,
+            "id": item["id"],
+            "title": item["title"],
+            "projection": args.action == "play_movie",
+        }
         save_state(state)
         return result(True, args.action, f"现在开始播放《{item['title']}》。", player_state=state)
 

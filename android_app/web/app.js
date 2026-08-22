@@ -13,8 +13,8 @@
     .filter((value) => value && value !== "auto")
     .map(normalizeBase);
   const endpointCandidates = [...new Set([pageOrigin, ...configuredBases].filter(Boolean))];
-  const CONNECT_TIMEOUT_MS = 2800;
-  const LINK_STALE_MS = 2600;
+  const CONNECT_TIMEOUT_MS = 5000;
+  const LINK_STALE_MS = 3500;
   const OFFLINE_GRACE_MS = 6500;
   const VOICE_UPLOAD_TIMEOUT_MS = 30000;
   let base = endpointCandidates[0] || "";
@@ -419,17 +419,30 @@
       acceptProgramUpdate(message.program || null, "state");
       state.task = message.task || null;
       state.microphone = message.microphone || (state.task && state.task.microphone) || state.microphone;
+      const reconnecting = message.robot && message.robot.mode === "reconnecting";
       const online = Boolean(message.robot && message.robot.online);
       state.pose = online ? (message.pose || null) : null;
-      setOnline(online);
+      if (reconnecting) setRecovering("机器人链路正在快速恢复"); else setOnline(online);
       renderPose(); renderVideos(); renderFitness(); renderProgram(); renderTaskState(); renderMicrophone();
       if (state.online && state.mapMeta) loadMap(); else clearMap();
       setActivity(state.online ? "系统就绪" : "等待机器人上线");
     } else if (message.type === "robot_status") {
-      setOnline(Boolean(message.robot && message.robot.online));
+      const reconnecting = message.robot && message.robot.mode === "reconnecting";
+      if (reconnecting) {
+        setRecovering("机器人链路正在快速恢复");
+      } else {
+        setOnline(Boolean(message.robot && message.robot.online));
+      }
       if (state.online) {
         if (state.mapMeta && !state.mapImage) loadMap();
         setActivity("系统就绪");
+      }
+    } else if (message.type === "server_heartbeat") {
+      // This proves the phone-to-relay socket is healthy. Robot online state is
+      // updated only by robot_status/telemetry, so a quiet ROS stack no longer
+      // makes the App tear down a perfectly healthy server connection.
+      if (!state.online && message.robot && message.robot.mode === "reconnecting") {
+        setRecovering("已连接服务器，正在等待机器人恢复");
       }
     } else if (message.type === "telemetry") {
       state.lastTelemetryAt = Date.now();

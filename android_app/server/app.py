@@ -35,7 +35,9 @@ APP_TOKEN = os.environ.get("ROBOT_APP_TOKEN", "")
 ROBOT_TOKEN = os.environ.get("ROBOT_BRIDGE_TOKEN", "")
 MAX_VIDEO_BYTES = int(os.environ.get("MAX_VIDEO_BYTES", str(80 * 1024 * 1024)))
 MAX_VOICE_BYTES = int(os.environ.get("MAX_VOICE_BYTES", str(4 * 1024 * 1024)))
-ROBOT_STALE_SECONDS = float(os.environ.get("ROBOT_STALE_SECONDS", "4.5"))
+ROBOT_STALE_SECONDS = float(os.environ.get("ROBOT_STALE_SECONDS", "12.0"))
+ROBOT_DISCONNECT_GRACE_SECONDS = float(os.environ.get("ROBOT_DISCONNECT_GRACE_SECONDS", "3.0"))
+SERVER_HEARTBEAT_INTERVAL_SECONDS = float(os.environ.get("SERVER_HEARTBEAT_INTERVAL_SECONDS", "1.0"))
 APP_SEND_TIMEOUT_SECONDS = float(os.environ.get("APP_SEND_TIMEOUT_SECONDS", "0.8"))
 
 
@@ -85,6 +87,10 @@ class Hub:
         self.commands: Dict[str, Dict[str, Any]] = {}
         self.voice_streams: Dict[str, Dict[str, Any]] = {}
         self.last_persist_monotonic = 0.0
+        self.last_broadcast_monotonic = 0.0
+        self.robot_last_seen_monotonic = 0.0
+        self.robot_generation = 0
+        self.robot_disconnect_task: Optional[asyncio.Task] = None
 
     def snapshot(self) -> Dict[str, Any]:
         return {
@@ -212,6 +218,7 @@ class Hub:
                 await asyncio.wait_for(client.close(code=4003), timeout=0.3)
             except Exception:
                 pass
+        self.last_broadcast_monotonic = time.monotonic()
 
 
 hub = Hub()
@@ -233,6 +240,27 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup() -> None:
     require_configured()
+    app.state.server_heartbeat_task = asyncio.create_task(server_heartbeat_loop())
+
+
+@app.on_event("shutdown")
+async def shutdown() -> None:
+    task = getattr(app.state, "server_heartbeat_task", None)
+    if task is not None:
+        task.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+
+
+async def server_heartbeat_loop() -> None:
+    """Keep App-to-relay health independent from robot telemetry."""
+    while True:
+        await asyncio.sleep(SERVER_HEARTBEAT_INTERVAL_SECONDS)
+        if hub.apps and time.monotonic() - hub.last_broadcast_monotonic >= SERVER_HEARTBEAT_INTERVAL_SECONDS * 0.8:
+            await hub.broadcast({
+                "type": "server_heartbeat",
+                "server_time": time.time(),
+                "robot": dict(hub.robot_status),
+            })
 
 
 def app_authorized(token: str) -> bool:
@@ -548,6 +576,11 @@ async def robot_socket(ws: WebSocket) -> None:
         await ws.close(code=4401)
         return
     await ws.accept()
+    hub.robot_generation += 1
+    connection_generation = hub.robot_generation
+    if hub.robot_disconnect_task is not None:
+        hub.robot_disconnect_task.cancel()
+        hub.robot_disconnect_task = None
     previous = hub.robot
     if previous is not None and previous is not ws:
         try:
@@ -555,14 +588,14 @@ async def robot_socket(ws: WebSocket) -> None:
         except Exception:
             pass
     hub.robot = ws
+    hub.robot_last_seen_monotonic = time.monotonic()
     hub.robot_status.update({"online": True, "last_seen": time.time(), "mode": "connected"})
     await hub.broadcast({"type": "robot_status", "robot": dict(hub.robot_status)})
 
     async def stale_connection_watchdog() -> None:
         while hub.robot is ws:
             await asyncio.sleep(0.75)
-            last_seen = float(hub.robot_status.get("last_seen") or 0.0)
-            if time.time() - last_seen > ROBOT_STALE_SECONDS:
+            if time.monotonic() - hub.robot_last_seen_monotonic > ROBOT_STALE_SECONDS:
                 await ws.close(code=4002, reason="robot_heartbeat_stale")
                 return
 
@@ -571,6 +604,7 @@ async def robot_socket(ws: WebSocket) -> None:
         while True:
             message = await ws.receive_json()
             kind = str(message.get("type") or "")
+            hub.robot_last_seen_monotonic = time.monotonic()
             hub.robot_status["last_seen"] = time.time()
             if kind == "telemetry":
                 hub.pose = message.get("pose")
@@ -635,9 +669,22 @@ async def robot_socket(ws: WebSocket) -> None:
         if hub.robot is ws:
             hub.robot = None
             hub.task = {"active": False, "planning": False, "queued": 0}
-            hub.robot_status.update({"online": False, "mode": "offline", "last_seen": time.time()})
+            hub.robot_status.update({"online": False, "mode": "reconnecting", "last_seen": time.time()})
             hub.persist()
             await hub.broadcast({"type": "robot_status", "robot": dict(hub.robot_status)})
+
+            async def finalize_offline(expected_generation: int) -> None:
+                try:
+                    await asyncio.sleep(ROBOT_DISCONNECT_GRACE_SECONDS)
+                    if hub.robot is None and hub.robot_generation == expected_generation:
+                        hub.robot_status.update({"online": False, "mode": "offline", "last_seen": time.time()})
+                        hub.persist()
+                        await hub.broadcast({"type": "robot_status", "robot": dict(hub.robot_status)})
+                finally:
+                    if hub.robot_generation == expected_generation:
+                        hub.robot_disconnect_task = None
+
+            hub.robot_disconnect_task = asyncio.create_task(finalize_offline(connection_generation))
 
 
 app.mount("/app", StaticFiles(directory=str(WEB), html=True), name="app")

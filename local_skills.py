@@ -83,6 +83,14 @@ def _scenario_clarification(
         if re.search(r"关|停|结束|退出|不投", text):
             return "你是想结束当前的会议投影吗？", "meeting_projection_stop"
         return "你是想让我开始会议投影吗？", "meeting_projection"
+    if requested.startswith("movie_projection") and re.search(r"电影|影片|播放|暂停|继续|结束", text):
+        if requested == "movie_projection_pause":
+            return "你是想暂停正在播放的电影吗？", requested
+        if requested == "movie_projection_resume":
+            return "你是想继续播放刚才的电影吗？", requested
+        if requested == "movie_projection_stop":
+            return "你是想结束电影播放并关闭投影吗？", requested
+        return "你是想让我播放电影吗？", "movie_projection"
     if requested == "rest_lighting" and re.search(r"休息|累|困|灯|光", text):
         return "你是想让我调整灯光，好让你休息一会儿吗？", requested
     if reason == "not_requested":
@@ -214,6 +222,10 @@ def _task_position(task: dict[str, Any], user_text: str, fallback: int) -> int:
                 "关闭会议投影", "关掉会议投影", "关闭投影", "关掉投影", "结束投影", "停止投影",
             ),
             "meeting_projection": ("会议投影", "投影会议内容", "开始投影"),
+            "movie_projection": ("播放电影", "看电影", "放电影", "电影投影"),
+            "movie_projection_pause": ("暂停电影", "电影暂停"),
+            "movie_projection_resume": ("继续播放电影", "恢复电影", "接着看电影"),
+            "movie_projection_stop": ("结束电影", "关闭电影", "停止播放电影"),
             "find_pet_at": ("找一下", "找豆豆", "寻找豆豆"),
             "find_pet_here": ("找一下", "找豆豆", "寻找豆豆"),
             "find_pet": ("找一下", "找豆豆", "寻找豆豆"),
@@ -732,6 +744,7 @@ def _atomic_intent_supported(
         action_evidence = {
             "play_music": r"音乐|歌曲|听歌|唱首歌|放歌",
             "play_video": r"视频|电影|短片|节目",
+            "play_movie": r"电影|影片|投影",
             "pause": r"暂停|停一下",
             "resume": r"继续|恢复",
             "next": r"下一首|换一首|换歌",
@@ -742,6 +755,7 @@ def _atomic_intent_supported(
         media_terms = {
             "play_music": ("播放音乐", "听歌", "放歌"),
             "play_video": ("播放视频", "看视频", "看电影"),
+            "play_movie": ("播放电影", "电影投影", "看电影"),
             "pause": ("暂停播放", "停一下"),
             "resume": ("继续播放", "恢复播放"),
             "next": ("下一首", "换歌"),
@@ -839,6 +853,7 @@ def task_future_phrase(name: str, arguments: dict[str, Any]) -> str:
         labels = {
             "play_music": "播放音乐",
             "play_video": "播放娱乐视频",
+            "play_movie": "投影播放电影",
             "pause": "暂停播放",
             "resume": "继续播放",
             "next": "切换下一首",
@@ -1299,6 +1314,23 @@ class LocalSkillBridge:
         prior = _intent_text(prior_assistant_text)
         if not answer or not prior:
             return None
+        active_movie = bool(
+            re.search(
+                r"电影.{0,10}(?:已经|正在|开始|播放|暂停|投好)|"
+                r"(?:已经|正在|开始|继续|暂停).{0,10}电影|"
+                r"(?:大雄兔|影片).{0,10}(?:播放|暂停)",
+                prior,
+            )
+        )
+        if active_movie:
+            contextual_controls = (
+                ("movie_projection_pause", r"^(?:暂停|停一下|先停|暂停一下)(?:播放|电影|影片)?$"),
+                ("movie_projection_resume", r"^(?:继续|恢复|接着播|接着看|继续播放)(?:电影|影片)?$"),
+                ("movie_projection_stop", r"^(?:不看了|结束|停止|关掉|关闭|收起来|就到这里|就到这)(?:电影|影片|播放|投影)?$"),
+            )
+            for scenario, pattern in contextual_controls:
+                if re.match(pattern, answer) and scenario in self.scenario_catalog.procedures:
+                    return {"name": SCENARIO_TOOL_NAME, "arguments": {"scenario": scenario}}
         if answer in _CONTEXT_REJECTIONS or re.match(r"^(?:不是|不对|不要|不用|算了|取消)", answer):
             return None
 
@@ -1309,10 +1341,14 @@ class LocalSkillBridge:
 
         if answer not in _CONTEXT_AFFIRMATIONS:
             return None
-        if "你是想" not in prior and "是想" not in prior:
-            return None
         scenario = None
-        if "俯卧撑" in prior:
+        if re.search(r"(?:需要|要不要|想不想).{0,10}(?:放|看|播放).{0,4}(?:电影|影片)", prior):
+            scenario = "movie_projection"
+        elif re.search(r"(?:需要|要不要|想不想).{0,10}(?:陪你|陪您|一起).{0,5}(?:运动|锻炼)", prior):
+            scenario = "push_up_companion"
+        elif "你是想" not in prior and "是想" not in prior:
+            return None
+        elif "俯卧撑" in prior:
             scenario = "push_up_companion"
         elif "引体向上" in prior:
             scenario = "pull_up_companion"
@@ -1352,6 +1388,38 @@ class LocalSkillBridge:
                 or name == SEQUENCE_TOOL_NAME
             )
         )
+        contextual_movie_scene: str | None = None
+        prior = _intent_text(prior_assistant_text)
+        active_movie = bool(
+            re.search(
+                r"电影.{0,10}(?:已经|正在|开始|播放|暂停|投好)|"
+                r"(?:已经|正在|开始|继续|暂停).{0,10}电影|"
+                r"(?:大雄兔|影片).{0,10}(?:播放|暂停)",
+                prior,
+            )
+        )
+        # A short “暂停一下/继续/不看了” while a movie projection is active
+        # must control the whole projection session, not only the Android
+        # player.  Constrain this conversion to authoritative preceding movie
+        # status speech so the same words still control music normally and a
+        # declined movie offer cannot turn off unrelated hardware.
+        if name == "media_player" and self.scenario_catalog is not None:
+            action = str(arguments.get("action") or "").strip().lower()
+            scene_for_action = {
+                "pause": "movie_projection_pause",
+                "resume": "movie_projection_resume",
+                "stop": "movie_projection_stop",
+            }.get(action)
+            if active_movie and scene_for_action in self.scenario_catalog.procedures:
+                contextual_movie_scene = scene_for_action
+                name = SCENARIO_TOOL_NAME
+                arguments = {"scenario": scene_for_action}
+        elif name == SCENARIO_TOOL_NAME and active_movie:
+            requested_movie_control = str(arguments.get("scenario") or "")
+            if requested_movie_control in {
+                "movie_projection_pause", "movie_projection_resume", "movie_projection_stop",
+            }:
+                contextual_movie_scene = requested_movie_control
         # Realtime models occasionally emit a valid scenario name directly as
         # the function name (for example ``meeting_projection``) instead of
         # calling ``run_robot_scenario`` with a scenario argument.  Sequence
@@ -1415,7 +1483,7 @@ class LocalSkillBridge:
             protected = self.scenario_catalog.protected_scenario(name, arguments)
             normalized_user = "".join(str(user_text or "").split()).strip("，。！？!?、")
             affirmative = normalized_user.lower() in _CONTEXT_AFFIRMATIONS | {"没问题", "就这样吧"}
-            contextual = (
+            contextual = contextual_movie_scene or (
                 self.scenario_catalog.match(f"{prior_assistant_text} {user_text}")
                 if affirmative and str(prior_assistant_text or "").strip()
                 else None
@@ -1477,7 +1545,7 @@ class LocalSkillBridge:
                 # Arguments inferred from explicit user words are authoritative
                 # over model-supplied defaults or guesses.
                 clean = {**clean, **inferred}
-                if scenario == "meeting_projection":
+                if scenario in {"meeting_projection", "movie_projection"}:
                     if "point" not in inferred:
                         # A partial atomic plan may carry a model-invented point.
                         # Only explicit location words in the user's transcript
