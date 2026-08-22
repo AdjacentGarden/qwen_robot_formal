@@ -9,6 +9,7 @@ CONTROL_SOCKET="$ROOT/runtime/app_control.sock"
 LOCK_FILE="$STATE/service.lock"
 STATE_FILE="$STATE/service_state.json"
 ACTION="${1:-status}"
+START_TIMEOUT="${QWEN_SERVICE_START_TIMEOUT:-720}"
 
 alive() {
   [[ -f "$PID_FILE" ]] || return 1
@@ -103,7 +104,7 @@ case "$ACTION" in
     # acquire it, observe this live PID and return "starting" without spawning
     # another stack. Stop is likewise never blocked for the full startup time.
     flock -u 9
-    deadline=$((SECONDS + 180))
+    deadline=$((SECONDS + START_TIMEOUT))
     while (( SECONDS < deadline )); do
       if ! kill -0 "$pid" 2>/dev/null; then
         tail -n 160 "$LOG_FILE" >&2 || true

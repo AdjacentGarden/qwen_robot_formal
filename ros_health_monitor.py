@@ -32,7 +32,8 @@ def evaluate_readiness(snapshot: Dict[str, Any], now: float) -> Dict[str, Any]:
 
     lifecycle = snapshot.get("lifecycle") or {}
     actions = snapshot.get("actions") or {}
-    base = bool(snapshot.get("cmd_vel_subscribers", 0)) and fresh("scan_raw") and fresh("imu")
+    manager = snapshot.get("manager") or {}
+    base = bool(snapshot.get("cmd_vel_subscribers", 0)) and fresh("scan") and fresh("imu")
     odometry = fresh("odom")
     navigation = (
         lifecycle.get("map_server") == "active"
@@ -43,7 +44,21 @@ def evaluate_readiness(snapshot: Dict[str, Any], now: float) -> Dict[str, Any]:
         and bool(actions.get("navigate_to_pose"))
         and bool(snapshot.get("tf_ready"))
     )
-    return {"base": base, "odometry": odometry, "navigation": navigation}
+    manager_ready = (
+        str(manager.get("state") or "").upper() == "NAVIGATION"
+        and manager.get("sensor_gate_enabled") is True
+        and str(manager.get("sensor_gate_state") or "").lower() == "ready"
+        and not bool(manager.get("control_conflict"))
+        and base
+        and odometry
+        and navigation
+    )
+    return {
+        "base": base,
+        "odometry": odometry,
+        "navigation": navigation,
+        "manager": manager_ready,
+    }
 
 
 class HealthMonitor:
@@ -57,6 +72,7 @@ class HealthMonitor:
         from rclpy.executors import SingleThreadedExecutor
         from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
         from sensor_msgs.msg import Imu, LaserScan
+        from std_msgs.msg import Bool, String, UInt32
         from tf2_ros import Buffer, TransformListener
 
         self.rclpy = rclpy
@@ -78,8 +94,18 @@ class HealthMonitor:
             "map_received": False,
             "tf_ready": False,
             "cmd_vel_subscribers": 0,
+            "manager": {
+                "state": "not_running",
+                "event": "",
+                "attempt": 0,
+                "sensor_gate_enabled": None,
+                "sensor_gate_state": "unknown",
+                "control_conflict": False,
+                "controller_status": "unknown",
+                "controller_warning": "",
+            },
         }
-        self.stable_counts = {"base": 0, "odometry": 0, "navigation": 0}
+        self.stable_counts = {"base": 0, "odometry": 0, "navigation": 0, "manager": 0}
         self.pending_lifecycle: Dict[str, Any] = {}
         self.last_lifecycle_request = 0.0
 
@@ -102,6 +128,28 @@ class HealthMonitor:
         self.node.create_subscription(Imu, "/imu", lambda _msg: self.mark_topic("imu"), sensor_qos)
         self.node.create_subscription(Odometry, "/odom", lambda _msg: self.mark_topic("odom"), 10)
         self.node.create_subscription(OccupancyGrid, "/map", self.mark_map, map_qos)
+        status_qos = QoSProfile(
+            depth=10,
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            history=HistoryPolicy.KEEP_LAST,
+        )
+        for message_type, topic, key in (
+            (String, "/mapping_manager/state", "state"),
+            (String, "/mapping_manager/event", "event"),
+            (UInt32, "/mapping_manager/attempt", "attempt"),
+            (Bool, "/motion_controller/lidar_enabled", "sensor_gate_enabled"),
+            (String, "/motion_controller/sensor_gate_state", "sensor_gate_state"),
+            (Bool, "/motion_controller/control_conflict", "control_conflict"),
+            (String, "/motion_controller/status", "controller_status"),
+            (String, "/motion_controller/warning", "controller_warning"),
+        ):
+            self.node.create_subscription(
+                message_type,
+                topic,
+                lambda message, manager_key=key: self.mark_manager(manager_key, message),
+                status_qos,
+            )
         self.lifecycle_clients = {
             name: self.node.create_client(GetState, f"/{name}/get_state")
             for name in ("map_server", "planner_server", "bt_navigator")
@@ -122,6 +170,19 @@ class HealthMonitor:
         with self.lock:
             self.snapshot["map_received"] = True
             self.snapshot["topics"]["map"] = time.monotonic()
+
+    def mark_manager(self, key: str, message: Any) -> None:
+        value = getattr(message, "data", message)
+        if key == "state":
+            value = str(value or "not_running").strip().upper()
+        elif key in {"event", "sensor_gate_state", "controller_status", "controller_warning"}:
+            value = str(value or "").strip()
+        elif key in {"sensor_gate_enabled", "control_conflict"}:
+            value = bool(value)
+        elif key == "attempt":
+            value = int(value)
+        with self.lock:
+            self.snapshot["manager"][key] = value
 
     def request_lifecycle_states(self, now: float) -> None:
         if now - self.last_lifecycle_request < 0.75:
@@ -152,7 +213,12 @@ class HealthMonitor:
         now = time.monotonic()
         self.request_lifecycle_states(now)
         with self.lock:
-            self.snapshot["cmd_vel_subscribers"] = int(self.node.count_subscribers("/cmd_vel"))
+            manager_publishers = int(self.node.count_publishers("/mapping_manager/state"))
+            if manager_publishers <= 0:
+                self.snapshot["manager"]["state"] = "not_running"
+            self.snapshot["cmd_vel_subscribers"] = int(
+                self.node.count_subscribers("/cmd_vel_external")
+            )
             for name, client in self.action_clients.items():
                 self.snapshot["actions"][name] = bool(client.server_is_ready())
             self.snapshot["tf_ready"] = any(
@@ -183,6 +249,8 @@ class HealthMonitor:
                 "map_received": bool(self.snapshot["map_received"]),
                 "tf_ready": bool(self.snapshot["tf_ready"]),
                 "cmd_vel_subscribers": int(self.snapshot["cmd_vel_subscribers"]),
+                "manager": dict(self.snapshot["manager"]),
+                "manager_publishers": manager_publishers,
             }
         self.atomic_write(output)
 

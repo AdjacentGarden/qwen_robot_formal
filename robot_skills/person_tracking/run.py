@@ -1407,7 +1407,7 @@ class PetTrackingSystem:
         def __init__(self):
             self.topic = os.getenv(
                 "PERSON_TRACKING_ROS_CMD_VEL_TOPIC",
-                os.getenv("PET_ROS_CMD_VEL_TOPIC", os.getenv("ROBOT_CMD_VEL_TOPIC", "/cmd_vel")),
+                os.getenv("PET_ROS_CMD_VEL_TOPIC", os.getenv("ROBOT_CMD_VEL_TOPIC", "/cmd_vel_external")),
             )
             self.max_linear = float(os.getenv(
                 "PERSON_TRACKING_ROS_MAX_LINEAR",
@@ -3479,7 +3479,7 @@ def _person_maybe_reexec_with_ros_env_for_cli():
 
     env = os.environ.copy()
     env["PERSON_TRACKING_ROS_ENV_REEXEC"] = "1"
-    car_ws = env.get("CAR_REAL_WS", "/home/test/car_real_copy_zhenghang")
+    car_ws = env.get("CAR_REAL_WS", "/home/test/Car_real_copy")
     setup_files = [
         "/opt/ros/humble/setup.bash",
         f"{car_ws}/install/setup.bash",
@@ -3527,7 +3527,7 @@ def _person_tracking_cli_main():
         "--cmd-vel-topic",
         default=os.getenv(
             "PERSON_TRACKING_ROS_CMD_VEL_TOPIC",
-            os.getenv("PET_ROS_CMD_VEL_TOPIC", os.getenv("ROBOT_CMD_VEL_TOPIC", "/cmd_vel")),
+            os.getenv("PET_ROS_CMD_VEL_TOPIC", os.getenv("ROBOT_CMD_VEL_TOPIC", "/cmd_vel_external")),
         ),
         help="ROS2 Twist topic. Default: /cmd_vel.",
     )

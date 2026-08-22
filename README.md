@@ -162,16 +162,17 @@ runtime/tool_test_response.wav
 bash run.sh --execute-skills
 ```
 
-该命令现在会先使用唯一允许的 ROS 工作区：
+该命令现在只加载（不修改）ROS 工作区：
 
 ```text
-/home/test/car_real_copy_zhenghang
+/home/test/Car_real_copy
 ```
 
-并依次启动、检查：底盘/雷达/IMU/TF/ToF → 里程计 → Cartographer 定位与地图 → Nav2。
-只有 `/cmd_vel`、`/scan`、`/imu`、`/odom`、`/map` 和 `/navigate_to_pose` 全部达到对应
-就绪条件后，才会启动持续语音。任何一层失败都会停止进入后续层，并逆序清理本测试项目
-自己启动的进程；检测到外部链路已经就绪时不会重复启动，也不会在退出时终止外部进程。
+并且只启动 `MappingNavigationManager`，由 Manager 统一管理底盘、雷达、里程计、定位、
+Nav2、sensor gate、有限恢复和 `SAFE_STOP`。启动前会验证已安装地图，地图无效时直接拒绝，
+不会回退到自动建图。只有 Manager 进入 `NAVIGATION`、sensor gate 为 `ready` 且导航链路
+完整就绪后才启动持续语音。Qwen/App 的手动运动进入 `/cmd_vel_external`，导航进入
+`/motion_controller/nav_goal_with_options`；不再绕过 Manager 直发底盘或 Nav2 目标。
 
 ROS 链路就绪后还会启动本副本中的：
 
@@ -194,7 +195,7 @@ bash run.sh --robot-stack-plan
 bash run.sh --robot-stack-status
 ```
 
-默认在千问程序退出时逆序关闭本测试项目启动的导航、里程计和底盘链路。如底层 ROS 已由
+默认在千问程序退出时调用 `/mapping_manager/shutdown`，由 Manager 统一关闭其拥有的链路。如底层 ROS 已由
 其他受控程序启动，可跳过自动启动：
 
 ```bash

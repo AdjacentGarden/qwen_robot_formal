@@ -14,6 +14,9 @@ import time
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from car_real_contract import NAV_GOAL_TOPIC, map_pose_to_gateway
+
 SKILL_NAME = "navigation_goto"
 POINTS_DB = Path(
     os.getenv(
@@ -976,9 +979,30 @@ def main() -> int:
         return emit({"ok": False, "skill": SKILL_NAME, "error": str(exc), "source": str(POINTS_DB)}, exit_code=2)
 
     goal_yaml = build_goal_yaml(goal["x"], goal["y"], goal["yaw"], goal["frame_id"])
-    cmd = ["ros2", "action", "send_goal", args.action_name, "nav2_msgs/action/NavigateToPose", goal_yaml, "--feedback"]
+    gateway_goal = map_pose_to_gateway(goal["x"], goal["y"], goal["yaw"])
+    cmd = [
+        sys.executable,
+        str(Path(__file__).resolve().parents[1] / "resident_skill_client.py"),
+        "navigation_goto",
+        "goto",
+        str(goal.get("name") or goal.get("requested_name") or "direct_pose"),
+    ]
     if args.dry_run:
-        return emit({"ok": True, "skill": SKILL_NAME, "action": "goto", "dry_run": True, "goal": goal, "cmd": cmd, "goal_yaml": goal_yaml, "source": str(POINTS_DB)})
+        return emit({
+            "ok": True,
+            "skill": SKILL_NAME,
+            "action": "goto",
+            "dry_run": True,
+            "goal": goal,
+            "transport": {
+                "backend": "Car_real_copy/mapping_navigation_manager",
+                "topic": NAV_GOAL_TOPIC,
+                "gateway_goal": gateway_goal,
+                "yaw_unit": "degrees",
+            },
+            "cmd": cmd,
+            "source": str(POINTS_DB),
+        })
 
     preflight = {"ok": True, "skipped": True}
     if not args.skip_path_preflight:
@@ -1025,4 +1049,7 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    if "--dry-run" in sys.argv[1:]:
+        sys.exit(main())
+    client = Path(__file__).resolve().parents[1] / "resident_skill_client.py"
+    os.execv(sys.executable, [sys.executable, str(client), "navigation_goto", *sys.argv[1:]])

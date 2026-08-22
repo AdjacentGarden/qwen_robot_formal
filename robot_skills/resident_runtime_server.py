@@ -339,17 +339,10 @@ class CameraManager:
 
 class ResidentSkills:
     def __init__(self):
-        from std_msgs.msg import UInt16
-        from std_srvs.srv import SetBool
-
         self.started = time.time()
         self.runtime = SharedRuntime()
         self.camera = CameraManager()
-        self.UInt16 = UInt16
-        self.SetBool = SetBool
-        self.head_pub = self.runtime.ros_node.create_publisher(UInt16, "/step_motor_angle", 10)
-        self.lidar_guard_client = self.runtime.ros_node.create_client(
-            SetBool, "/head_lidar_guard/set_live")
+        self.head_pub = self.runtime.head_angle_pub
         # Serialize the complete guard -> motion -> feedback -> restore cycle.
         self.head_control_lock = threading.RLock()
         self.modules: dict[str, Any] = {}
@@ -414,7 +407,9 @@ class ResidentSkills:
         short recovery operation.
         """
         try:
-            with self.resources.acquire(["base", "head"], "head_auto_level", 0.05):
+            with self.resources.acquire(
+                ["base", "head", "motion_domain"], "head_auto_level", 0.05
+            ):
                 if self._persistent_projection_active():
                     return {"ok": False, "error": "projection_became_active"}
                 return self._move_head_resident(
@@ -434,61 +429,17 @@ class ResidentSkills:
             }
 
     def _set_lidar_live(self, enable: bool, timeout: float = 2.0) -> dict[str, Any]:
-        """Synchronously acknowledge the scan gate without stopping the lidar.
+        """Delegate to Car_real_copy's motion-controller sensor gate."""
 
-        The ROS executor runs on its own thread, so waiting here does not block
-        the service response.  A missing guard is a hard failure for tilt
-        commands: moving first and hoping that a subscriber catches the target
-        would reintroduce the map-corruption race this interlock removes.
-        """
-        client = self.lidar_guard_client
-        deadline = time.monotonic() + max(0.1, float(timeout))
-        if not client.wait_for_service(timeout_sec=max(0.05, deadline - time.monotonic())):
-            return {"called": False, "ok": False, "message": "lidar_guard_service_unavailable"}
-        attempts = 0
-        retryable = {
-            True: {"head_not_stably_level"},
-            # Nav2 can report success just before the guard's short
-            # motion-hold window expires.  Waiting here prevents a normal
-            # navigation -> head-up transition from becoming a false fatal
-            # lidar_guard_not_ready result.
-            False: {"base_is_moving"},
+        result = self.runtime.set_sensor_gate_enabled(
+            bool(enable),
+            timeout_sec=max(float(timeout), 16.0 if enable else 3.0),
+        )
+        return {
+            "called": True,
+            "live": bool(enable) if result.get("ok") else None,
+            **result,
         }
-        while time.monotonic() < deadline:
-            attempts += 1
-            request = self.SetBool.Request()
-            request.data = bool(enable)
-            future = client.call_async(request)
-            done = threading.Event()
-            future.add_done_callback(lambda _future: done.set())
-            remaining = max(0.01, deadline - time.monotonic())
-            if not done.wait(min(0.75, remaining)):
-                if time.monotonic() >= deadline:
-                    break
-                continue
-            try:
-                response = future.result()
-            except Exception as exc:
-                return {"called": True, "ok": False, "message": f"lidar_guard_error:{exc}", "attempts": attempts}
-            message = str(response.message)
-            if response.success:
-                return {
-                    "called": True,
-                    "ok": True,
-                    "message": message,
-                    "live": bool(enable),
-                    "attempts": attempts,
-                }
-            if message not in retryable[bool(enable)]:
-                return {
-                    "called": True,
-                    "ok": False,
-                    "message": message,
-                    "live": None,
-                    "attempts": attempts,
-                }
-            time.sleep(min(0.05, max(0.0, deadline - time.monotonic())))
-        return {"called": True, "ok": False, "message": "lidar_guard_timeout", "attempts": attempts}
 
     def _load_module(self, key: str, path: Path):
         if key in self.modules:
@@ -786,7 +737,7 @@ class ResidentSkills:
         parser.add_argument("--speed", type=float, default=0.12)
         parser.add_argument("--angular-speed", type=float, default=0.35)
         parser.add_argument("--duration", type=float, default=1.0)
-        parser.add_argument("--topic", default="/cmd_vel")
+        parser.add_argument("--topic", default="/cmd_vel_external")
         parser.add_argument("--discovery-timeout", type=float, default=0.8)
         parser.add_argument("--allow-no-subscriber", action="store_true")
         parser.add_argument("--dry-run", action="store_true")
@@ -876,74 +827,27 @@ class ResidentSkills:
                     "error": "lidar_guard_not_ready",
                     "transport": "resident_ros_participant",
                 })
-            deadline = time.monotonic() + max(0.0, float(discovery_timeout))
-            subscribers = int(self.head_pub.get_subscription_count())
-            while subscribers <= 0 and time.monotonic() < deadline:
-                time.sleep(0.03)
-                subscribers = int(self.head_pub.get_subscription_count())
-
-            msg = self.UInt16()
-            msg.data = max(0, min(65535, angle))
-            for index in range(max(1, int(repeat))):
-                self.head_pub.publish(msg)
-                if index + 1 < max(1, int(repeat)):
-                    time.sleep(max(0.0, float(interval)))
-
-            feedback = self.runtime.wait_for_head_target(
+            feedback = self.runtime.command_head(
                 angle,
-                tolerance_deg=max(0.5, float(feedback_tolerance)),
-                stable_sec=max(0.05, float(feedback_stable_sec)),
-                maximum_roll_span_deg=max(0.25, float(feedback_max_roll_span)),
-                maximum_rate_dps=max(0.5, float(feedback_max_rate)),
-                maximum_feedback_age_sec=max(0.1, float(feedback_max_age)),
-                timeout_sec=max(0.2, float(feedback_timeout)),
+                repeat=repeat,
+                interval=interval,
+                discovery_timeout=discovery_timeout,
+                feedback_timeout=feedback_timeout,
             )
-            subscribers = max(subscribers, int(self.head_pub.get_subscription_count()))
+            subscribers = int(feedback.get("subscribers", 0))
             delivered = subscribers > 0
             at_target = bool(feedback.get("ok"))
-            scan_sequence_before = self.runtime.current_scan_sequence()
-            guard_after = self._set_lidar_live(True, timeout=2.5) if not tilting and at_target else guard_before
-            fresh_scan = (
-                self.runtime.wait_for_fresh_scan(
-                    after_sequence=scan_sequence_before,
-                    timeout_sec=2.5,
-                    maximum_age_sec=0.5,
-                )
-                if not tilting and at_target and guard_after.get("ok")
-                else {"ok": bool(tilting), "skipped": True}
+            # Manager and motion_controller jointly keep every base source at
+            # zero until this enable request reaches the fully recovered
+            # ``ready`` state (fresh gated scan/IMU/odom/TF/map).
+            guard_after = (
+                self._set_lidar_live(True, timeout=float(os.getenv(
+                    "HEAD_LOCALIZATION_RECOVERY_TIMEOUT_SEC", "18.0"
+                )))
+                if not tilting and at_target
+                else guard_before
             )
-            localization_recovery = {"ok": True, "skipped": True, "reason": "head_remains_tilted"}
-            if not tilting and at_target and guard_after.get("ok") and fresh_scan.get("ok"):
-                # A single fresh /scan only proves that the guard reopened.  It
-                # does not prove that laser odometry, map TF and Nav2 have
-                # flushed old timestamps.  When Nav2 is present (the complete
-                # robot project), keep the head action open until that whole
-                # chain is continuously healthy.  Head-only deployments remain
-                # usable because they have no navigation server to protect.
-                if self.runtime.nav_client.server_is_ready():
-                    localization_recovery = self.runtime.wait_for_navigation_health(
-                        timeout_sec=float(os.getenv("HEAD_LOCALIZATION_RECOVERY_TIMEOUT_SEC", "12.0")),
-                        stable_sec=float(os.getenv("HEAD_LOCALIZATION_RECOVERY_STABLE_SEC", "1.0")),
-                        maximum_age_sec=float(os.getenv("HEAD_LOCALIZATION_MAXIMUM_AGE_SEC", "0.60")),
-                        minimum_updates=int(os.getenv("HEAD_LOCALIZATION_MINIMUM_UPDATES", "5")),
-                        require_navigation_server=True,
-                    )
-                else:
-                    localization_recovery = {
-                        "ok": True,
-                        "skipped": True,
-                        "reason": "navigation_server_not_running",
-                    }
-            guard_after = {
-                **guard_after,
-                "fresh_scan": fresh_scan,
-                "localization_recovery": localization_recovery,
-            }
-            guard_ok = (
-                bool(guard_after.get("ok"))
-                and bool(fresh_scan.get("ok"))
-                and bool(localization_recovery.get("ok"))
-            )
+            guard_ok = bool(guard_after.get("ok"))
             return finish({
                 "ok": delivered and at_target and guard_ok,
                 "skill": "head_control",
@@ -957,10 +861,9 @@ class ResidentSkills:
                     None if delivered and at_target and guard_ok
                     else "no_subscribers" if not delivered
                     else "head_target_unconfirmed" if not at_target
-                    else "lidar_fresh_scan_resume_failed" if not fresh_scan.get("ok")
-                    else "localization_recovery_failed"
+                    else "sensor_gate_recovery_failed"
                 ),
-                "transport": "resident_ros_participant",
+                "transport": "car_real_copy_motion_controller",
             })
 
     def _head(self, argv: list[str]) -> int:
@@ -973,7 +876,7 @@ class ResidentSkills:
         parser.add_argument("--interval", type=float, default=0.05)
         parser.add_argument("--discovery-timeout", type=float, default=0.8)
         parser.add_argument("--service-timeout", type=float, default=0.45)
-        # car_real_copy_zhenghang stops inside a 5 degree head deadband, so the
+        # Car_real_copy stops inside a 5 degree head deadband, so the
         # physical arrival gate must use the same tolerance.
         parser.add_argument("--feedback-timeout", type=float, default=12.0)
         parser.add_argument("--feedback-tolerance", type=float, default=5.0)
@@ -1274,7 +1177,7 @@ class ResidentSkills:
         parser.add_argument("--search-mode")
         parser.add_argument("--model", default=cls.DETECTOR_MODEL)
         parser.add_argument("--backend", choices=["ros2", "dummy"], default=os.getenv("PET_MOTOR_BACKEND", "ros2"))
-        parser.add_argument("--cmd-vel-topic", default="/cmd_vel")
+        parser.add_argument("--cmd-vel-topic", default="/cmd_vel_external")
         parser.add_argument("--json", action="store_true")
         parser.add_argument("--start-gate")
         parser.add_argument("--resume-from-interrupt", action="store_true")
@@ -1487,6 +1390,11 @@ class ResidentSkills:
             resources.append("feeder_device")
         elif skill.startswith("reminder_"):
             resources.append("reminder_store")
+        if "base" in resources or "head" in resources:
+            # Sensor gating and chassis motion are one safety domain in
+            # Car_real_copy.  This prevents a base request from starting while
+            # a tilt command has the gate disabled (and vice versa).
+            resources.append("motion_domain")
         return resources
 
     @staticmethod

@@ -236,6 +236,11 @@ def humanize_failure_summary(skill: str, raw_reason: str) -> str:
     reason = str(raw_reason or "").strip()
     lowered = reason.lower()
     mappings = (
+        (("manager_safe_stop",), "机器人安全管理器已经进入保护停止状态，所以我没有继续动作。"),
+        (("manager_not_navigation",), "底盘和导航管理器还没有完整就绪，所以我没有启动动作。"),
+        (("sensor_gate_not_ready", "sensor_gate_recovery"), "雷达和定位还在恢复，为了安全我暂时没有移动。"),
+        (("motion_controller_conflict",), "检测到运动控制冲突，为避免抢占我没有继续动作。"),
+        (("goal_outside_current_map",), "这个目标超出了当前地图可导航范围，所以我没有继续。"),
         (("localization_node_unavailable", "cartographer_unavailable"), "定位节点当前不可用，所以没有启动导航。"),
         (("imu_publisher_conflict", "duplicate_imu"), "检测到重复的惯性传感器数据，为避免定位冲突，没有启动导航。"),
         (("navigation_no_valid_path", "no_valid_path"), "当前规划不出安全路径，所以这次没有继续导航。"),
@@ -314,7 +319,7 @@ def build_spoken_summary(executor: Any, step: Any, result: dict[str, Any]) -> st
 
 def configure_robot_environment(config: dict[str, Any]) -> None:
     paths = config.get("paths", {})
-    car_workspace = str(paths.get("car_workspace") or "/home/test/car_real_copy_zhenghang")
+    car_workspace = str(paths.get("car_workspace") or "/home/test/Car_real_copy")
     os.environ["CAR_REAL_WS"] = car_workspace
     os.environ["PET_CONTROLLER_CLI_PATH"] = str(
         Path(car_workspace) / "src" / "demo" / "controller_cli.py"

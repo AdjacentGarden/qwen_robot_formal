@@ -13,8 +13,8 @@ mkdir -p "$STATE_DIR"
 if [[ -f /opt/ros/humble/setup.bash ]]; then
   set +u
   source /opt/ros/humble/setup.bash
-  if [[ -f /home/test/car_real_copy_zhenghang/install/setup.bash ]]; then
-    source /home/test/car_real_copy_zhenghang/install/setup.bash
+  if [[ -f /home/test/Car_real_copy/install/setup.bash ]]; then
+    source /home/test/Car_real_copy/install/setup.bash
   fi
   set -u
 fi

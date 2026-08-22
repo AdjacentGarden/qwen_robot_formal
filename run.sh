@@ -4,9 +4,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
 
-CAR_REAL_WS="/home/test/car_real_copy_zhenghang"
+CAR_REAL_WS="/home/test/Car_real_copy"
 export CAR_REAL_WS
-export PET_CONTROLLER_CLI_PATH="$CAR_REAL_WS/src/demo/controller_cli.py"
+export PET_CONTROLLER_CLI_PATH="$CAR_REAL_WS/ai_control_sim.py"
 
 if [[ -f runtime/config.env ]]; then
   set -a

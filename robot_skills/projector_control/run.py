@@ -141,7 +141,7 @@ def restore_head_level(config, timeout):
     """
     command = list(config.get("head_level_command") or DEFAULT_HEAD_LEVEL_COMMAND)
     env = os.environ.copy()
-    env.setdefault("CAR_REAL_WS", "/home/test/car_real_copy_zhenghang")
+    env.setdefault("CAR_REAL_WS", "/home/test/Car_real_copy")
     attempts = []
     for attempt in range(1, 3):
         try:

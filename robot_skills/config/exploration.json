@@ -2,7 +2,7 @@
   "version": 1,
   "map": {
     "topic": "/map",
-    "fallback_yaml": "/home/test/car_real_copy_zhenghang/src/exploration/map/exploration_map.yaml",
+    "fallback_yaml": "/home/test/Car_real_copy/install/car_nav2/share/car_nav2/maps/exploration_map.yaml",
     "offline_start_pose": [0.0, 0.0, -3.141592653589793],
     "note": "Live execution always prefers the resident /map snapshot; the YAML is only an offline or startup fallback."
   },

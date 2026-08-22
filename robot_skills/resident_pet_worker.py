@@ -19,6 +19,7 @@ from pathlib import Path
 
 from resident_runtime_server import ResidentSkills, ThreadRoutingStream, recv_request, send_response
 from resident_camera_ipc import open_capture
+from car_real_contract import EXTERNAL_CMD_VEL_TOPIC, manager_allows_motion
 
 
 ROOT = Path(__file__).resolve().parent
@@ -43,7 +44,9 @@ class RosOwner:
         import rclpy
         from geometry_msgs.msg import Twist
         from rclpy.executors import MultiThreadedExecutor
+        from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
         from rclpy.time import Time
+        from std_msgs.msg import Bool, String
         from tf2_ros import Buffer, TransformListener
 
         self.rclpy = rclpy
@@ -52,7 +55,33 @@ class RosOwner:
         if not rclpy.ok():
             rclpy.init(args=None)
         self.node = rclpy.create_node(f"resident_pet_ros_{os.getpid()}")
-        self.publisher = self.node.create_publisher(Twist, "/cmd_vel", 10)
+        self.publisher = self.node.create_publisher(Twist, EXTERNAL_CMD_VEL_TOPIC, 10)
+        self.manager_state = "not_running"
+        self.sensor_gate_state = "unknown"
+        self.control_conflict = False
+        retained_status_qos = QoSProfile(
+            history=HistoryPolicy.KEEP_LAST,
+            depth=1,
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+        )
+        self.status_subscriptions = [
+            self.node.create_subscription(
+                String, "/mapping_manager/state",
+                lambda message: setattr(self, "manager_state", str(message.data).strip().upper()),
+                retained_status_qos,
+            ),
+            self.node.create_subscription(
+                String, "/motion_controller/sensor_gate_state",
+                lambda message: setattr(self, "sensor_gate_state", str(message.data).strip().lower()),
+                retained_status_qos,
+            ),
+            self.node.create_subscription(
+                Bool, "/motion_controller/control_conflict",
+                lambda message: setattr(self, "control_conflict", bool(message.data)),
+                retained_status_qos,
+            ),
+        ]
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self.node, spin_thread=False)
         self.executor = MultiThreadedExecutor(num_threads=1)
@@ -61,6 +90,14 @@ class RosOwner:
         self.thread.start()
 
     def _publish_twist(self, linear: float, angular: float):
+        if abs(float(linear)) > 1e-9 or abs(float(angular)) > 1e-9:
+            allowed, reason = manager_allows_motion(
+                self.manager_state, self.sensor_gate_state
+            )
+            if not allowed:
+                raise RuntimeError(reason or "car_motion_not_authorized")
+            if self.control_conflict:
+                raise RuntimeError("motion_controller_conflict")
         msg = self.Twist()
         msg.linear.x = float(linear)
         msg.angular.z = float(angular)
@@ -99,6 +136,7 @@ class RosOwner:
         self.thread.join(timeout=2.5)
         with contextlib.suppress(Exception):
             self.node.destroy_node()
+        self.status_subscriptions.clear()
         with contextlib.suppress(Exception):
             if self.rclpy.ok():
                 self.rclpy.shutdown()

@@ -11,7 +11,7 @@
 
 它与早期“本地 ASR + DeepSeek + 本地 TTS”的分段式链路不同：现场麦克风语音直接送入阿里云千问 `qwen-audio-3.0-realtime-flash` 的长连接，会话同时完成语音理解、对话决策、Function Calling 和语音合成。模型需要操作机器人时，只能通过本地 Skill 接口；固定演示场景由本地场景编译器展开，不能让模型自由拼接受保护的原子动作。
 
-项目自身不包含底盘驱动和 Nav2 的完整源码副本。它通过唯一允许的 ROS 2 工作空间 `/home/test/car_real_copy_zhenghang` 启动真实底盘、里程计、定位和导航，再通过 ROS Topic、Action 和本地 Unix Socket 调用机器人能力。
+项目自身不包含底盘驱动和 Nav2 的完整源码副本。它只读加载 `/home/test/Car_real_copy`，只启动其中的 `MappingNavigationManager`，再通过 motion controller 的受保护 Topic/Service 和本地 Unix Socket 调用机器人能力；本项目不会修改 `Car_real_copy`。
 
 系统可概括为六层：
 
@@ -41,7 +41,7 @@ flowchart TB
         Resident["resident_runtime_server.py<br/>常驻 ROS/模型/硬件上下文"]
         Camera["resident_camera_broker.py<br/>前后相机共享内存"]
         Pet["resident_pet_worker.py<br/>独立宠物 NPU Worker"]
-        ROS["ROS 2 / car_real_copy_zhenghang<br/>底盘 + 里程计 + 定位 + Nav2"]
+        ROS["ROS 2 / Car_real_copy Manager<br/>底盘 + 里程计 + 定位 + Nav2 + SAFE_STOP"]
         Devices["底盘、雷达、IMU、ToF、头部、投影、灯、投食机"]
     end
 
@@ -77,7 +77,7 @@ flowchart TB
 |---|---|
 | `run.sh` | 前台总入口；按顺序启动 ROS、Resident、Skill Host 和实时语音 |
 | `resident_service.sh` | 后台服务入口，供 App 启动/停止整套千问机器人程序 |
-| `robot_stack.sh` | 只管理 `/home/test/car_real_copy_zhenghang` 的 base、odometry、navigation |
+| `robot_stack.sh` | 只启动/停止 `/home/test/Car_real_copy` 的 MappingNavigationManager，并等待其权威状态 |
 | `realtime_chat.py` | 麦克风/扬声器、千问 WebSocket、Function Calling、App 控制 Socket、记忆 |
 | `realtime_core.py` | 千问会话参数、事件状态机、音频事件和断线重连基础逻辑 |
 | `skill_event_audio.py` | 运动计数等实时事件的独立千问播报通道 |
@@ -315,14 +315,18 @@ Resident 通过资源协调器保护以下资源：底盘、头部、前相机�
 所有真实运动能力只能来自：
 
 ```text
-/home/test/car_real_copy_zhenghang
+/home/test/Car_real_copy
 ```
 
-项目不应加载或修改其他导航工作空间。`robot_stack.sh` 固定启动：
+项目不修改该工作空间。`robot_stack.sh` 固定只启动：
 
-1. `real_robot_base.launch.py`
-2. `real_robot_odometry.launch.py`
-3. `real_robot_nav.launch.py use_rviz:=false enable_auto_navigation:=true`
+1. `mapping_navigation_manager.py init:=false use_rviz:=false`
+2. 启动期 sensor gate 关闭 → 头部平视 → sensor gate 恢复
+3. 等待 Manager `NAVIGATION` 和 sensor gate `ready`
+
+业务层地图坐标继续使用米和弧度。适配层统一反变换为 Car AI 网关的反向坐标与角度制；
+手动运动只发布 `/cmd_vel_external`，导航只发布
+`/motion_controller/nav_goal_with_options`。Manager 进入 `SAFE_STOP` 后，所有非零运动立即被拒绝。
 
 ### 8.2 底盘与传感器
 
@@ -552,7 +556,7 @@ App 把屏幕像素根据地图元数据换算成 `map` 坐标，用户确认后
 ### 13.1 项目隔离
 
 - 运行 Socket、PID、日志和模型状态均放在当前项目目录；
-- 只允许加载 `/home/test/car_real_copy_zhenghang`；
+- 只读加载 `/home/test/Car_real_copy`；
 - 启动前扫描冲突控制程序，避免两个项目同时占用同一硬件；
 - 检测到另一个 Resident Runtime 时拒绝重复启动；
 - Camera Broker 保证摄像头只有一个所有者；

@@ -1,5 +1,6 @@
 {
   "paths": {
+    "car_workspace": "/home/test/Car_real_copy",
     "project_root": "/home/test/new_project_optimized_v11_navsafe",
     "runtime_dir": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime",
     "self_program_dir": "/home/test/self_program",
@@ -9,7 +10,7 @@
     "self_program_audio_config": "/home/test/self_program/audio_config.json",
     "ros_setup_files": [
       "/opt/ros/humble/setup.bash",
-      "/home/test/car_real_copy_zhenghang/install/setup.bash"
+      "/home/test/Car_real_copy/install/setup.bash"
     ]
   },
   "audio": {

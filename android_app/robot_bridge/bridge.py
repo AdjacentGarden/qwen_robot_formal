@@ -134,23 +134,24 @@ class RosAdapter:
             return
         import rclpy
         from geometry_msgs.msg import Twist
-        from nav2_msgs.action import NavigateToPose
         from nav_msgs.msg import OccupancyGrid
-        from rclpy.action import ActionClient
         from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
+        from std_srvs.srv import Trigger
         from tf2_ros import Buffer, TransformListener
 
         self.rclpy = rclpy
         self.Twist = Twist
-        self.NavigateToPose = NavigateToPose
+        self.Trigger = Trigger
         rclpy.init(args=None)
         self.node = rclpy.create_node("android_robot_bridge")
-        self.publisher = self.node.create_publisher(Twist, "/cmd_vel", 10)
+        self.publisher = self.node.create_publisher(Twist, "/cmd_vel_external", 10)
+        self.cancel_nav_client = self.node.create_client(
+            Trigger, "/motion_controller/cancel_nav_goal"
+        )
         qos = QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE, durability=DurabilityPolicy.TRANSIENT_LOCAL, history=HistoryPolicy.KEEP_LAST)
         self.node.create_subscription(OccupancyGrid, "/map", self._map_callback, qos)
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self.node)
-        self.action = ActionClient(self.node, NavigateToPose, "/navigate_to_pose")
         self.thread = threading.Thread(target=rclpy.spin, args=(self.node,), daemon=True, name="android-bridge-ros")
         self.thread.start()
 
@@ -213,37 +214,14 @@ class RosAdapter:
     def move(self, direction: str, duration: float, linear: float, angular: float) -> Dict[str, Any]:
         if self.dry_run:
             return {"status": "dry_run", "direction": direction, "duration": duration, "first_publish_ms": 0.0}
-        started = time.monotonic()
-        self.cancel_navigation()
-        twist = self.Twist()
-        if direction == "forward": twist.linear.x = linear
-        elif direction == "backward": twist.linear.x = -linear
-        elif direction == "left": twist.angular.z = angular
-        elif direction == "right": twist.angular.z = -angular
-        elif direction == "stop":
-            self.stop(); return {"status": "stopped"}
-        deadline = time.monotonic() + duration
-        first_publish_ms = None
-        while time.monotonic() < deadline:
-            self.publisher.publish(twist)
-            if first_publish_ms is None:
-                first_publish_ms = (time.monotonic() - started) * 1000.0
-            time.sleep(0.04)
-        self.stop()
-        return {
-            "status": "completed", "direction": direction, "duration": duration,
-            "first_publish_ms": round(float(first_publish_ms or 0.0), 3),
-        }
+        raise RuntimeError("direct_motion_disabled_use_qwen_manager_adapter")
 
     def cancel_navigation(self) -> None:
         self.cancel_requested.set()
-        with self.goal_lock:
-            handle = self.goal_handle
-        if handle is not None:
-            try:
-                handle.cancel_goal_async()
-            except Exception:
-                pass
+        if self.dry_run or not self.cancel_nav_client.service_is_ready():
+            return
+        with contextlib.suppress(Exception):
+            self.cancel_nav_client.call_async(self.Trigger.Request())
 
     @staticmethod
     def _wait_future(future, timeout: float):
@@ -256,47 +234,13 @@ class RosAdapter:
     def navigate(self, x: float, y: float, yaw: float, timeout: float = 120.0) -> Dict[str, Any]:
         if self.dry_run:
             return {"status": "dry_run", "x": x, "y": y, "yaw": yaw}
-        with self.goal_lock:
-            if self.goal_handle is not None:
-                raise RuntimeError("navigation_busy")
-            self.cancel_requested.clear()
-        if not self.action.wait_for_server(timeout_sec=6.0):
-            raise RuntimeError("navigation_server_unavailable")
-        goal = self.NavigateToPose.Goal()
-        goal.pose.header.frame_id = "map"
-        goal.pose.header.stamp = self.node.get_clock().now().to_msg()
-        goal.pose.pose.position.x = float(x)
-        goal.pose.pose.position.y = float(y)
-        goal.pose.pose.orientation.z = math.sin(yaw / 2.0)
-        goal.pose.pose.orientation.w = math.cos(yaw / 2.0)
-        handle = self._wait_future(self.action.send_goal_async(goal), 8.0)
-        if not handle or not handle.accepted:
-            raise RuntimeError("navigation_goal_rejected")
-        with self.goal_lock:
-            self.goal_handle = handle
-        result_future = handle.get_result_async()
-        started = time.monotonic()
-        try:
-            while not result_future.done():
-                if self.cancel_requested.wait(0.08):
-                    self._wait_future(handle.cancel_goal_async(), 3.0)
-                    return {"status": "cancelled"}
-                if time.monotonic() - started > timeout:
-                    self._wait_future(handle.cancel_goal_async(), 3.0)
-                    raise TimeoutError("navigation_result_timeout")
-            result = result_future.result()
-            status = int(result.status)
-            return {"status": "succeeded" if status == 4 else "failed", "action_status": status}
-        finally:
-            with self.goal_lock:
-                self.goal_handle = None
-            self.cancel_requested.clear()
+        raise RuntimeError("direct_navigation_disabled_use_qwen_manager_adapter")
 
 
 class ProgramController:
     """Start and stop the Qwen realtime resident while leaving the App bridge alive."""
 
-    COMPONENT_NAMES = ("base", "odometry", "navigation", "resident", "skill_host", "voice")
+    COMPONENT_NAMES = ("manager", "resident", "skill_host", "voice")
 
     def __init__(self, project: Path, dry_run: bool = False) -> None:
         self.project = project
@@ -304,9 +248,7 @@ class ProgramController:
         self.dry_run = dry_run
         self.lock = threading.Lock()
         self.process_patterns = {
-            "base": "robot_bringup real_robot_base.launch.py",
-            "odometry": "robot_bringup real_robot_odometry.launch.py",
-            "navigation": "robot_bringup real_robot_nav.launch.py",
+            "manager": "mapping_navigation_manager.py",
             "resident": str(project / "robot_skills/resident_runtime_server.py"),
             "skill_host": str(project / "skill_host.py"),
             "voice": str(project / "realtime_chat.py"),
@@ -344,6 +286,19 @@ class ProgramController:
         except Exception:
             return False
 
+    def _manager_ready(self) -> bool:
+        path = self.project / "runtime/robot_stack/health.json"
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+            manager = value.get("manager") or {}
+            return bool(
+                (value.get("ready") or {}).get("manager")
+                and str(manager.get("state") or "").upper() == "NAVIGATION"
+                and str(manager.get("sensor_gate_state") or "").lower() == "ready"
+            )
+        except Exception:
+            return False
+
     def wait_for_voice_ready(self, timeout: float = 10.0) -> bool:
         """Wait through a short Qwen idle-session reconnect.
 
@@ -363,6 +318,7 @@ class ProgramController:
         if self.dry_run:
             return {"state": "dry_run", "components": {name: True for name in self.COMPONENT_NAMES}}
         components = {name: self._process_running(pattern) for name, pattern in self.process_patterns.items()}
+        components["manager"] = bool(components.get("manager") and self._manager_ready())
         # run.sh intentionally starts the voice process with a relative argv,
         # so an absolute pgrep pattern can report a false negative. The local
         # control socket is the authoritative readiness check used by the App.
@@ -422,15 +378,13 @@ class ProgramController:
             if before["state"] == "partial" and before["components"].get("voice"):
                 self._run(["bash", str(self.project / "resident_service.sh"), "stop"], 120.0)
             try:
-                # A cold boot can legitimately consume roughly 30 s for a
-                # base retry plus two 75 s navigation readiness attempts.
-                # The previous 240 s bridge timeout could kill only the
-                # supervising shell mid-retry and leave orphaned ROS launch
-                # processes behind.  Keep the App request alive long enough
-                # for resident_service's own bounded retries to finish.
+                # Keep the App request alive longer than resident_service's
+                # complete two-attempt Manager state machine.  A shorter bridge
+                # timeout could kill only the supervising shell mid-retry and
+                # leave an otherwise recoverable startup looking incomplete.
                 service = self._run(
                     ["bash", str(self.project / "resident_service.sh"), "start"],
-                    420.0,
+                    780.0,
                 )
             except Exception:
                 # Always use the project's ownership-aware stop path after an
@@ -661,14 +615,7 @@ class Bridge:
         return result
 
     def execute_manual_move_fast(self, command: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute App point-control without routing through the voice planner.
-
-        The App D-pad is already an explicit, validated command surface.  A
-        second trip through the voice-agent scheduler adds latency without
-        adding semantic safety.  Cached task state still prevents motion from
-        racing an active autonomous task.  Stop is handled as an immediate ROS
-        zero-velocity command before coordinator cleanup.
-        """
+        """Route App motion through the same Manager-aware Qwen adapter."""
         direction = str(command.get("direction") or "")
         if direction == "stop":
             self.ros.stop()
@@ -677,16 +624,9 @@ class Bridge:
                     self.qwen_control_request({"op": "cancel_all"}, timeout=2.0)
             threading.Thread(target=cancel_coordinator, name="app-stop-cancel", daemon=True).start()
             return {"status": "stopped", "fast_path": True, "first_publish_ms": 0.0}
-        task = dict(self.task_state or {})
-        if task.get("active") or task.get("planning") or int(task.get("queued") or 0) > 0:
-            raise RuntimeError("task_busy")
-        result = self.ros.move(
-            direction,
-            float(command["duration"]),
-            float(command.get("linear_speed") or 0.12),
-            float(command.get("angular_speed") or 0.42),
-        )
-        result["fast_path"] = True
+        result = self.execute_app_plan(command)
+        result["fast_path"] = False
+        result["transport"] = "qwen_car_real_copy_manager_adapter"
         return result
 
     def execute_app_voice(self, command: Dict[str, Any]) -> Dict[str, Any]:

@@ -4,7 +4,7 @@
   "source_project": "/home/test/qwen_audio_3_realtime_flash_test",
   "scene_snapshot_source": "/home/test/project_0727_fixed_points_home_scenes/voice_composable_agent",
   "resident_skill_snapshot_source": "/home/test/project_0727_fixed_points_home_scenes/skills",
-  "allowed_ros_workspace": "/home/test/car_real_copy_zhenghang",
+  "allowed_ros_workspace": "/home/test/Car_real_copy",
   "source_projects_modified": false,
   "runtime_isolation": {
     "skill_host_socket": "runtime/skill_host.sock",

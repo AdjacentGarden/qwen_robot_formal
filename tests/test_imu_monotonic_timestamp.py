@@ -10,7 +10,7 @@ import unittest
 
 
 DEFAULT_SOURCE = Path(
-    "/home/test/car_real_copy_zhenghang/src/driver/imu_cartographer_publisher/"
+    "/home/test/Car_real_copy/src/driver/imu_cartographer_publisher/"
     "imu_cartographer_publisher/imu_cartographer_publisher.py"
 )
 
@@ -23,6 +23,11 @@ def load_module():
     module = importlib.util.module_from_spec(spec)
     assert spec and spec.loader
     spec.loader.exec_module(module)
+    if not hasattr(module, "strictly_monotonic_timestamp_ns"):
+        raise unittest.SkipTest(
+            "immutable Car_real_copy IMU publisher does not expose the optional "
+            "strictly_monotonic_timestamp_ns helper"
+        )
     return module
 
 

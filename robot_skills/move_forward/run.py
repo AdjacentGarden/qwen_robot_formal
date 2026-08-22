@@ -37,11 +37,7 @@ def _single_function_cli_preflight(skill_name):
     if timeout is not None:
         _os.environ['SINGLE_FUNCTION_TIMEOUT'] = str(timeout)
     if dry_run:
-        action = 'default'
-        for token in kept[1:]:
-            if not token.startswith('-'):
-                action = token
-                break
+        action = skill_name
         print(_json.dumps({
             'ok': True,
             'status': 'dry_run',
@@ -54,6 +50,11 @@ def _single_function_cli_preflight(skill_name):
         raise SystemExit(0)
 
 _single_function_cli_preflight(SKILL_NAME)
+if __name__ == "__main__":
+    import os as _os, sys as _sys
+    from pathlib import Path as _Path
+    _client = _Path(__file__).resolve().parents[1] / "resident_skill_client.py"
+    _os.execv(_sys.executable, [_sys.executable, str(_client), SKILL_NAME, *_sys.argv[1:]])
 
 import argparse, json, os, time
 try:
@@ -65,7 +66,7 @@ parser=argparse.ArgumentParser(description='Move forward skill.')
 parser.add_argument('--speed', type=float, default=0.12)
 parser.add_argument('--angular-speed', type=float, default=0.35)
 parser.add_argument('--duration', type=float, default=1.0)
-parser.add_argument('--topic', default='/cmd_vel')
+parser.add_argument('--topic', default='/cmd_vel_external')
 parser.add_argument('--discovery-timeout', type=float, default=float(os.getenv('CMD_VEL_DISCOVERY_TIMEOUT_SEC', '0.8')))
 parser.add_argument('--allow-no-subscriber', action='store_true')
 args=parser.parse_args()

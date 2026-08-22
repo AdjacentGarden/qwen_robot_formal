@@ -6,7 +6,7 @@ from ros_health_monitor import evaluate_readiness
 def test_readiness_requires_fresh_samples_lifecycle_actions_map_and_tf() -> None:
     now = 100.0
     healthy = {
-        "topics": {"scan_raw": 99.8, "imu": 99.7, "odom": 99.9},
+        "topics": {"scan": 99.8, "imu": 99.7, "odom": 99.9},
         "cmd_vel_subscribers": 1,
         "lifecycle": {
             "map_server": "active",
@@ -16,16 +16,25 @@ def test_readiness_requires_fresh_samples_lifecycle_actions_map_and_tf() -> None
         "actions": {"compute_path_to_pose": True, "navigate_to_pose": True},
         "map_received": True,
         "tf_ready": True,
+        "manager": {
+            "state": "NAVIGATION",
+            "sensor_gate_enabled": True,
+            "sensor_gate_state": "ready",
+            "control_conflict": False,
+        },
     }
     assert evaluate_readiness(healthy, now) == {
         "base": True,
         "odometry": True,
         "navigation": True,
+        "manager": True,
     }
-    stale_scan = {**healthy, "topics": {**healthy["topics"], "scan_raw": 90.0}}
+    stale_scan = {**healthy, "topics": {**healthy["topics"], "scan": 90.0}}
     assert evaluate_readiness(stale_scan, now)["base"] is False
     no_tf = {**healthy, "tf_ready": False}
     assert evaluate_readiness(no_tf, now)["navigation"] is False
+    safe_stop = {**healthy, "manager": {**healthy["manager"], "state": "SAFE_STOP"}}
+    assert evaluate_readiness(safe_stop, now)["manager"] is False
 
 
 def test_monitor_source_has_no_hardware_command_interfaces() -> None:

@@ -8,7 +8,7 @@
   },
   "paths": {
     "project": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test",
-    "car_workspace": "/home/test/car_real_copy_zhenghang",
+    "car_workspace": "/home/test/Car_real_copy",
     "executor_project": "/home/test/qwen_robot_project",
     "skill_specs": "/home/test/self_program/skill_function_specs",
     "reminder_project": "/home/test/new_project",
@@ -17,9 +17,10 @@
     "fixed_audio": "/home/test/refine_0508/llm/doubao_fixed_audio"
   },
   "git_dependencies": {
-    "car_real_copy_zhenghang": {
-      "remote": "git@github.com:AdjacentGarden/car_real_copy_zhenghang.git",
-      "commit": "f6f4edd6270f62eeda843885a0236aca12a0d7c5f"
+    "Car_real_copy_runtime": {
+      "path": "/home/test/Car_real_copy",
+      "base_commit": "52348412d7dfa7ade879fbea67a76c0c1367d19c",
+      "note": "外部只读运行依赖；机器人工作树含既有未提交修改，本仓库不复制、不构建也不修改它。关键接口以 checksums 记录。"
     },
     "qwen_robot_project_base": {
       "remote": "git@github.com:AdjacentGarden/new_architect_robot_0706.git",
@@ -38,6 +39,10 @@
     }
   },
   "checksums": {
+    "/home/test/Car_real_copy/ai_control_sim.py": "4f82e720d83583d92fc84f6d6c0d9f71e233e5078b8763ef8fc8d4bb2fe49470",
+    "/home/test/Car_real_copy/src/motion_controller/msg/NavGoal.msg": "12b71f9a74ca01ff242cb34148de56324018b608098d09909e81cc0c62eedcb1",
+    "/home/test/Car_real_copy/src/motion_controller/src/motion_controller_node.cpp": "db20c32a81113cc444a965a27157faa6504811a87b67af5da235b1e8301c32ae",
+    "/home/test/Car_real_copy/src/robot_bringup/tools/mapping_navigation_manager.py": "cabb1b847c57ba616f54ab9a04ee4344519ad0fbed84ffba92b48fdd5c5e6586",
     "reproduce/home_test_root/dian.py": "719a91293f9c32c745356e10ed4b7b3830dc5d66d544ccdff03f123f34a9bb01",
     "reproduce/home_test_root/start_projection_ppt.sh": "94b9b38cc9d6591a26b940104df6c787ab64d853eb0848a6efe14209ed5502c2",
     "reproduce/home_test_root/stop_projection_ppt.sh": "2b81ce1c179a725f5fdff731a4a8b610602c7a2964cffe94e01f6e357a015b73",

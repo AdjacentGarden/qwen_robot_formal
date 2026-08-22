@@ -11,8 +11,8 @@ mkdir -p "$STATE"
 
 set +u
 source /opt/ros/humble/setup.bash
-if [[ -f /home/test/car_real_copy_zhenghang/install/setup.bash ]]; then
-  source /home/test/car_real_copy_zhenghang/install/setup.bash
+if [[ -f /home/test/Car_real_copy/install/setup.bash ]]; then
+  source /home/test/Car_real_copy/install/setup.bash
 fi
 if [[ -f /home/test/new_project_optimized_v11_navsafe/startup/ros_transport_env.sh ]]; then
   # Standalone Car_real_copy terminals use the ROS system default unless the

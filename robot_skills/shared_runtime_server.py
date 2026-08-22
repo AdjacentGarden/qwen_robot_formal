@@ -23,6 +23,18 @@ from pathlib import Path
 from typing import Any
 
 import preload_runtime as preload
+from car_real_contract import (
+    EXTERNAL_CMD_VEL_TOPIC,
+    HEAD_ANGLE_TOPIC,
+    MANAGER_MOTION_STATE,
+    NAV_CANCEL_SERVICE,
+    NAV_GOAL_TOPIC,
+    SENSOR_GATE_SERVICE,
+    classify_nav_status,
+    head_status_matches,
+    manager_allows_motion,
+    map_pose_to_gateway,
+)
 
 
 ROOT = Path(__file__).resolve().parent
@@ -75,6 +87,7 @@ class SharedRuntime:
         import numpy as np
         import rclpy
         from geometry_msgs.msg import PoseStamped, Twist
+        from motion_controller.msg import NavGoal
         from nav_msgs.msg import OccupancyGrid, Odometry
         from nav2_msgs.action import ComputePathToPose, NavigateToPose
         from nav2_msgs.srv import ClearEntireCostmap
@@ -89,7 +102,8 @@ class SharedRuntime:
         )
         from rclpy.time import Time
         from sensor_msgs.msg import Imu, LaserScan
-        from std_msgs.msg import Float32, String
+        from std_msgs.msg import Bool, Float32, String, UInt16, UInt32
+        from std_srvs.srv import SetBool, Trigger
         from tf2_ros import Buffer, TransformListener
 
         self.cv2 = cv2
@@ -100,6 +114,10 @@ class SharedRuntime:
         self.ComputePathToPose = ComputePathToPose
         self.NavigateToPose = NavigateToPose
         self.ClearEntireCostmap = ClearEntireCostmap
+        self.NavGoal = NavGoal
+        self.UInt16 = UInt16
+        self.SetBool = SetBool
+        self.Trigger = Trigger
         self.RosTime = Time
         self.stages: list[dict[str, Any]] = []
         self.model_lock = threading.Lock()
@@ -114,6 +132,7 @@ class SharedRuntime:
         self.head_feedback_condition = threading.Condition()
         self.latest_head_roll: tuple[float, float] | None = None
         self.latest_head_roll_rate: tuple[float, float] | None = None
+        self.head_level_angle = float(os.getenv("HEAD_LEVEL_ANGLE", "185"))
         self.navigation_health_condition = threading.Condition()
         self.navigation_inputs: dict[str, dict[str, float] | None] = {
             "scan": None,
@@ -124,6 +143,21 @@ class SharedRuntime:
         self.navigation_stamp_advance_sequences = {"scan": 0, "imu": 0, "odom": 0}
         self.scan_sequence = 0
         self.latest_guard_status: dict[str, Any] | None = None
+        self.car_feedback_condition = threading.Condition()
+        self.car_feedback: dict[str, Any] = {
+            "manager_state": "not_running",
+            "manager_event": "",
+            "manager_attempt": 0,
+            "controller_status": "unknown",
+            "controller_warning": "",
+            "control_conflict": False,
+            "nav_status": "unknown",
+            "sensor_gate_enabled": None,
+            "sensor_gate_state": "unknown",
+            "head_status": "unknown",
+            "head_aligned": False,
+        }
+        self.car_sequences = {key: 0 for key in self.car_feedback}
 
         self.retina = self._timed("retinaface", self._build_retina)
         self.face_common, self.facenet = self._timed("facenet", self._build_facenet)
@@ -152,7 +186,11 @@ class SharedRuntime:
             ClearEntireCostmap,
             "/global_costmap/clear_entirely_global_costmap",
         )
-        self.cmd_vel_pub = self.ros_node.create_publisher(Twist, "/cmd_vel", 10)
+        self.cmd_vel_pub = self.ros_node.create_publisher(Twist, EXTERNAL_CMD_VEL_TOPIC, 10)
+        self.nav_gateway_pub = self.ros_node.create_publisher(NavGoal, NAV_GOAL_TOPIC, 10)
+        self.head_angle_pub = self.ros_node.create_publisher(UInt16, HEAD_ANGLE_TOPIC, 10)
+        self.cancel_nav_client = self.ros_node.create_client(Trigger, NAV_CANCEL_SERVICE)
+        self.sensor_gate_client = self.ros_node.create_client(SetBool, SENSOR_GATE_SERVICE)
         map_qos = QoSProfile(
             history=HistoryPolicy.KEEP_LAST,
             depth=1,
@@ -165,11 +203,15 @@ class SharedRuntime:
             self._on_map,
             map_qos,
         )
+        # Car_real_copy reports current angle as an offset from its calibrated
+        # horizontal pose. Convert it to the command-angle convention used by
+        # HeadPoseSupervisor; task completion itself remains authoritative on
+        # the latched /head/status + /head/aligned pair below.
         self.head_roll_subscription = self.ros_node.create_subscription(
-            Float32, "/head/roll_deg", self._on_head_roll, 10
+            Float32, "/head/current_angle_deg", self._on_head_roll, 10
         )
         self.head_roll_rate_subscription = self.ros_node.create_subscription(
-            Float32, "/head/roll_rate_dps", self._on_head_roll_rate, 10
+            Float32, "/head/angular_rate_dps", self._on_head_roll_rate, 10
         )
         self.scan_health_subscription = self.ros_node.create_subscription(
             LaserScan, "/scan", self._on_navigation_scan, qos_profile_sensor_data
@@ -183,6 +225,36 @@ class SharedRuntime:
         self.guard_status_subscription = self.ros_node.create_subscription(
             String, "/head_lidar_guard/status", self._on_guard_status, 10
         )
+        feedback_qos = QoSProfile(
+            history=HistoryPolicy.KEEP_LAST,
+            depth=10,
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+        )
+        self.car_subscriptions = []
+        for message_type, topic, key in (
+            (String, "/mapping_manager/state", "manager_state"),
+            (String, "/mapping_manager/event", "manager_event"),
+            (UInt32, "/mapping_manager/attempt", "manager_attempt"),
+            (String, "/motion_controller/status", "controller_status"),
+            (String, "/motion_controller/warning", "controller_warning"),
+            (Bool, "/motion_controller/control_conflict", "control_conflict"),
+            (String, "/motion_controller/nav_goal_status", "nav_status"),
+            (Bool, "/motion_controller/lidar_enabled", "sensor_gate_enabled"),
+            (String, "/motion_controller/sensor_gate_state", "sensor_gate_state"),
+            (String, "/head/status", "head_status"),
+            (Bool, "/head/aligned", "head_aligned"),
+        ):
+            self.car_subscriptions.append(
+                self.ros_node.create_subscription(
+                    message_type,
+                    topic,
+                    lambda message, feedback_key=key: self._on_car_feedback(
+                        feedback_key, message
+                    ),
+                    feedback_qos,
+                )
+            )
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(
             self.tf_buffer,
@@ -218,7 +290,8 @@ class SharedRuntime:
 
     def _on_head_roll(self, message) -> None:
         with self.head_feedback_condition:
-            self.latest_head_roll = (float(message.data), time.monotonic())
+            command_angle = self.head_level_angle + float(message.data)
+            self.latest_head_roll = (command_angle, time.monotonic())
             self.head_feedback_condition.notify_all()
 
     def _on_head_roll_rate(self, message) -> None:
@@ -312,6 +385,81 @@ class SharedRuntime:
             }
             self.navigation_health_condition.notify_all()
 
+    def _on_car_feedback(self, key: str, message) -> None:
+        value = getattr(message, "data", message)
+        if key in {"manager_state"}:
+            value = str(value or "unknown").strip().upper()
+        elif key in {
+            "manager_event", "controller_status", "controller_warning",
+            "nav_status", "sensor_gate_state", "head_status",
+        }:
+            value = str(value or "").strip()
+        elif key in {"control_conflict", "sensor_gate_enabled", "head_aligned"}:
+            value = bool(value)
+        elif key == "manager_attempt":
+            value = int(value)
+        with self.car_feedback_condition:
+            self.car_feedback[key] = value
+            self.car_sequences[key] = int(self.car_sequences.get(key, 0)) + 1
+            self.car_feedback_condition.notify_all()
+        if key == "manager_state" and value == "SAFE_STOP":
+            # Interrupt every active Qwen base request.  Zero commands are still
+            # allowed through the adapter; no automatic restart clears this.
+            self.move_cancel.set()
+            self.navigation_cancel.set()
+
+    def car_feedback_snapshot(self) -> dict[str, Any]:
+        with self.car_feedback_condition:
+            return {
+                **self.car_feedback,
+                "sequences": dict(self.car_sequences),
+            }
+
+    def ensure_car_motion_authorized(self) -> dict[str, Any]:
+        snapshot = self.car_feedback_snapshot()
+        allowed, reason = manager_allows_motion(
+            str(snapshot.get("manager_state")),
+            str(snapshot.get("sensor_gate_state")),
+        )
+        if bool(snapshot.get("control_conflict")):
+            allowed, reason = False, "motion_controller_conflict"
+        if not allowed:
+            raise RuntimeError(reason or "car_motion_not_authorized")
+        return snapshot
+
+    def wait_for_car_feedback(
+        self,
+        key: str,
+        *,
+        after_sequence: int,
+        predicate,
+        timeout_sec: float,
+        cancel_event: threading.Event | None = None,
+    ) -> dict[str, Any]:
+        deadline = time.monotonic() + max(0.05, float(timeout_sec))
+        with self.car_feedback_condition:
+            while True:
+                value = self.car_feedback.get(key)
+                sequence = int(self.car_sequences.get(key, 0))
+                if sequence > int(after_sequence) and predicate(value):
+                    return {"ok": True, "key": key, "value": value, "sequence": sequence}
+                if cancel_event is not None and cancel_event.is_set():
+                    return {
+                        "ok": False,
+                        "error": f"{key}_wait_cancelled",
+                        "value": value,
+                        "sequence": sequence,
+                    }
+                now = time.monotonic()
+                if now >= deadline:
+                    return {
+                        "ok": False,
+                        "error": f"{key}_feedback_timeout",
+                        "value": value,
+                        "sequence": sequence,
+                    }
+                self.car_feedback_condition.wait(timeout=min(0.05, deadline - now))
+
     def current_scan_sequence(self) -> int:
         with self.navigation_health_condition:
             return int(self.scan_sequence)
@@ -346,19 +494,12 @@ class SharedRuntime:
                     }
                 sample = self.navigation_inputs.get("scan")
                 age = None if sample is None else max(0.0, now - float(sample["received_monotonic"]))
-                guard = dict(self.latest_guard_status or {})
-                guard_age = None if not guard else max(
-                    0.0,
-                    now - float(guard.get("received_monotonic", now)),
-                )
+                car = self.car_feedback_snapshot()
                 sequence_ok = self.scan_sequence > int(after_sequence)
                 sample_ok = bool(sample and sample.get("valid", True) and sample.get("stamp_advanced"))
                 guard_ok = (
-                    bool(guard.get("live"))
-                    and bool(guard.get("resume_confirmed"))
-                    and bool(guard.get("stationary"))
-                    and guard_age is not None
-                    and guard_age <= 2.0
+                    car.get("sensor_gate_enabled") is True
+                    and str(car.get("sensor_gate_state", "")).lower() == "ready"
                 )
                 if (
                     sequence_ok
@@ -372,8 +513,10 @@ class SharedRuntime:
                         "scan_sequence": int(self.scan_sequence),
                         "scan_age_sec": age,
                         "scan_stamp_sec": float(sample.get("stamp_sec", 0.0)),
-                        "guard_age_sec": guard_age,
-                        "guard": guard,
+                        "sensor_gate": {
+                            "enabled": car.get("sensor_gate_enabled"),
+                            "state": car.get("sensor_gate_state"),
+                        },
                     }
                 if now >= deadline:
                     return {
@@ -384,8 +527,10 @@ class SharedRuntime:
                         "scan_age_sec": age,
                         "scan_valid": bool(sample and sample.get("valid", True)),
                         "scan_stamp_advanced": bool(sample and sample.get("stamp_advanced")),
-                        "guard_age_sec": guard_age,
-                        "guard": guard,
+                        "sensor_gate": {
+                            "enabled": car.get("sensor_gate_enabled"),
+                            "state": car.get("sensor_gate_state"),
+                        },
                     }
                 self.navigation_health_condition.wait(timeout=min(0.05, deadline - now))
 
@@ -397,7 +542,7 @@ class SharedRuntime:
                 name: None if sample is None else dict(sample)
                 for name, sample in self.navigation_inputs.items()
             }
-            guard = dict(self.latest_guard_status or {})
+        car = self.car_feedback_snapshot()
         ages = {
             name: None if sample is None else max(0.0, now - float(sample["received_monotonic"]))
             for name, sample in inputs.items()
@@ -419,17 +564,19 @@ class SharedRuntime:
             name for name, sample in inputs.items()
             if sample is not None and not bool(sample.get("valid", True))
         ]
-        guard_age = None
-        if guard:
-            guard_age = max(0.0, now - float(guard.get("received_monotonic", now)))
-        guard_ok = bool(guard.get("live")) and bool(guard.get("resume_confirmed")) and guard_age is not None and guard_age <= 2.0
-        stationary_ok = bool(guard.get("stationary"))
+        guard_ok = (
+            car.get("sensor_gate_enabled") is True
+            and str(car.get("sensor_gate_state", "")).lower() == "ready"
+        )
+        stationary_ok = str(car.get("controller_status", "")).lower() in {
+            "idle", "switching_source", "sensor_gate_not_ready"
+        }
         pose = self.lookup_pose("map", "base_footprint")
         tf_ok = bool(pose.get("available")) and float(pose.get("age_sec", limit + 1.0)) <= limit
         errors = [f"{name}_missing_or_stale" for name in stale]
         errors.extend(f"{name}_invalid" for name in invalid)
         if not guard_ok:
-            errors.append("lidar_guard_not_resumed")
+            errors.append("sensor_gate_not_ready")
         if not stationary_ok:
             errors.append("base_not_stationary")
         if not tf_ok:
@@ -440,8 +587,11 @@ class SharedRuntime:
             "input_age_sec": ages,
             "input_stamp_age_sec": stamp_ages,
             "input_samples": inputs,
-            "guard": guard,
-            "guard_age_sec": guard_age,
+            "sensor_gate": {
+                "enabled": car.get("sensor_gate_enabled"),
+                "state": car.get("sensor_gate_state"),
+            },
+            "manager_state": car.get("manager_state"),
             "base_stationary": stationary_ok,
             "pose": pose,
             "navigate_to_pose_ready": bool(self.nav_client.server_is_ready()),
@@ -614,6 +764,125 @@ class SharedRuntime:
                     return {**last_result, "ok": False, "error": "head_target_timeout"}
                 self.head_feedback_condition.wait(timeout=min(0.05, deadline - now))
 
+    def set_sensor_gate_enabled(self, enabled: bool, timeout_sec: float = 16.0) -> dict[str, Any]:
+        """Use motion_controller's acknowledged gate; never stop the lidar node."""
+
+        timeout_sec = max(0.2, float(timeout_sec))
+        snapshot = self.car_feedback_snapshot()
+        before = int((snapshot.get("sequences") or {}).get("sensor_gate_state", 0))
+        if not self.sensor_gate_client.wait_for_service(timeout_sec=min(2.0, timeout_sec)):
+            return {"ok": False, "error": "sensor_gate_service_unavailable"}
+        request = self.SetBool.Request()
+        request.data = bool(enabled)
+        future = self.sensor_gate_client.call_async(request)
+        state = self._wait_future(future, min(3.0, timeout_sec))
+        if state != "done":
+            return {"ok": False, "error": f"sensor_gate_service_{state}"}
+        response = future.result()
+        if response is None or not response.success:
+            return {
+                "ok": False,
+                "error": "sensor_gate_rejected",
+                "message": str(response.message if response else "empty_response"),
+            }
+        wanted = "ready" if enabled else "disabled"
+        current = str(self.car_feedback_snapshot().get("sensor_gate_state", "")).lower()
+        if current == wanted:
+            return {
+                "ok": True,
+                "enabled": bool(enabled),
+                "state": current,
+                "message": str(response.message),
+            }
+        feedback = self.wait_for_car_feedback(
+            "sensor_gate_state",
+            after_sequence=before,
+            predicate=lambda value: str(value).strip().lower() == wanted,
+            timeout_sec=max(0.1, timeout_sec - 3.0),
+        )
+        return {
+            "ok": bool(feedback.get("ok")),
+            "enabled": bool(enabled),
+            "state": feedback.get("value"),
+            "message": str(response.message),
+            "feedback": feedback,
+            "error": None if feedback.get("ok") else feedback.get("error"),
+        }
+
+    def command_head(
+        self,
+        angle: int,
+        *,
+        repeat: int = 5,
+        interval: float = 0.05,
+        discovery_timeout: float = 0.8,
+        feedback_timeout: float = 12.0,
+    ) -> dict[str, Any]:
+        """Publish one Car_real_copy head command and require fresh task feedback."""
+
+        angle = max(0, min(65535, int(angle)))
+        deadline = time.monotonic() + max(0.0, float(discovery_timeout))
+        subscribers = int(self.head_angle_pub.get_subscription_count())
+        while subscribers <= 0 and time.monotonic() < deadline:
+            time.sleep(0.03)
+            subscribers = int(self.head_angle_pub.get_subscription_count())
+        if subscribers <= 0:
+            return {"ok": False, "error": "head_command_subscribers_0", "angle": angle}
+        before = self.car_feedback_snapshot()
+        sequences = before.get("sequences") or {}
+        status_sequence = int(sequences.get("head_status", 0))
+        aligned_sequence = int(sequences.get("head_aligned", 0))
+        feedback_deadline = time.monotonic() + max(0.05, float(feedback_timeout))
+        message = self.UInt16()
+        message.data = angle
+        for index in range(max(1, int(repeat))):
+            self.head_angle_pub.publish(message)
+            if index + 1 < max(1, int(repeat)):
+                time.sleep(max(0.0, float(interval)))
+        feedback = self.wait_for_car_feedback(
+            "head_status",
+            after_sequence=status_sequence,
+            predicate=lambda value: (
+                head_status_matches(str(value), angle)
+                or str(value).lower().startswith("timeout;")
+            ),
+            timeout_sec=feedback_timeout,
+        )
+        if bool(feedback.get("ok")) and head_status_matches(str(feedback.get("value")), angle):
+            aligned_feedback = self.wait_for_car_feedback(
+                "head_aligned",
+                after_sequence=aligned_sequence,
+                predicate=lambda value: bool(value),
+                timeout_sec=max(0.05, feedback_deadline - time.monotonic()),
+            )
+        else:
+            aligned_feedback = {
+                "ok": False,
+                "error": "head_status_not_succeeded",
+                "value": self.car_feedback_snapshot().get("head_aligned"),
+                "sequence": int(
+                    (self.car_feedback_snapshot().get("sequences") or {}).get("head_aligned", 0)
+                ),
+            }
+        snapshot = self.car_feedback_snapshot()
+        ok = (
+            bool(feedback.get("ok"))
+            and head_status_matches(str(feedback.get("value")), angle)
+            and bool(aligned_feedback.get("ok"))
+            and bool(aligned_feedback.get("value"))
+        )
+        return {
+            "ok": ok,
+            "angle": angle,
+            "topic": HEAD_ANGLE_TOPIC,
+            "subscribers": subscribers,
+            "status": feedback.get("value"),
+            "aligned": bool(snapshot.get("head_aligned")),
+            "feedback": feedback,
+            "aligned_feedback": aligned_feedback,
+            "error": None if ok else "head_target_unconfirmed",
+        }
+
     def occupancy_grid_snapshot(self, max_age_sec: float = 8.0) -> dict[str, Any]:
         with self.map_lock:
             snapshot = self.latest_map
@@ -677,6 +946,8 @@ class SharedRuntime:
         return self.np.frombuffer(payload, dtype=self.np.uint8).reshape((height, width, channels))
 
     def _publish_twist(self, linear_x: float, angular_z: float) -> None:
+        if abs(float(linear_x)) > 1e-9 or abs(float(angular_z)) > 1e-9:
+            self.ensure_car_motion_authorized()
         message = self.Twist()
         message.linear.x = float(linear_x)
         message.angular.z = float(angular_z)
@@ -690,7 +961,11 @@ class SharedRuntime:
     def chassis_stop(self) -> dict[str, Any]:
         self.move_cancel.set()
         self._publish_stop()
-        return {"status": "stopped", "subscribers": int(self.cmd_vel_pub.get_subscription_count())}
+        return {
+            "status": "stopped",
+            "topic": EXTERNAL_CMD_VEL_TOPIC,
+            "subscribers": int(self.cmd_vel_pub.get_subscription_count()),
+        }
 
     def chassis_move(self, request: dict[str, Any]) -> dict[str, Any]:
         if not self.move_lock.acquire(blocking=False):
@@ -698,13 +973,14 @@ class SharedRuntime:
         requested_linear = float(request.get("linear_x", 0.0))
         requested_angular = float(request.get("angular_z", 0.0))
         requested_duration = float(request.get("duration", 0.5))
-        linear = max(-0.25, min(0.25, requested_linear))
-        angular = max(-0.60, min(0.60, requested_angular))
+        linear = max(-0.30, min(0.30, requested_linear))
+        angular = max(-0.40, min(0.40, requested_angular))
         duration = max(0.05, min(5.0, requested_duration))
         allow_no_subscriber = bool(request.get("allow_no_subscriber", False))
         self.move_cancel.clear()
         started = time.monotonic()
         try:
+            authorization = self.ensure_car_motion_authorized()
             discovery_deadline = time.monotonic() + min(3.0, max(0.0, float(request.get("discovery_timeout", 1.0))))
             subscribers = int(self.cmd_vel_pub.get_subscription_count())
             while subscribers <= 0 and time.monotonic() < discovery_deadline:
@@ -724,7 +1000,9 @@ class SharedRuntime:
                 "duration_requested": duration,
                 "duration_actual": round(time.monotonic() - started, 3),
                 "subscribers": max(subscribers, int(self.cmd_vel_pub.get_subscription_count())),
-                "limits": {"max_abs_linear": 0.25, "max_abs_angular": 0.60, "max_duration": 5.0},
+                "topic": EXTERNAL_CMD_VEL_TOPIC,
+                "manager_state": authorization.get("manager_state"),
+                "limits": {"max_abs_linear": 0.30, "max_abs_angular": 0.40, "max_duration": 5.0},
             }
         finally:
             self._publish_stop()
@@ -781,7 +1059,27 @@ class SharedRuntime:
 
     def navigation_cancel_request(self) -> dict[str, Any]:
         self.navigation_cancel.set()
-        return {"status": "cancel_requested", "goal_active": self.active_goal_handle is not None}
+        called = False
+        success = False
+        message = "cancel_service_unavailable"
+        if self.cancel_nav_client.wait_for_service(timeout_sec=0.6):
+            called = True
+            future = self.cancel_nav_client.call_async(self.Trigger.Request())
+            state = self._wait_future(future, 2.5)
+            if state == "done":
+                response = future.result()
+                success = bool(response and response.success)
+                message = str(response.message if response else "empty_cancel_response")
+            else:
+                message = f"cancel_service_{state}"
+        self._publish_stop(repetitions=3)
+        return {
+            "status": "cancel_requested" if success else "cancel_request_failed",
+            "goal_active": self.active_goal_handle is not None,
+            "service_called": called,
+            "service_success": success,
+            "message": message,
+        }
 
     def preflight_navigation_path(
         self,
@@ -1216,8 +1514,6 @@ class SharedRuntime:
             }
 
     def navigation_goal(self, request: dict[str, Any]) -> dict[str, Any]:
-        from action_msgs.msg import GoalStatus
-
         if not self.navigation_lock.acquire(blocking=False):
             raise RuntimeError("navigation_goal_busy")
         goal = self._resolve_navigation_goal(request)
@@ -1227,16 +1523,9 @@ class SharedRuntime:
         self.navigation_cancel.clear()
         self.active_goal_handle = None
         started = time.monotonic()
-        feedback = {"count": 0, "last_distance_remaining": None, "last_ts": None}
-
-        def on_feedback(message):
-            feedback["count"] += 1
-            feedback["last_ts"] = time.time()
-            value = getattr(message.feedback, "distance_remaining", None)
-            if value is not None:
-                feedback["last_distance_remaining"] = float(value)
 
         try:
+            authorization = self.ensure_car_motion_authorized()
             preflight = self.wait_for_navigation_health(
                 timeout_sec=server_wait,
                 stable_sec=float(request.get("health_stable_sec", 0.80)),
@@ -1266,58 +1555,121 @@ class SharedRuntime:
                     "preflight": preflight,
                     "path_preflight": path_preflight,
                 }
-            deadline = time.monotonic() + server_wait
-            while not self.nav_client.server_is_ready() and time.monotonic() < deadline:
+            discovery_deadline = time.monotonic() + server_wait
+            subscribers = int(self.nav_gateway_pub.get_subscription_count())
+            while subscribers <= 0 and time.monotonic() < discovery_deadline:
                 if self.navigation_cancel.is_set():
                     return {"status": "cancelled_before_send", "goal": goal}
                 time.sleep(0.05)
-            if not self.nav_client.server_is_ready():
-                raise RuntimeError("navigate_to_pose_server_unavailable")
+                subscribers = int(self.nav_gateway_pub.get_subscription_count())
+            if subscribers <= 0:
+                raise RuntimeError("motion_controller_nav_gateway_unavailable")
 
-            message = self.NavigateToPose.Goal()
-            message.pose.header.frame_id = goal["frame_id"]
-            message.pose.header.stamp = self.ros_node.get_clock().now().to_msg()
-            message.pose.pose.position.x = goal["x"]
-            message.pose.pose.position.y = goal["y"]
-            half = goal["yaw"] / 2.0
-            import math
-            message.pose.pose.orientation.z = math.sin(half)
-            message.pose.pose.orientation.w = math.cos(half)
+            gateway = map_pose_to_gateway(goal["x"], goal["y"], goal["yaw"])
+            # Manager may enter SAFE_STOP while the read-only path preflight is
+            # running. Re-authorize immediately before the only goal publish so
+            # no stale startup decision can cross that state transition.
+            authorization = self.ensure_car_motion_authorized()
+            message = self.NavGoal()
+            message.x = gateway["x"]
+            message.y = gateway["y"]
+            message.yaw = gateway["yaw_degrees"]
+            message.align_to_wall = bool(request.get("align_to_wall", False))
+            before = self.car_feedback_snapshot()
+            nav_sequence = int((before.get("sequences") or {}).get("nav_status", 0))
+            self.active_goal_handle = "motion_controller_gateway"
+            self.nav_gateway_pub.publish(message)
 
-            send_future = self.nav_client.send_goal_async(message, feedback_callback=on_feedback)
-            response_state = self._wait_future(send_future, goal_response_timeout, self.navigation_cancel)
-            if response_state != "done":
-                raise RuntimeError("goal_response_cancelled" if response_state == "cancelled" else "goal_response_timeout")
-            goal_handle = send_future.result()
-            if goal_handle is None or not goal_handle.accepted:
-                raise RuntimeError("navigation_goal_rejected")
-            self.active_goal_handle = goal_handle
-            result_future = goal_handle.get_result_async()
-            remaining = max(0.1, timeout - (time.monotonic() - started))
-            result_state = self._wait_future(result_future, remaining, self.navigation_cancel)
-            if result_state != "done":
-                cancel_future = goal_handle.cancel_goal_async()
-                self._wait_future(cancel_future, 3.0)
+            accepted = self.wait_for_car_feedback(
+                "nav_status",
+                after_sequence=nav_sequence,
+                predicate=lambda value: classify_nav_status(str(value)).get("phase")
+                in {"active", "success", "failure"},
+                timeout_sec=goal_response_timeout,
+                cancel_event=self.navigation_cancel,
+            )
+            if not accepted.get("ok"):
+                if self.navigation_cancel.is_set():
+                    self.navigation_cancel_request()
+                    return {
+                        "status": "cancelled_before_accept",
+                        "goal": goal,
+                        "gateway_goal": gateway,
+                        "gateway_feedback": accepted,
+                    }
                 return {
-                    "status": "cancelled" if result_state == "cancelled" else "timeout_cancelled",
+                    "status": "goal_response_timeout",
                     "goal": goal,
+                    "gateway_goal": gateway,
+                    "gateway_feedback": accepted,
                     "elapsed_sec": round(time.monotonic() - started, 3),
-                    "feedback": feedback,
                 }
-            wrapped = result_future.result()
-            status_code = int(wrapped.status)
-            names = {
-                GoalStatus.STATUS_SUCCEEDED: "succeeded",
-                GoalStatus.STATUS_ABORTED: "aborted",
-                GoalStatus.STATUS_CANCELED: "canceled",
-                GoalStatus.STATUS_CANCELING: "canceling",
-            }
+
+            latest = classify_nav_status(str(accepted.get("value")))
+            if latest["terminal"]:
+                return {
+                    "status": "succeeded" if latest["ok"] else latest["status"],
+                    "goal": goal,
+                    "gateway_goal": gateway,
+                    "gateway_feedback": accepted,
+                    "manager_state": authorization.get("manager_state"),
+                    "elapsed_sec": round(time.monotonic() - started, 3),
+                }
+
+            deadline = started + timeout
+            observed = [str(accepted.get("value"))]
+            last_sequence = int(accepted.get("sequence", nav_sequence))
+            while time.monotonic() < deadline:
+                if self.navigation_cancel.is_set():
+                    cancel = self.navigation_cancel_request()
+                    return {
+                        "status": "cancelled",
+                        "goal": goal,
+                        "gateway_goal": gateway,
+                        "gateway_status_history": observed[-20:],
+                        "cancel": cancel,
+                        "elapsed_sec": round(time.monotonic() - started, 3),
+                    }
+                car = self.car_feedback_snapshot()
+                if str(car.get("manager_state", "")).upper() == "SAFE_STOP":
+                    return {
+                        "status": "manager_safe_stop",
+                        "goal": goal,
+                        "gateway_goal": gateway,
+                        "manager_event": car.get("manager_event"),
+                        "gateway_status_history": observed[-20:],
+                        "elapsed_sec": round(time.monotonic() - started, 3),
+                    }
+                update = self.wait_for_car_feedback(
+                    "nav_status",
+                    after_sequence=last_sequence,
+                    predicate=lambda _value: True,
+                    timeout_sec=min(0.5, max(0.05, deadline - time.monotonic())),
+                    cancel_event=self.navigation_cancel,
+                )
+                if not update.get("ok"):
+                    continue
+                last_sequence = int(update["sequence"])
+                observed.append(str(update["value"]))
+                latest = classify_nav_status(str(update["value"]))
+                if latest["terminal"]:
+                    return {
+                        "status": "succeeded" if latest["ok"] else latest["status"],
+                        "goal": goal,
+                        "gateway_goal": gateway,
+                        "gateway_status_history": observed[-20:],
+                        "manager_state": car.get("manager_state"),
+                        "elapsed_sec": round(time.monotonic() - started, 3),
+                    }
+
+            cancel = self.navigation_cancel_request()
             return {
-                "status": names.get(status_code, f"status_{status_code}"),
-                "status_code": status_code,
+                "status": "timeout_cancelled",
                 "goal": goal,
+                "gateway_goal": gateway,
+                "gateway_status_history": observed[-20:],
+                "cancel": cancel,
                 "elapsed_sec": round(time.monotonic() - started, 3),
-                "feedback": feedback,
             }
         finally:
             self.active_goal_handle = None
@@ -1334,9 +1686,24 @@ class SharedRuntime:
         op = str(request.get("op", "")).strip()
         started = time.perf_counter()
         if op == "ping":
-            result = {"pid": os.getpid(), "models": ["retinaface", "facenet", "yolo", "reid", "mediapipe_pose"], "ros_node": self.ros_node.get_name()}
+            result = {
+                "pid": os.getpid(),
+                "models": ["retinaface", "facenet", "yolo", "reid", "mediapipe_pose"],
+                "ros_node": self.ros_node.get_name(),
+                "motion_backend": "Car_real_copy/mapping_navigation_manager",
+                "car_feedback": self.car_feedback_snapshot(),
+            }
         elif op == "ros_ready":
-            result = {"navigate_to_pose_ready": bool(self.nav_client.server_is_ready())}
+            car = self.car_feedback_snapshot()
+            allowed, reason = manager_allows_motion(
+                str(car.get("manager_state")), str(car.get("sensor_gate_state"))
+            )
+            result = {
+                "navigate_to_pose_ready": bool(self.nav_client.server_is_ready()),
+                "manager_motion_ready": bool(allowed),
+                "manager_block_reason": reason,
+                "car_feedback": car,
+            }
         elif op == "chassis_move":
             result = self.chassis_move(request)
         elif op == "chassis_stop":
@@ -1468,7 +1835,9 @@ def write_status(state: str, runtime: SharedRuntime | None, error: str | None = 
             "implements_limited_motion": True,
             "implements_navigation_goal": True,
             "controls_appliances": False,
-            "motion_limits": {"max_abs_linear": 0.25, "max_abs_angular": 0.60, "max_duration_sec": 5.0},
+            "motion_backend": "Car_real_copy/mapping_navigation_manager",
+            "motion_topic": EXTERNAL_CMD_VEL_TOPIC,
+            "motion_limits": {"max_abs_linear": 0.30, "max_abs_angular": 0.40, "max_duration_sec": 5.0},
         },
     }
     temp = STATUS_FILE.with_suffix(".tmp")

@@ -25,7 +25,7 @@ load_environment() {
   set +a
   set +u
   source /opt/ros/humble/setup.bash
-  source /home/test/car_real_copy_zhenghang/install/setup.bash
+  source /home/test/Car_real_copy/install/setup.bash
   set -u
   export ROBOT_PROJECT="$PROJECT"
 }

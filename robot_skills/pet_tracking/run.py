@@ -68,7 +68,7 @@ os.environ.setdefault("PET_DETECTOR_WEIGHT", str(runtime_config.PET_DETECTOR_WEI
 os.environ.setdefault("PET_TRACKING_RESULT_PATH", str(runtime_config.PET_TRACKING_RESULT_PATH))
 os.environ.setdefault("PET_TRACKING_OUTPUT_VIDEO", str(runtime_config.PET_TRACKING_OUTPUT_VIDEO))
 os.environ.setdefault("PET_MOTOR_BACKEND", "ros2")
-os.environ.setdefault("PET_ROS_CMD_VEL_TOPIC", os.getenv("ROBOT_CMD_VEL_TOPIC", "/cmd_vel"))
+os.environ.setdefault("PET_ROS_CMD_VEL_TOPIC", os.getenv("ROBOT_CMD_VEL_TOPIC", "/cmd_vel_external"))
 
 
 class _RuntimeModels:
@@ -307,7 +307,7 @@ class PetTrackingSystem:
         def __init__(self):
             self.topic = os.getenv(
                 "PET_ROS_CMD_VEL_TOPIC",
-                os.getenv("ROBOT_CMD_VEL_TOPIC", "/cmd_vel"),
+                os.getenv("ROBOT_CMD_VEL_TOPIC", "/cmd_vel_external"),
             )
             self.max_linear = float(os.getenv("PET_ROS_MAX_LINEAR", "0.55"))
             self.max_angular = float(os.getenv("PET_ROS_MAX_ANGULAR", "1.30"))
@@ -2492,7 +2492,7 @@ class PetTrackingSystem:
         )
         parser.add_argument(
             "--cmd-vel-topic",
-            default=os.getenv("PET_ROS_CMD_VEL_TOPIC", os.getenv("ROBOT_CMD_VEL_TOPIC", "/cmd_vel")),
+            default=os.getenv("PET_ROS_CMD_VEL_TOPIC", os.getenv("ROBOT_CMD_VEL_TOPIC", "/cmd_vel_external")),
             help="ROS2 Twist topic. Default: /cmd_vel.",
         )
         parser.add_argument(
@@ -2713,7 +2713,7 @@ def _maybe_reexec_with_ros_env_for_cli():
     env["PET_CAMERA_ROS_ENV_REEXEC"] = "1"
     setup_files = [
         "/opt/ros/humble/setup.bash",
-        "/home/test/car_real_copy_zhenghang/install/setup.bash",
+        "/home/test/Car_real_copy/install/setup.bash",
     ]
     source_lines = "\n".join(
         f'[ -f "{item}" ] && source "{item}"' for item in setup_files

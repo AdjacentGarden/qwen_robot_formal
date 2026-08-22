@@ -4,6 +4,7 @@ import json
 import os
 import sys
 import time
+from pathlib import Path
 from typing import Optional, Tuple
 import rclpy
 from rclpy.node import Node
@@ -365,4 +366,7 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    if "--dry-run" in sys.argv[1:]:
+        raise SystemExit(main())
+    client = Path(__file__).resolve().parents[1] / "resident_skill_client.py"
+    os.execv(sys.executable, [sys.executable, str(client), "head_control", *sys.argv[1:]])

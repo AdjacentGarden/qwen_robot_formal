@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "map_source": "/home/test/car_real_copy_zhenghang/src/car_nav2/maps/cartographer/latest.pbstream",
+  "map_source": "/home/test/Car_real_copy/install/robot_bringup/share/robot_bringup/map/map.pbstream",
   "map_layout": "u_shape_810",
   "max_pose_age_sec": 1.5,
   "default_point_tolerance_m": 0.35,

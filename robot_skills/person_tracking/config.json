@@ -69,7 +69,7 @@
     "pull_up_down_angle": 145.0
   },
   "tracking": {
-    "cmd_vel_topic": "/cmd_vel",
+    "cmd_vel_topic": "/cmd_vel_external",
     "maximum_linear_speed": 0.68,
     "maximum_angular_speed": 0.65,
     "linear_sign": 1.0,

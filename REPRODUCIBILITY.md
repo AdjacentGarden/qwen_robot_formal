@@ -9,8 +9,13 @@
 - Ubuntu 22.04，aarch64（RK3588）
 - Python 3.10.12
 - ROS 2 Humble
-- 正式 ROS 工作空间：`/home/test/car_real_copy_zhenghang`
+- 正式 ROS 工作空间（外部只读依赖）：`/home/test/Car_real_copy`
 - 正式项目路径：`/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test`
+
+本次 Manager 迁移前的可恢复基线为 Git tag
+`before-car-real-copy-manager-migration-20260823`（commit
+`e923a2fe7d5d2ea373d65ca8e982eeb945e39a4a`）。机器人上另有只读目录备份：
+`/home/test/qwen_project_backups/before_car_real_copy_manager_20260823_e923a2f`。
 
 ## 仓库结构
 
@@ -40,13 +45,11 @@
 
 ## 安装顺序
 
-1. 克隆并构建导航仓库：
+1. 准备已经构建好的 `Car_real_copy` 工作区。本仓库不会修改或重建它：
 
    ```bash
-   git clone git@github.com:AdjacentGarden/car_real_copy_zhenghang.git /home/test/car_real_copy_zhenghang
-   git -C /home/test/car_real_copy_zhenghang checkout f6f4edd6270f62eeda843885a0236aca12a0d7c5f
-   cd /home/test/car_real_copy_zhenghang
-   bash build_restored_car.sh
+   test -f /home/test/Car_real_copy/install/setup.bash
+   test -s /home/test/Car_real_copy/install/robot_bringup/share/robot_bringup/map/map.pbstream
    ```
 
 2. 将本仓库放到正式项目路径，然后恢复配套快照：

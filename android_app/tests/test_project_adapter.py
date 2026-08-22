@@ -33,9 +33,7 @@ class RecordingProgramController(ProgramController):
         return {
             "state": state,
             "components": {
-                "base": state == "running",
-                "odometry": state == "running",
-                "navigation": state == "running",
+                "manager": state == "running",
                 "resident": state == "running",
                 "skill_host": state == "running",
                 "voice": state == "running",
@@ -52,7 +50,7 @@ def test_program_buttons_target_qwen_realtime_resident_service(tmp_path):
     start = RecordingProgramController(project, "start")
     started = start.start()
     assert started["status"] == "started"
-    assert start.calls == [(["bash", str(project / "resident_service.sh"), "start"], 420.0)]
+    assert start.calls == [(["bash", str(project / "resident_service.sh"), "start"], 780.0)]
 
     stop = RecordingProgramController(project, "stop")
     stopped = stop.stop()
@@ -95,7 +93,7 @@ def test_app_start_rolls_back_if_any_required_component_is_missing(tmp_path):
             self.status_calls += 1
             components = {name: True for name in self.COMPONENT_NAMES}
             if self.status_calls > 1:
-                components["navigation"] = False
+                components["manager"] = False
             return {
                 "state": "stopped" if self.status_calls == 1 else "partial",
                 "components": components,
@@ -106,14 +104,14 @@ def test_app_start_rolls_back_if_any_required_component_is_missing(tmp_path):
             return {"returncode": 0, "output": "mocked"}
 
     controller = PartialController()
-    with pytest.raises(RuntimeError, match="program_incomplete_after_start: missing=navigation"):
+    with pytest.raises(RuntimeError, match="program_incomplete_after_start: missing=manager"):
         controller.start()
     assert [call[0][-1] for call in controller.calls] == ["start", "stop"]
 
 
-def test_program_status_matches_the_actual_zhenghang_navigation_launch():
+def test_program_status_matches_the_car_real_copy_manager():
     controller = ProgramController(Path("/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test"), dry_run=False)
-    assert controller.process_patterns["navigation"] == "robot_bringup real_robot_nav.launch.py"
+    assert controller.process_patterns["manager"] == "mapping_navigation_manager.py"
 
 
 def test_terminal_start_in_progress_is_not_restarted_or_stopped(tmp_path, monkeypatch):

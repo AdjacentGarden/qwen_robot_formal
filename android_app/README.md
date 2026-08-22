@@ -11,7 +11,7 @@
 
 控制页的“关闭麦克风”只暂停机器人本机麦克风的现场语音输入；App 的按住说话、地图、家居和其他按键控制均保持可用。“打开麦克风”会立即恢复现场语音；如果语音主程序尚未启动，该设置会安全保存并在下次启动时生效。
 
-机器人端唯一目标目录为 `/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test`；底盘/导航环境只加载 `/home/test/car_real_copy_zhenghang`。
+机器人端唯一目标目录为 `/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test`；底盘/导航环境只读加载 `/home/test/Car_real_copy`，App 的完整启动状态以 Manager `NAVIGATION` 和 sensor gate `ready` 为准。
 
 ## 构建
 
