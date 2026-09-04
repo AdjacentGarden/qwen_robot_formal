@@ -40,8 +40,10 @@ case "$ACTION" in
       /usr/bin/nsenter -t "$surface_pid" -m -p -- /system/bin/cmd window set-ignore-orientation-request true
       [[ ! -x /usr/local/libexec/robot-projection-prep ]] || /usr/local/libexec/robot-projection-prep
     fi
+    "${sudo_cmd[@]}" /system/bin/settings put global policy_control 'immersive.full=*'
     "${sudo_cmd[@]}" am force-stop android.rk.RockVideoPlayer >/dev/null
     "${sudo_cmd[@]}" am start -n android.rk.RockVideoPlayer/.VideoPlayActivity -a android.intent.action.VIEW -d "file://$PATH_IN_ANDROID" -t video/mp4 >/dev/null
+    "${sudo_cmd[@]}" sh -c "sleep 1.0; input tap 960 500"
     ;;
   pause) "${sudo_cmd[@]}" input keyevent 127 >/dev/null ;;
   resume) "${sudo_cmd[@]}" input keyevent 126 >/dev/null ;;

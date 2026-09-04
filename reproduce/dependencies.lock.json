@@ -1,5 +1,5 @@
 {
-  "snapshot_date": "2026-08-23",
+  "snapshot_date": "2026-09-04",
   "platform": {
     "os": "Ubuntu 22.04",
     "architecture": "aarch64",
@@ -19,8 +19,9 @@
   "git_dependencies": {
     "Car_real_copy_runtime": {
       "path": "/home/test/Car_real_copy",
-      "base_commit": "52348412d7dfa7ade879fbea67a76c0c1367d19c",
-      "note": "外部只读运行依赖；机器人工作树含既有未提交修改，本仓库不复制、不构建也不修改它。关键接口以 checksums 记录。"
+      "repository": "https://github.com/AdjacentGarden/carrelcopy-formal",
+      "commit": "4b2428d2505c4e7bbb5abaefa83c146d04580640",
+      "note": "Independent source snapshot; build/install excluded. Also copied in reproduce/vendor/Car_real_copy."
     },
     "qwen_robot_project_base": {
       "remote": "git@github.com:AdjacentGarden/new_architect_robot_0706.git",
@@ -41,16 +42,16 @@
   "checksums": {
     "/home/test/Car_real_copy/ai_control_sim.py": "4f82e720d83583d92fc84f6d6c0d9f71e233e5078b8763ef8fc8d4bb2fe49470",
     "/home/test/Car_real_copy/src/motion_controller/msg/NavGoal.msg": "12b71f9a74ca01ff242cb34148de56324018b608098d09909e81cc0c62eedcb1",
-    "/home/test/Car_real_copy/src/motion_controller/src/motion_controller_node.cpp": "db20c32a81113cc444a965a27157faa6504811a87b67af5da235b1e8301c32ae",
-    "/home/test/Car_real_copy/src/robot_bringup/tools/mapping_navigation_manager.py": "cabb1b847c57ba616f54ab9a04ee4344519ad0fbed84ffba92b48fdd5c5e6586",
+    "/home/test/Car_real_copy/src/motion_controller/src/motion_controller_node.cpp": "730be15a16ed0b3a6e3a51dab67b78313b33b030e1947787bbf38f5a9236ecad",
+    "/home/test/Car_real_copy/src/robot_bringup/tools/mapping_navigation_manager.py": "731b92bb567d4072515df8587448b004ce08005a5ab2a1da274882a5780cbaf6",
     "reproduce/home_test_root/dian.py": "719a91293f9c32c745356e10ed4b7b3830dc5d66d544ccdff03f123f34a9bb01",
     "reproduce/home_test_root/start_projection_ppt.sh": "94b9b38cc9d6591a26b940104df6c787ab64d853eb0848a6efe14209ed5502c2",
     "reproduce/home_test_root/stop_projection_ppt.sh": "2b81ce1c179a725f5fdff731a4a8b610602c7a2964cffe94e01f6e357a015b73",
     "reproduce/home_test_root/start_projection_video.sh": "2558702aca2fe404ea7ff33f051efa2eca6afe7d6c2e5fe77a72dde64150a640",
-    "reproduce/system_files/usr_local_sbin/robot-media-player": "7cfd93db1fbede24095a00d4da1602e39d61fafc78c3bc593111f45fd3ab9a2e",
-    "reproduce/system_files/usr_local_sbin/robot-meeting-projection-v2": "e2e4ca779c6827ede930c0f609fdc9048185121df15cce7c2c75778837a75f00",
-    "reproduce/system_files/usr_local_sbin/robot-start-exercise-projection": "e2e4ca779c6827ede930c0f609fdc9048185121df15cce7c2c75778837a75f00",
-    "reproduce/system_files/usr_local_sbin/robot-welcome-projection": "e2e4ca779c6827ede930c0f609fdc9048185121df15cce7c2c75778837a75f00",
+    "reproduce/system_files/usr_local_sbin/robot-media-player": "b41f52a0fd2b8a49e35e28bdd777b9598556a783a86bde424cb072fc70317c02",
+    "reproduce/system_files/usr_local_sbin/robot-meeting-projection-v2": "d055b30bade9c5e5eec4fc440e05986aa8486f3dfc0842ff26ae90aedb13ce06",
+    "reproduce/system_files/usr_local_sbin/robot-start-exercise-projection": "86ec4e70e277bd078d7ab58dc60e98f038d915443a6e77fdb72ced56bd0e15c4",
+    "reproduce/system_files/usr_local_sbin/robot-welcome-projection": "8b4fe5922925cd6fc9331740f31b1f6f3183a7fb6be1b519b07eee331c09fb96",
     "reproduce/system_files/usr_local_libexec/robot-projection-prep": "b2ed66ee1731aee957780f0e6701367bedbce6cc5609185c3f0f9a4191386f3f"
   }
 }

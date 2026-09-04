@@ -63,4 +63,9 @@ fi
   --ks "$KEYSTORE" --ks-pass pass:android --key-pass pass:android \
   --out "$OUT" "$BUILD/aligned.apk"
 "$TOOLS/apksigner" verify "$OUT"
+if command -v sha256sum >/dev/null 2>&1; then
+  sha256sum "$OUT" >"$OUT.sha256"
+else
+  shasum -a 256 "$OUT" >"$OUT.sha256"
+fi
 echo "$OUT"

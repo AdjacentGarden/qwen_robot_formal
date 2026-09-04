@@ -1,9 +1,30 @@
 #!/usr/bin/env bash
 set -euo pipefail
-name="$(basename "$0")"
-qwen="/usr/local/libexec/${name}-qwen"
-formal="/usr/local/libexec/${name}-formal"
-if /usr/bin/pgrep -f '^python3 /home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/resident_runtime_server.py$' >/dev/null 2>&1; then
-  exec "$qwen" "$@"
+
+readonly CONTAINER_NAME="android_0"
+readonly VIDEO_PATH="/sdcard/Movies/exercise.mp4"
+readonly VIDEO_SHA256="de344de64d55a8ebb71bd827abf545c1fe89202d0ae0e8652573ce6e2f65222e"
+readonly PREP="/usr/local/libexec/robot-projection-prep"
+readonly ACTION="${1:-start}"
+
+actual_sha="$(/usr/bin/docker exec "$CONTAINER_NAME" sha256sum "$VIDEO_PATH" | /usr/bin/awk '{print $1}')"
+[[ "$actual_sha" == "$VIDEO_SHA256" ]] || { echo "exercise projection media checksum mismatch" >&2; exit 1; }
+
+if [[ "$ACTION" == "check" ]]; then
+  echo "exercise projection media is ready"
+  exit 0
 fi
-exec "$formal" "$@"
+[[ "$ACTION" == "start" ]] || { echo "usage: $0 {check|start}" >&2; exit 2; }
+
+pid="$(/usr/bin/pidof surfaceflinger | /usr/bin/awk '{print $1}')"
+[[ -n "$pid" ]] || { echo "surfaceflinger pid not found" >&2; exit 1; }
+
+/usr/bin/nsenter -t "$pid" -m -p -- /system/bin/settings put system accelerometer_rotation 0
+/usr/bin/nsenter -t "$pid" -m -p -- /system/bin/settings put system user_rotation 2
+/usr/bin/nsenter -t "$pid" -m -p -- /system/bin/cmd window user-rotation lock 2
+/usr/bin/nsenter -t "$pid" -m -p -- /system/bin/cmd window fixed-to-user-rotation enabled
+/usr/bin/nsenter -t "$pid" -m -p -- /system/bin/cmd window set-ignore-orientation-request true
+"$PREP"
+/usr/bin/docker exec "$CONTAINER_NAME" /system/bin/settings put global policy_control 'immersive.full=*'
+/usr/bin/docker exec "$CONTAINER_NAME" sh -c "appops set android.rk.RockVideoPlayer MANAGE_EXTERNAL_STORAGE allow 2>/dev/null || true; appops set android.rk.RockVideoPlayer READ_EXTERNAL_STORAGE allow 2>/dev/null || true; appops set android.rk.RockVideoPlayer READ_MEDIA_VIDEO allow 2>/dev/null || true; appops set android.rk.RockVideoPlayer READ_MEDIA_AUDIO allow 2>/dev/null || true; am force-stop android.rk.RockVideoPlayer; am start -n android.rk.RockVideoPlayer/.VideoPlayActivity -a android.intent.action.VIEW -d file://$VIDEO_PATH -t video/mp4"
+/usr/bin/docker exec "$CONTAINER_NAME" sh -c "sleep 1.0; input tap 960 500"

@@ -20,6 +20,11 @@ for arg in "$@"; do
   esac
 done
 
+if [[ "$INSTALL_USER_FILES" -eq 0 && "$INSTALL_SYSTEM_FILES" -eq 0 ]]; then
+  usage
+  exit 0
+fi
+
 if [[ "$ROOT" != "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test" ]]; then
   echo "Repository must be located at /home/test/qwen_audio_3_realtime_flash_scenarios_resident_test" >&2
   exit 1
@@ -30,6 +35,7 @@ if [[ "$INSTALL_SYSTEM_FILES" -eq 1 ]]; then
     echo "--system-files requires root; rerun with sudo and the same repository path." >&2
     exit 1
   fi
+  install -d /usr/local/libexec /usr/local/sbin
   install -m 0755 "$REPRO/system_files/usr_local_libexec/"* /usr/local/libexec/
   install -m 0755 "$REPRO/system_files/usr_local_sbin/"* /usr/local/sbin/
   install -m 0644 "$REPRO/system_files/systemd/ideal-robot-app-bridge.service" /etc/systemd/system/

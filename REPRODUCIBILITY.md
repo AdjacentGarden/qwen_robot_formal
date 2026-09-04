@@ -1,5 +1,8 @@
 # Qwen 家庭机器人固定场景项目复现说明
 
+> 更新：2026-09-04 已迁为私有仓库并补充私密资源和 Android 镜像 Release。
+> 当前恢复步骤以 [PRIVATE_RESTORE.md](reproduce/PRIVATE_RESTORE.md) 为准。下文为早期历史说明，涉及脱敏、缺失资源和旧版本限制不应作为最新安装步骤。
+
 本目录记录 2026-08-23 机器人当前正式演示版本的运行依赖。仓库根目录是
 `/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test` 的脱敏工作树快照，
 其中包含实时千问语音、场景引擎、Skill、RKNN 模型和完整 Android App 源码。

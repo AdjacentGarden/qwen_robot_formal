@@ -1,5 +1,7 @@
 # Qwen Audio 3.0 Realtime Flash 场景演示与常驻 Skill 测试
 
+> **私有备份（2026-09-04）**：完整资源、凭据和人脸资料在本仓库私有 Release 中，当前恢复流程见 [私有恢复说明](reproduce/PRIVATE_RESTORE.md)。请勿将仓库或资源公开。机器人现有运行代码未因打包而修改。
+
 这是从 `/home/test/qwen_audio_3_realtime_flash_test` 创建的独立副本。它不修改、不停止，
 也不在运行时导入 `/home/test/project_0727_fixed_points_home_scenes`；场景目录和已验证的
 常驻 Skill 代码以快照形式复制在本项目中，拥有独立的 Socket、PID、日志和运行目录。
