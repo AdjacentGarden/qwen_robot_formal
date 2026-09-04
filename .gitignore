@@ -39,3 +39,13 @@ config/resident_profile.json
 *.keystore
 *.new
 ._*
+
+# Never publish credential/biometric bundles, even when renamed or archived.
+private_assets/
+*private-resources*.tar*
+*map-credential*.tar*
+*.apk
+*.apk.idsig
+*.zip
+*.tgz
+*.tar.gz
