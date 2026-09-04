@@ -14,8 +14,8 @@
     .map(normalizeBase);
   const endpointCandidates = [...new Set([pageOrigin, ...configuredBases].filter(Boolean))];
   const CONNECT_TIMEOUT_MS = 5000;
-  const LINK_STALE_MS = 3500;
-  const OFFLINE_GRACE_MS = 6500;
+  const LINK_STALE_MS = 4500;
+  const OFFLINE_GRACE_MS = 8000;
   const VOICE_UPLOAD_TIMEOUT_MS = 30000;
   let base = endpointCandidates[0] || "";
   const $ = (id) => document.getElementById(id);
@@ -24,6 +24,7 @@
     pose: null, target: null, videos: [], feedGrams: 20, pending: new Map(), online: false,
     program: null, programTransition: null, task: null, microphone: null, endpointIndex: 0, endpointAttempts: 0,
     lastMessageAt: 0, lastTelemetryAt: 0, disconnectStartedAt: 0, connectTimer: null, offlineTimer: null,
+    endpointFailures: new Map(), lastHealthyEndpoint: 0,
   };
   const voiceCapture = {
     stream: null, recorder: null, chunks: [], startedAt: 0,
@@ -186,7 +187,16 @@
       partial: "部分服务未正常运行，可先关闭后重新启动。",
       offline: "控制通道离线，暂时无法管理机器人程序。",
     };
-    $("programHint").textContent = hints[rawState] || "正在读取机器人程序状态……";
+    const runtimeMode = String(state.program && state.program.runtime_mode || "");
+    const runningHints = {
+      head_motion: "程序运行正常；头部动作期间雷达按安全策略暂时屏蔽。",
+      sensor_recovering: "程序运行正常；雷达与定位链路正在自动恢复。",
+      navigation_temporarily_unavailable: "程序运行正常；导航目前暂不可用，其他功能不受影响。",
+      voice_reconnecting: "程序运行正常；端到端语音正在快速重连。",
+    };
+    $("programHint").textContent = (rawState === "running" && runningHints[runtimeMode])
+      || hints[rawState]
+      || "正在读取机器人程序状态……";
   }
 
   function renderMicrophone() {
@@ -346,6 +356,7 @@
     base = endpointCandidates[candidateIndex];
     const wsBase = base.replace(/^http/, "ws");
     const socket = new WebSocket(`${wsBase}/ws/app?token=${encodeURIComponent(token)}`);
+    socket._openedAt = 0;
     state.socket = socket;
     state.connectTimer = setTimeout(() => {
       if (state.socket === socket && socket.readyState === WebSocket.CONNECTING) {
@@ -354,13 +365,16 @@
       }
     }, CONNECT_TIMEOUT_MS);
     socket.onopen = () => {
+      socket._openedAt = Date.now();
       clearTimeout(state.connectTimer);
       state.connectTimer = null;
-      state.retry = 0;
-      state.endpointAttempts = 0;
       setActivity("连接已建立，正在同步状态");
     };
     socket.onmessage = (event) => {
+      state.endpointFailures.set(candidateIndex, 0);
+      state.lastHealthyEndpoint = candidateIndex;
+      state.retry = 0;
+      state.endpointAttempts = 0;
       markConnectionHealthy();
       try { handle(JSON.parse(event.data)); } catch (error) { console.warn("invalid message", error); }
     };
@@ -378,9 +392,18 @@
         setOnline(false);
       }
       state.endpointAttempts += 1;
-      state.endpointIndex = (candidateIndex + 1) % endpointCandidates.length;
+      const failures = Number(state.endpointFailures.get(candidateIndex) || 0) + 1;
+      state.endpointFailures.set(candidateIndex, failures);
+      const retryLastHealthy = candidateIndex === state.lastHealthyEndpoint && failures <= 2;
+      state.endpointIndex = retryLastHealthy
+        ? candidateIndex
+        : (candidateIndex + 1) % endpointCandidates.length;
       const completedRound = state.endpointAttempts % endpointCandidates.length === 0;
-      const delay = completedRound ? Math.min(10000, 700 * Math.pow(1.7, state.retry++)) : 120;
+      const delay = retryLastHealthy
+        ? 180 * failures
+        : completedRound
+          ? Math.min(10000, 700 * Math.pow(1.7, state.retry++))
+          : 120;
       state.reconnectTimer = setTimeout(connect, delay);
     };
     socket.onerror = () => socket.close();
@@ -391,11 +414,10 @@
     if (!state.disconnectStartedAt) state.disconnectStartedAt = Date.now();
     setRecovering(message);
     if (socket) {
-      state.socket = null;
       try { socket.close(); } catch (_) {}
+      return;
     }
     clearTimeout(state.reconnectTimer);
-    state.endpointIndex = (state.endpointIndex + 1) % Math.max(1, endpointCandidates.length);
     state.reconnectTimer = setTimeout(connect, 80);
     scheduleOfflineFallback();
   }

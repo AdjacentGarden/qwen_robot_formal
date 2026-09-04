@@ -2,29 +2,82 @@
   "timezone": "Asia/Shanghai",
   "default_location": null,
   "location": {
-    "address": "惠州市惠城区",
-    "latitude": 23.084657,
-    "longitude": 114.382526,
-    "coordinate_system": "gcj02",
-    "coordinate_source": "amap_district_center",
+    "address": "请配置家庭地址",
+    "city": "北京市",
+    "district_id": "110105",
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "coordinate_system": "wgs84",
+    "coordinate_source": "user_provided_address_geocoded_baidu",
     "timezone": "Asia/Shanghai",
-    "precision": "district_center",
-    "allow_ip_fallback": true
+    "precision": "address_geocoded",
+    "allow_ip_fallback": false
+  },
+  "saved_places": {
+    "home": {
+      "display_name": "家庭",
+      "aliases": ["家", "家庭", "家里", "住宅", "住处", "家庭位置", "家里的位置", "望京的家", "家庭地址", "朝阳区", "北京朝阳区", "北京市朝阳区"],
+      "address": "请配置家庭地址",
+      "city": "北京市",
+      "district_id": "110105",
+      "latitude": 0.0,
+      "longitude": 0.0,
+      "coordinate_system": "wgs84",
+      "coordinate_source": "user_provided_address_geocoded_baidu",
+      "timezone": "Asia/Shanghai",
+      "precision": "address_geocoded"
+    },
+    "company": {
+      "display_name": "理想汽车研发总部",
+      "aliases": ["公司", "单位", "上班地点", "工作地点", "公司地址", "理想公司", "理想汽车", "理想汽车研发总部", "研发总部", "公司地址"],
+      "address": "请配置公司地址",
+      "city": "北京市",
+      "district_id": "110113",
+      "latitude": 0.0,
+      "longitude": 0.0,
+      "coordinate_system": "wgs84",
+      "coordinate_source": "user_provided_address_geocoded_baidu",
+      "timezone": "Asia/Shanghai",
+      "precision": "address_geocoded"
+    }
+  },
+  "indoor_location": {
+    "map_frame": "map",
+    "base_frames": ["base_footprint", "base_link"],
+    "lookup_timeout_seconds": 1.5,
+    "max_transform_age_seconds": 2.0,
+    "default_room_radius_meters": 2.0,
+    "rooms": [
+      {"name": "dining_room", "display_name": "餐厅", "anchor": {"x": 0.0, "y": 0.0}, "radius_meters": 1.6},
+      {"name": "living_room", "display_name": "客厅", "anchor": {"x": -2.2, "y": 0.1}, "radius_meters": 1.8},
+      {"name": "study", "display_name": "书房", "anchor": {"x": 0.0, "y": 3.0}, "radius_meters": 1.8}
+    ]
   },
   "request_timeout_seconds": 12,
   "nearby_radius_meters": 2000,
   "nearby_limit": 5,
   "cache_ttl_seconds": {
     "ip_location": 3600,
+    "geocoding": 86400,
     "weather": 300,
     "nearby": 600,
     "traffic": 120
+    ,"route": 60
   },
   "endpoints": {
     "open_meteo_geocoding": "https://geocoding-api.open-meteo.com/v1/search",
     "open_meteo_forecast": "https://api.open-meteo.com/v1/forecast",
     "ip_location": "https://ipwho.is/",
     "overpass": "https://overpass-api.de/api/interpreter",
-    "amap_traffic": "https://restapi.amap.com/v3/traffic/status/circle"
+    "amap_traffic": "https://restapi.amap.com/v3/traffic/status/circle",
+    "baidu_geocoding": "https://api.map.baidu.com/geocoding/v3/",
+    "baidu_reverse_geocoding": "https://api.map.baidu.com/reverse_geocoding/v3/",
+    "baidu_weather": "https://api.map.baidu.com/weather/v1/",
+    "baidu_place_search": "https://api.map.baidu.com/place/v2/search",
+    "baidu_place_suggestion": "https://api.map.baidu.com/place/v2/suggestion",
+    "baidu_traffic_around": "https://api.map.baidu.com/traffic/v1/around",
+    "baidu_traffic_road": "https://api.map.baidu.com/traffic/v1/road"
+    ,"baidu_direction_driving": "https://api.map.baidu.com/directionlite/v1/driving"
+    ,"baidu_direction_transit": "https://api.map.baidu.com/directionlite/v1/transit"
   }
 }

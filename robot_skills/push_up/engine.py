@@ -165,6 +165,10 @@ class FitnessFramingEventPolicy:
         self.last_emitted_at = now
         reason = str(pose_result.get("reason") or "incomplete_pose")
         direction, text = "enter_and_center", "我暂时没看全你的动作，请站到画面中间，让全身都出现在镜头里。"
+        if reason == "multiple_horizontal_targets":
+            direction, text = "one_exercise_person", "画面下方同时有多位运动者，我先暂停计数。请只保留一位正在做俯卧撑的人。"
+        elif reason in {"waiting_for_horizontal_target", "geometry_target_stabilizing"}:
+            direction, text = "enter_lower_half", "请在画面下半部分侧身做好俯卧撑姿势，保持全身出现在镜头里。"
         if person_bbox is not None:
             left, top, right, bottom = person_bbox
             width, height = frame_size
@@ -480,6 +484,9 @@ class Candidate:
     identity_score: float
     spatial_score: float
     association_score: float
+    memory_score: float = -1.0
+    memory_feature: np.ndarray | None = None
+    temporal_score: float = -1.0
 
 
 class AnonymousTargetTracker:
@@ -561,6 +568,153 @@ class AnonymousTargetTracker:
         }
 
 
+class LowerHalfHorizontalTargetTracker:
+    """Select the staged push-up subject from geometry, without body ReID.
+
+    Face authentication still happens before the workout unless the user has
+    explicitly opted out. Once counting starts, only one sufficiently large,
+    horizontal person box in the lower half of the image is accepted. A short
+    IoU-continuous confirmation removes one-frame detector noise. If two people
+    satisfy the rule simultaneously, counting pauses instead of guessing.
+    """
+
+    def __init__(self, config: dict[str, Any], *, face_authenticated: bool = True) -> None:
+        self.cfg = config["pushup_target_selector"]
+        self.face_authenticated = bool(face_authenticated)
+        self.pending_bbox: tuple[int, int, int, int] | None = None
+        self.confirmed_bbox: tuple[int, int, int, int] | None = None
+        self.confirmation_streak = 0
+        self.reacquisitions = 0
+        self.switch_rejections = 0
+        self.tracklet_gallery: list[np.ndarray] = []
+        self.tracklet_updates = 0
+        self.adaptive_gallery: list[np.ndarray] = []
+        self.adaptive_updates = 0
+        self.rolling_anchor_updates = 0
+        self.eligible_frames = 0
+        self.ambiguous_frames = 0
+
+    @staticmethod
+    def _candidate(person: Detection, *, eligible: bool, score: float) -> Candidate:
+        return Candidate(
+            person=person,
+            feature=np.empty((0,), dtype=np.float32),
+            anchor_score=0.0,
+            rolling_anchor_score=0.0,
+            adaptive_score=0.0,
+            tracklet_score=0.0,
+            prone_score=score,
+            wide_body=eligible,
+            identity_score=0.0,
+            spatial_score=score,
+            association_score=score,
+        )
+
+    def _measure(
+        self,
+        person: Detection,
+        frame_width: int,
+        frame_height: int,
+    ) -> tuple[bool, dict[str, float]]:
+        x1, y1, x2, y2 = person.bbox
+        box_width = max(1, x2 - x1)
+        box_height = max(1, y2 - y1)
+        frame_area = max(1.0, float(frame_width * frame_height))
+        metrics = {
+            "aspect": box_width / box_height,
+            "area_ratio": person.area / frame_area,
+            "center_y_ratio": ((y1 + y2) * 0.5) / max(1.0, float(frame_height)),
+            "bottom_y_ratio": y2 / max(1.0, float(frame_height)),
+        }
+        eligible = bool(
+            metrics["aspect"] >= float(self.cfg["minimum_aspect"])
+            and metrics["area_ratio"] >= float(self.cfg["minimum_area_ratio"])
+            and metrics["center_y_ratio"] >= float(self.cfg["minimum_center_y_ratio"])
+            and metrics["bottom_y_ratio"] >= float(self.cfg["minimum_bottom_y_ratio"])
+        )
+        return eligible, metrics
+
+    def _reset_pending(self) -> None:
+        self.pending_bbox = None
+        self.confirmation_streak = 0
+
+    def update(
+        self,
+        frame: np.ndarray,
+        people: list[Detection],
+        _reid: RknnReID | None = None,
+    ) -> tuple[Candidate | None, list[Candidate], dict[str, Any]]:
+        frame_height, frame_width = frame.shape[:2]
+        candidates: list[Candidate] = []
+        candidate_metrics: list[dict[str, Any]] = []
+        eligible_candidates: list[Candidate] = []
+        for person in people:
+            eligible, metrics = self._measure(person, frame_width, frame_height)
+            score = float(metrics["area_ratio"])
+            candidate = self._candidate(person, eligible=eligible, score=score)
+            candidates.append(candidate)
+            candidate_metrics.append(
+                {
+                    "bbox": list(person.bbox),
+                    "eligible": eligible,
+                    **{key: round(value, 4) for key, value in metrics.items()},
+                }
+            )
+            if eligible:
+                eligible_candidates.append(candidate)
+
+        freeze_reason: str | None = None
+        selected: Candidate | None = None
+        if len(eligible_candidates) > 1:
+            self.ambiguous_frames += 1
+            self.switch_rejections += 1
+            self.confirmed_bbox = None
+            self._reset_pending()
+            freeze_reason = "multiple_horizontal_targets"
+        elif not eligible_candidates:
+            self.confirmed_bbox = None
+            self._reset_pending()
+            freeze_reason = "waiting_for_horizontal_target"
+        else:
+            self.eligible_frames += 1
+            only = eligible_candidates[0]
+            if self.pending_bbox is not None:
+                iou, _containment = bbox_overlap(self.pending_bbox, only.person.bbox)
+            else:
+                iou = 0.0
+            if self.pending_bbox is not None and iou >= float(self.cfg["continuity_iou"]):
+                self.confirmation_streak += 1
+            else:
+                self.confirmation_streak = 1
+            self.pending_bbox = only.person.bbox
+            if self.confirmation_streak >= int(self.cfg["confirmation_frames"]):
+                if self.confirmed_bbox is None:
+                    self.reacquisitions += 1
+                self.confirmed_bbox = only.person.bbox
+                selected = only
+            else:
+                freeze_reason = "geometry_target_stabilizing"
+
+        state = "geometry_locked" if selected is not None else "geometry_waiting"
+        return selected, candidates, {
+            "state": state,
+            "policy": (
+                "face_authenticated_then_lower_half_geometry"
+                if self.face_authenticated
+                else "lower_half_geometry"
+            ),
+            "face_recognition": self.face_authenticated,
+            "reid": False,
+            "people": len(people),
+            "eligible_people": len(eligible_candidates),
+            "confirmation_streak": self.confirmation_streak,
+            "confirmation_frames": int(self.cfg["confirmation_frames"]),
+            "freeze_reason": freeze_reason,
+            "selected_bbox": list(selected.person.bbox) if selected is not None else None,
+            "candidates": candidate_metrics,
+        }
+
+
 def locked_continuity_candidates(
     candidates: list[Candidate],
     config: dict[str, Any],
@@ -627,6 +781,23 @@ class ContinuousIdentityTracker:
         self.prone_updates = 0
         self.prone_seed_streak = 0
         self.selected_streak = 0
+        self.reauthentication_required = False
+        self.face_reauthentications = 0
+        # Persistent, identity-safe body memory. Unlike rolling/tracklet
+        # galleries, this survives target loss and is never updated while the
+        # authenticated trajectory is missing or ambiguous.
+        self.identity_memory_gallery: list[np.ndarray] = [
+            item.copy() for item in self.anchor_gallery
+        ]
+        self.identity_memory_updates = 0
+        self.body_reauthentications = 0
+        self.body_reauth_streak = 0
+        self.body_reauth_missed_frames = 0
+        self.body_reauth_previous_bbox: tuple[int, int, int, int] | None = None
+        self.previous_selected_feature: np.ndarray | None = None
+        self.previous_selected_wide: bool | None = None
+        self.same_pose_streak = 0
+        self.previous_frame_signature: np.ndarray | None = None
 
         # Face acquisition has already authenticated both the identity and the
         # corresponding person box.  Preserve that physical track when the
@@ -653,6 +824,155 @@ class ContinuousIdentityTracker:
         self.previous_bbox = values
         self.older_bbox = values
         self.selected_streak = 1
+        self.reauthentication_required = False
+
+    def reauthenticate_face_target(self, bbox: Any, feature: np.ndarray) -> None:
+        """Restore a lost session only after the requested face is verified.
+
+        The immutable acquisition anchor remains unchanged.  The newly
+        face-associated body feature seeds only the short-term galleries, so a
+        returning target can resume in different clothes/posture without
+        allowing body ReID itself to make an identity decision.
+        """
+        values = tuple(int(value) for value in bbox)
+        if len(values) != 4:
+            raise ValueError(f"reauthenticated bbox must contain four values: {bbox!r}")
+        body_feature = normalized(feature)
+        self._reset_tracklet()
+        diverse_append(
+            self.tracklet_gallery,
+            body_feature,
+            int(self.cfg["tracklet_gallery_size"]),
+            float(self.cfg.get("tracklet_min_feature_distance", 0.015)),
+        )
+        self.rolling_anchor_centroid = normalized(
+            0.25 * self.anchor_centroid + 0.75 * body_feature
+        )
+        self.locked = True
+        self.stable_frames = max(1, int(self.cfg.get("stable_accept_frames", 2)))
+        self.lost_frames = 0
+        self.previous_bbox = values
+        self.older_bbox = values
+        self.selected_streak = 1
+        self.reauthentication_required = False
+        self.reacquisitions += 1
+        self.face_reauthentications += 1
+        if diverse_append(
+            self.identity_memory_gallery,
+            body_feature,
+            int(self.cfg.get("identity_memory_size", 64)),
+            float(self.cfg.get("identity_memory_min_feature_distance", 0.018)),
+        ):
+            self.identity_memory_updates += 1
+        self._reset_body_reauth_evidence()
+        self.previous_selected_feature = body_feature.copy()
+        self.previous_selected_wide = None
+        self.same_pose_streak = 1
+
+    def _identity_memory_score(self, feature: np.ndarray) -> float:
+        if not self.identity_memory_gallery:
+            return -1.0
+        similarities = np.asarray(
+            [float(np.dot(feature, item)) for item in self.identity_memory_gallery],
+            dtype=np.float32,
+        )
+        top_k = min(
+            len(similarities),
+            max(1, int(self.cfg.get("identity_memory_top_k", 3))),
+        )
+        return float(np.mean(np.sort(similarities)[-top_k:]))
+
+    def _reset_body_reauth_evidence(self) -> None:
+        self.body_reauth_streak = 0
+        self.body_reauth_missed_frames = 0
+        self.body_reauth_previous_bbox = None
+
+    def _observe_body_reauthentication(
+        self,
+        candidates: list[Candidate],
+        frame_width: int,
+    ) -> Candidate | None:
+        if not bool(self.cfg.get("body_reauth_enabled", True)):
+            return None
+        ranked = sorted(candidates, key=lambda item: item.memory_score, reverse=True)
+        best = ranked[0] if ranked else None
+        second_score = ranked[1].memory_score if len(ranked) > 1 else -1.0
+        valid = bool(
+            best is not None
+            and best.memory_score
+            >= float(self.cfg.get("body_reauth_match_threshold", 0.78))
+            and (
+                len(ranked) == 1
+                or best.memory_score - second_score
+                >= float(self.cfg.get("body_reauth_candidate_margin", 0.10))
+            )
+        )
+        if not valid:
+            self.body_reauth_missed_frames += 1
+            if self.body_reauth_missed_frames > int(
+                self.cfg.get("body_reauth_max_missed_frames", 3)
+            ):
+                self._reset_body_reauth_evidence()
+            return None
+        assert best is not None
+        current_bbox = tuple(int(value) for value in best.person.bbox)
+        same_physical_candidate = bool(
+            self.body_reauth_previous_bbox is not None
+            and bbox_spatial_similarity(
+                self.body_reauth_previous_bbox,
+                current_bbox,
+                frame_width,
+                float(self.cfg.get("body_reauth_maximum_center_shift", 0.55)),
+            )
+            >= float(self.cfg.get("body_reauth_same_person_min_spatial_score", 0.30))
+        )
+        self.body_reauth_streak = self.body_reauth_streak + 1 if same_physical_candidate else 1
+        self.body_reauth_previous_bbox = current_bbox
+        self.body_reauth_missed_frames = 0
+        if self.body_reauth_streak < int(
+            self.cfg.get("body_reauth_required_confirmations", 3)
+        ):
+            return None
+        return best
+
+    def reauthenticate_body_target(self, candidate: Candidate) -> None:
+        """Restore the physical track from persistent multi-pose body memory."""
+        self._reset_tracklet()
+        diverse_append(
+            self.tracklet_gallery,
+            candidate.feature,
+            int(self.cfg["tracklet_gallery_size"]),
+            float(self.cfg.get("tracklet_min_feature_distance", 0.015)),
+        )
+        if candidate.memory_feature is not None:
+            diverse_append(
+                self.tracklet_gallery,
+                candidate.memory_feature,
+                int(self.cfg["tracklet_gallery_size"]),
+                float(self.cfg.get("tracklet_min_feature_distance", 0.015)),
+            )
+        self.rolling_anchor_centroid = normalized(candidate.feature)
+        values = tuple(int(value) for value in candidate.person.bbox)
+        self.locked = True
+        self.stable_frames = max(1, int(self.cfg.get("stable_accept_frames", 2)))
+        self.lost_frames = 0
+        self.previous_bbox = values
+        self.older_bbox = values
+        self.selected_streak = 1
+        self.reauthentication_required = False
+        self.reacquisitions += 1
+        self.body_reauthentications += 1
+        if diverse_append(
+            self.identity_memory_gallery,
+            candidate.feature,
+            int(self.cfg.get("identity_memory_size", 64)),
+            float(self.cfg.get("identity_memory_min_feature_distance", 0.018)),
+        ):
+            self.identity_memory_updates += 1
+        self._reset_body_reauth_evidence()
+        self.previous_selected_feature = candidate.feature.copy()
+        self.previous_selected_wide = candidate.wide_body
+        self.same_pose_streak = 1
 
     def _reset_tracklet(self) -> None:
         self.tracklet_gallery = [item.copy() for item in self.anchor_gallery]
@@ -666,6 +986,14 @@ class ContinuousIdentityTracker:
         self.prone_seed_streak = 0
 
     def _expire_lost_lock_if_allowed(self) -> None:
+        if self.lost_frames > int(self.cfg.get("reauthenticate_after_lost_frames", 8)):
+            # Body ReID is not identity authentication.  Once the physical
+            # face-authenticated track has been absent for long enough, do not
+            # let a remaining person's spatial continuity or an adaptive body
+            # gallery turn that person green. Recovery now starts only from the
+            # persistent identity-safe body memory or a fresh face confirmation.
+            self.reauthentication_required = True
+            self._reset_tracklet()
         if self.lost_frames <= int(self.cfg["lost_grace_frames"]):
             return
         # A registered-face session must not silently degrade into ordinary
@@ -681,6 +1009,27 @@ class ContinuousIdentityTracker:
 
     def update(self, frame: np.ndarray, people: list[Detection], reid: RknnReID) -> tuple[Candidate | None, list[Candidate], dict[str, Any]]:
         self.frame_index += 1
+        frame_signature = cv2.resize(
+            cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), (32, 24)
+        ).astype(np.float32) / 255.0
+        frame_change_score = (
+            float(np.mean(np.abs(frame_signature - self.previous_frame_signature)))
+            if self.previous_frame_signature is not None
+            else 0.0
+        )
+        self.previous_frame_signature = frame_signature
+        scene_cut_detected = bool(
+            self.locked
+            and frame_change_score
+            >= float(self.cfg.get("scene_cut_reauthentication_threshold", 0.08))
+        )
+        if scene_cut_detected:
+            # A discontinuous image jump invalidates geometry and all volatile
+            # galleries. Keep only the persistent, authenticated body memory;
+            # counting resumes after the normal multi-frame body reauth gate.
+            self.reauthentication_required = True
+            self._reset_tracklet()
+            self._reset_body_reauth_evidence()
         top_k = int(self.cfg["gallery_top_k"])
         adaptive_matrix = np.stack(self.adaptive_gallery) if self.adaptive_gallery else None
         tracklet_matrix = np.stack(self.tracklet_gallery)
@@ -693,14 +1042,38 @@ class ContinuousIdentityTracker:
         )
         candidates: list[Candidate] = []
         for person in people:
-            feature = reid.feature(crop_person(frame, person.bbox, padding=0.08))
+            person_crop = crop_person(frame, person.bbox, padding=0.08)
+            feature = reid.feature(person_crop)
+            box_width = max(1, person.bbox[2] - person.bbox[0])
+            box_height = max(1, person.bbox[3] - person.bbox[1])
+            wide_body = box_width / box_height >= float(
+                self.cfg.get("prone_gallery_min_bbox_aspect", 1.10)
+            )
+            memory_feature = feature
+            memory_score = self._identity_memory_score(feature)
+            temporal_score = (
+                float(np.dot(self.previous_selected_feature, feature))
+                if self.previous_selected_feature is not None
+                else 1.0
+            )
+            if (
+                self.reauthentication_required
+                and wide_body
+                and bool(self.cfg.get("body_reauth_orientation_normalization", True))
+            ):
+                # ReID backbones are trained mainly on upright pedestrians.
+                # During recovery only, compare both 90-degree normalizations
+                # so a returning prone target is not penalized for orientation.
+                for rotation in (cv2.ROTATE_90_CLOCKWISE, cv2.ROTATE_90_COUNTERCLOCKWISE):
+                    rotated_feature = reid.feature(cv2.rotate(person_crop, rotation))
+                    rotated_score = self._identity_memory_score(rotated_feature)
+                    if rotated_score > memory_score:
+                        memory_score = rotated_score
+                        memory_feature = rotated_feature
             anchor_score = identity_score(feature, self.anchor_centroid, self.anchor_gallery, top_k)
             rolling_anchor_score = float(np.dot(self.rolling_anchor_centroid, feature))
             adaptive_score = float(np.max(adaptive_matrix @ feature)) if adaptive_matrix is not None else -1.0
             tracklet_score = float(np.max(tracklet_matrix @ feature))
-            box_width = max(1, person.bbox[2] - person.bbox[0])
-            box_height = max(1, person.bbox[3] - person.bbox[1])
-            wide_body = box_width / box_height >= float(self.cfg.get("prone_gallery_min_bbox_aspect", 1.10))
             prone_score = (
                 float(np.mean(np.sort(prone_matrix @ feature)[-min(3, len(prone_matrix)):]))
                 if prone_matrix is not None and wide_body
@@ -739,9 +1112,17 @@ class ContinuousIdentityTracker:
                     combined,
                     spatial,
                     association,
+                    memory_score,
+                    memory_feature,
+                    temporal_score,
                 )
             )
         candidates.sort(key=lambda item: item.association_score, reverse=True)
+        body_reauth_candidate = (
+            self._observe_body_reauthentication(candidates, int(frame.shape[1]))
+            if self.reauthentication_required
+            else None
+        )
         comparison_candidates = candidates
         anchor_ranked = sorted(candidates, key=lambda item: item.anchor_score, reverse=True)
         anchor_margin = (
@@ -783,11 +1164,19 @@ class ContinuousIdentityTracker:
                 and prone_margin >= float(self.cfg.get("prone_guard_min_margin", 0.08))
             )
             if (
-                not prone_guard_active
+                bool(self.cfg.get("allow_nonspatial_identity_override", False))
+                and not self.reauthentication_required
+                and (
+                    not bool(self.cfg.get("nonspatial_reacquire_requires_multiple_people", True))
+                    or len(candidates) > 1
+                )
+                and self.lost_frames
+                <= int(self.cfg.get("nonspatial_reacquire_max_gap_frames", 4))
+                and not prone_guard_active
                 and anchor_ranked[0].anchor_score
-                >= float(self.cfg.get("locked_reacquire_min_anchor_score", 0.72))
+                >= float(self.cfg.get("nonspatial_reacquire_min_anchor_score", 0.88))
                 and anchor_margin
-                >= float(self.cfg.get("locked_reacquire_min_anchor_margin", 0.15))
+                >= float(self.cfg.get("nonspatial_reacquire_min_anchor_margin", 0.25))
             ):
                 # A decisive immutable-anchor match is stronger evidence than
                 # motion after a crossing.  It safely reattaches the original
@@ -829,8 +1218,30 @@ class ContinuousIdentityTracker:
                 0.50 if len(candidates) == 1 else 0.42,
             )
         )
+        second_best_spatial = max(
+            (
+                item.spatial_score
+                for item in candidates
+                if item is not best
+            ),
+            default=-1.0,
+        )
+        best_spatial_margin = (
+            best.spatial_score - second_best_spatial if best is not None else -1.0
+        )
+        temporal_identity_discontinuity = bool(
+            best is not None
+            and self.previous_selected_feature is not None
+            and self.previous_selected_wide == best.wide_body
+            and self.same_pose_streak
+            >= int(self.cfg.get("temporal_identity_guard_ready_frames", 3))
+            and best.temporal_score
+            < float(self.cfg.get("temporal_identity_min_score", 0.80))
+        )
         identity_accept = bool(
             best
+            and not self.reauthentication_required
+            and not temporal_identity_discontinuity
             and best.identity_score >= float(self.cfg["accept_threshold"])
             and best.anchor_score >= float(self.cfg["identity_min_anchor_score"])
             and identity_margin >= float(self.cfg["minimum_candidate_margin"])
@@ -857,6 +1268,8 @@ class ContinuousIdentityTracker:
         ) * float(self.cfg["tracklet_gap_score_increment"])
         tracklet_accept = bool(
             best
+            and not self.reauthentication_required
+            and not temporal_identity_discontinuity
             and self.locked
             and self.lost_frames <= int(self.cfg["tracklet_max_gap_frames"])
             and best.tracklet_score >= required_tracklet_score
@@ -875,6 +1288,8 @@ class ContinuousIdentityTracker:
         # continuity rule, not a global lowering of the identity threshold.
         single_posture_bridge_accept = bool(
             best
+            and not self.reauthentication_required
+            and not temporal_identity_discontinuity
             and self.locked
             and len(candidates) == 1
             and self.lost_frames <= int(self.cfg.get("posture_bridge_max_gap_frames", 36))
@@ -885,6 +1300,8 @@ class ContinuousIdentityTracker:
         )
         multi_posture_bridge_accept = bool(
             best
+            and not self.reauthentication_required
+            and not temporal_identity_discontinuity
             and self.locked
             and len(candidates) > 1
             and self.lost_frames <= int(self.cfg.get("multi_posture_bridge_max_gap_frames", 18))
@@ -898,11 +1315,51 @@ class ContinuousIdentityTracker:
             and best.person.confidence >= float(self.cfg["tracklet_min_detection_confidence"])
             and not crossing_ambiguous
         )
-        posture_bridge_accept = single_posture_bridge_accept or multi_posture_bridge_accept
+        # Upright pedestrian ReID briefly collapses at the exact bending ->
+        # prone transition.  Preserve the already face-authenticated physical
+        # trajectory only when geometry is decisive: the candidate has become
+        # horizontal, remains almost exactly on the predicted path, and every
+        # other person is materially farther away.  This deliberately does not
+        # lower any global identity/reacquisition threshold.
+        strong_spatial_pose_bridge_accept = bool(
+            best
+            and not self.reauthentication_required
+            and self.locked
+            and best.wide_body
+            and not temporal_identity_discontinuity
+            and self.lost_frames
+            <= int(self.cfg.get("strong_pose_bridge_max_gap_frames", 18))
+            and best.tracklet_score
+            >= float(self.cfg.get("strong_pose_bridge_min_dynamic_score", 0.24))
+            and best.spatial_score
+            >= float(self.cfg.get("strong_pose_bridge_min_spatial_score", 0.85))
+            and best_spatial_margin
+            >= float(self.cfg.get("strong_pose_bridge_min_spatial_margin", 0.45))
+            and candidate_overlap
+            < float(self.cfg.get("strong_pose_bridge_max_overlap", 0.16))
+            and best.person.confidence
+            >= float(self.cfg["tracklet_min_detection_confidence"])
+            and not crossing_ambiguous
+        )
+        posture_bridge_accept = bool(
+            single_posture_bridge_accept
+            or multi_posture_bridge_accept
+            or strong_spatial_pose_bridge_accept
+        )
         selected: Candidate | None = None
         selection_mode: str | None = None
         was_locked = self.locked
-        if crossing_ambiguous:
+        if body_reauth_candidate is not None:
+            self.reauthenticate_body_target(body_reauth_candidate)
+            selected = body_reauth_candidate
+            best = body_reauth_candidate
+            selection_mode = "body_reauthenticated"
+        elif self.reauthentication_required:
+            self.lost_frames += 1
+            self.stable_frames = 0
+            self.selected_streak = 0
+            self.switch_rejections += 1
+        elif crossing_ambiguous:
             self.lost_frames += 1
             self.stable_frames = 0
             self.selected_streak = 0
@@ -936,6 +1393,12 @@ class ContinuousIdentityTracker:
             self._expire_lost_lock_if_allowed()
         if selected is not None:
             self.selected_streak += 1
+            if self.previous_selected_wide == selected.wide_body:
+                self.same_pose_streak += 1
+            else:
+                self.same_pose_streak = 1
+            self.previous_selected_feature = selected.feature.copy()
+            self.previous_selected_wide = selected.wide_body
             self.older_bbox = self.previous_bbox
             self.previous_bbox = selected.person.bbox
             strong_identity_update = bool(
@@ -965,7 +1428,7 @@ class ContinuousIdentityTracker:
                 and (
                     len(candidates) == 1
                     or (
-                        multi_posture_bridge_accept
+                        (multi_posture_bridge_accept or strong_spatial_pose_bridge_accept)
                         and association_margin
                         >= float(self.cfg.get("multi_anchor_update_min_association_margin", 0.12))
                         and identity_margin >= float(self.cfg.get("multi_anchor_update_min_identity_margin", 0.05))
@@ -988,8 +1451,24 @@ class ContinuousIdentityTracker:
                 and candidate_overlap < float(self.cfg.get("multi_anchor_update_max_overlap", 0.12))
                 and selected.person.confidence >= float(self.cfg["tracklet_min_detection_confidence"])
             )
+            trusted_multi_person_identity_update = bool(
+                len(candidates) > 1
+                and selection_mode == "identity"
+                and not crossing_ambiguous
+                and selected.anchor_score
+                >= float(self.cfg.get("multi_dynamic_update_min_anchor_score", 0.82))
+                and identity_margin
+                >= float(self.cfg.get("multi_dynamic_update_min_identity_margin", 0.20))
+            )
+            dynamic_updates_allowed = bool(
+                len(candidates) == 1
+                or strong_spatial_pose_bridge_accept
+                or not bool(self.cfg.get("freeze_dynamic_updates_when_multiple_people", True))
+                or trusted_multi_person_identity_update
+            )
             safe_tracklet_update = bool(
                 self.locked
+                and dynamic_updates_allowed
                 and not crossing_ambiguous
                 and selected.person.confidence >= float(self.cfg["tracklet_min_detection_confidence"])
                 and (
@@ -1011,6 +1490,7 @@ class ContinuousIdentityTracker:
                     self.tracklet_updates += 1
             trusted_prone_observation = bool(
                 self.locked
+                and dynamic_updates_allowed
                 and selected.wide_body
                 and not crossing_ambiguous
                 and selected.person.confidence >= float(self.cfg["tracklet_min_detection_confidence"])
@@ -1046,6 +1526,7 @@ class ContinuousIdentityTracker:
                 self.prone_updates += 1
             safe_rolling_anchor_update = bool(
                 self.locked
+                and dynamic_updates_allowed
                 and not crossing_ambiguous
                 and selected.person.confidence >= float(self.cfg["tracklet_min_detection_confidence"])
                 and (
@@ -1092,10 +1573,70 @@ class ContinuousIdentityTracker:
                 )
                 if appended:
                     self.adaptive_updates += 1
+            second_spatial = max(
+                (item.spatial_score for item in candidates if item is not selected),
+                default=-1.0,
+            )
+            memory_spatial_margin = selected.spatial_score - second_spatial
+            trusted_pose_memory_update = bool(
+                selection_mode == "posture_bridge"
+                and strong_spatial_pose_bridge_accept
+                and selected.wide_body
+                and selected.tracklet_score
+                >= float(self.cfg.get("strong_pose_memory_min_dynamic_score", 0.24))
+                and selected.spatial_score
+                >= float(self.cfg.get("strong_pose_memory_min_spatial_score", 0.85))
+                and memory_spatial_margin
+                >= float(self.cfg.get("strong_pose_memory_min_spatial_margin", 0.45))
+            )
+            safe_identity_memory_update = bool(
+                not self.reauthentication_required
+                and selection_mode in {
+                    "identity",
+                    "tracklet",
+                    "posture_bridge",
+                    "face_reauthenticated",
+                    "body_reauthenticated",
+                }
+                and not crossing_ambiguous
+                and selected.person.confidence
+                >= float(self.cfg["tracklet_min_detection_confidence"])
+                and (
+                    selected.anchor_score
+                    >= float(self.cfg.get("identity_memory_min_anchor_score", 0.28))
+                    or trusted_pose_memory_update
+                )
+                and selected.spatial_score
+                >= float(self.cfg.get("identity_memory_min_spatial_score", 0.85))
+                and (
+                    len(candidates) == 1
+                    or memory_spatial_margin
+                    >= float(self.cfg.get("identity_memory_min_spatial_margin", 0.25))
+                )
+                and self.selected_streak
+                >= int(self.cfg.get("identity_memory_min_selected_streak", 3))
+                and (
+                    selection_mode != "posture_bridge"
+                    or selected.anchor_score >= 0.45
+                    or trusted_pose_memory_update
+                )
+                and self.frame_index
+                % int(self.cfg.get("identity_memory_update_interval_frames", 2))
+                == 0
+            )
+            if safe_identity_memory_update and diverse_append(
+                self.identity_memory_gallery,
+                selected.feature,
+                int(self.cfg.get("identity_memory_size", 64)),
+                float(self.cfg.get("identity_memory_min_feature_distance", 0.018)),
+            ):
+                self.identity_memory_updates += 1
         if selected is not None:
             freeze_reason = None
         elif best is None:
             freeze_reason = "no_candidate"
+        elif self.reauthentication_required:
+            freeze_reason = "identity_reauthentication_required"
         elif crossing_ambiguous:
             freeze_reason = "crossing_ambiguous"
         elif identity_accept:
@@ -1129,6 +1670,11 @@ class ContinuousIdentityTracker:
             "locked_accept_spatial_gate": locked_accept_spatial_gate,
             "identity_override_active": identity_override_active,
             "strict_session_reacquire": not was_locked,
+            "face_reauthentication_required": self.reauthentication_required,
+            "body_reauth_streak": self.body_reauth_streak,
+            "body_reauthentications": self.body_reauthentications,
+            "identity_memory_size": len(self.identity_memory_gallery),
+            "identity_memory_updates": self.identity_memory_updates,
             "authenticated_lock_preserved": bool(
                 self.locked
                 and self.lost_frames > int(self.cfg["lost_grace_frames"])
@@ -1142,6 +1688,12 @@ class ContinuousIdentityTracker:
             "posture_bridge_accept": posture_bridge_accept,
             "single_posture_bridge_accept": single_posture_bridge_accept,
             "multi_posture_bridge_accept": multi_posture_bridge_accept,
+            "strong_spatial_pose_bridge_accept": strong_spatial_pose_bridge_accept,
+            "temporal_identity_discontinuity": temporal_identity_discontinuity,
+            "temporal_score": round(best.temporal_score, 4) if best else None,
+            "same_pose_streak": self.same_pose_streak,
+            "scene_cut_detected": scene_cut_detected,
+            "frame_change_score": round(frame_change_score, 4),
             "stable_frames": self.stable_frames,
             "lost_frames": self.lost_frames,
             "selected_streak": self.selected_streak,
@@ -1166,6 +1718,8 @@ class ContinuousIdentityTracker:
                     "identity": round(item.identity_score, 4),
                     "spatial": round(item.spatial_score, 4),
                     "association": round(item.association_score, 4),
+                        "memory": round(item.memory_score, 4),
+                        "temporal": round(item.temporal_score, 4),
                 }
                 for item in candidates
             ],
@@ -1264,6 +1818,162 @@ def registered_face_person_matches(
         elif match["person"].area < deduplicated[duplicate_index]["person"].area:
             deduplicated[duplicate_index] = match
     return deduplicated
+
+
+class FaceReauthenticationState:
+    """Require repeated, unique face matches on one physical candidate."""
+
+    def __init__(self, config: dict[str, Any]):
+        self.cfg = config["face"]
+        self.confirmation_streak = 0
+        self.missed_attempts = 0
+        self.previous_bbox: tuple[int, int, int, int] | None = None
+
+    def reset(self) -> None:
+        self.confirmation_streak = 0
+        self.missed_attempts = 0
+        self.previous_bbox = None
+
+    def observe(
+        self,
+        matches: list[dict[str, Any]],
+        frame_width: int,
+    ) -> dict[str, Any] | None:
+        strict_matches = sorted(
+            (
+                item
+                for item in matches
+                if float(item["identity"]["score"])
+                >= float(self.cfg.get("reauth_match_threshold", 0.78))
+                and float(item["identity"]["margin"])
+                >= float(self.cfg.get("reauth_match_margin", 0.08))
+            ),
+            key=lambda item: float(item["identity"]["score"]),
+            reverse=True,
+        )
+        if not strict_matches:
+            self.missed_attempts += 1
+            if self.missed_attempts > int(self.cfg.get("reauth_max_missed_attempts", 2)):
+                self.reset()
+            return None
+
+        best = strict_matches[0]
+        second_score = (
+            float(strict_matches[1]["identity"]["score"])
+            if len(strict_matches) > 1
+            else -1.0
+        )
+        if (
+            len(strict_matches) > 1
+            and float(best["identity"]["score"]) - second_score
+            < float(self.cfg.get("reauth_person_match_margin", 0.08))
+        ):
+            self.reset()
+            return None
+
+        current_bbox = tuple(int(value) for value in best["person"].bbox)
+        same_physical_candidate = bool(
+            self.previous_bbox is not None
+            and bbox_spatial_similarity(
+                self.previous_bbox,
+                current_bbox,
+                frame_width,
+                float(self.cfg.get("reauth_maximum_center_shift", 0.50)),
+            )
+            >= float(self.cfg.get("reauth_same_person_min_spatial_score", 0.30))
+        )
+        self.confirmation_streak = self.confirmation_streak + 1 if same_physical_candidate else 1
+        self.previous_bbox = current_bbox
+        self.missed_attempts = 0
+        if self.confirmation_streak < int(self.cfg.get("reauth_required_confirmations", 3)):
+            return None
+        self.reset()
+        return best
+
+
+class FaceReauthenticationVerifier:
+    """Lazily run face verification only after a body track is truly lost."""
+
+    def __init__(
+        self,
+        requested_name: str,
+        registered: list[dict[str, Any]],
+        config: dict[str, Any],
+    ):
+        self.requested_name = requested_name
+        self.registered = registered
+        self.config = config
+        self.state = FaceReauthenticationState(config)
+        self.face_model: FaceEmbeddingModel | Any | None = None
+        self.face_detector: Any | None = None
+        self.last_attempt_frame = -10**9
+        self.attempts = 0
+        self.confirmations = 0
+        self.errors = 0
+
+    def should_attempt(self, processed_frame: int) -> bool:
+        return bool(self.config["face"].get("reauth_enabled", True)) and (
+            processed_frame - self.last_attempt_frame
+            >= max(1, int(self.config["face"].get("reauth_interval_frames", 2)))
+        )
+
+    def _ensure_models(self) -> None:
+        if self.face_model is None:
+            self.face_model = _RESIDENT_FACE_OVERRIDE or FaceEmbeddingModel(
+                self.config["models"]["face_embedding"],
+                self.config["face"]["npu_core"],
+            )
+        if self.face_detector is None:
+            ensure_mediapipe_protobuf_compat()
+            self.face_detector = mp.solutions.face_detection.FaceDetection(
+                model_selection=0,
+                min_detection_confidence=float(self.config["face"]["detection_confidence"]),
+            )
+
+    def check(
+        self,
+        frame: np.ndarray,
+        people: list[Detection],
+        processed_frame: int,
+    ) -> dict[str, Any] | None:
+        if not self.should_attempt(processed_frame):
+            return None
+        self.last_attempt_frame = processed_frame
+        self.attempts += 1
+        try:
+            self._ensure_models()
+            matches = registered_face_person_matches(
+                frame,
+                people,
+                self.face_detector,
+                self.face_model,
+                self.registered,
+                self.requested_name,
+                self.config,
+            )
+            confirmed = self.state.observe(matches, int(frame.shape[1]))
+            if confirmed is not None:
+                self.confirmations += 1
+            return confirmed
+        except Exception:
+            self.errors += 1
+            raise
+
+    def diagnostics(self) -> dict[str, Any]:
+        return {
+            "face_reauth_attempts": self.attempts,
+            "face_reauth_confirmations": self.confirmations,
+            "face_reauth_errors": self.errors,
+            "face_reauth_confirmation_streak": self.state.confirmation_streak,
+        }
+
+    def close(self) -> None:
+        if self.face_detector is not None:
+            self.face_detector.close()
+            self.face_detector = None
+        if self.face_model is not None and self.face_model is not _RESIDENT_FACE_OVERRIDE:
+            self.face_model.release()
+        self.face_model = None
 
 
 def acquire_database_identity_gallery(
@@ -1406,8 +2116,13 @@ class PushupPhaseTracker:
         self.horizontal_frames = 0
         self.horizontal_ready = False
         self.phase_frames = 0
+        # Do not turn an ordinary stand->floor->plank preparation sequence into
+        # repetition one.  A session is armed only after a stable horizontal
+        # upper-plank has been observed; only a subsequent down->up cycle counts.
+        self.armed = False
+        self.initial_down_seeded = False
 
-    def _reset_posture(self) -> None:
+    def _reset_posture(self, *, disarm: bool = True) -> None:
         self.phase = None
         self.candidate_phase = None
         self.candidate_frames = 0
@@ -1415,12 +2130,18 @@ class PushupPhaseTracker:
         self.horizontal_frames = 0
         self.horizontal_ready = False
         self.phase_frames = 0
+        if disarm:
+            self.armed = False
+            self.initial_down_seeded = False
 
     def mark_missing(self) -> None:
         self.missing_frames += 1
         self.frames_since_rep += 1
         if self.missing_frames > int(self.cfg["lost_reset_frames"]):
-            self._reset_posture()
+            # A temporary pose/identity dropout must not turn the next genuine
+            # repetition into another session preparation.  Lose phase history
+            # but retain the fact that this workout was already armed.
+            self._reset_posture(disarm=False)
 
     def process_observation(
         self,
@@ -1445,6 +2166,8 @@ class PushupPhaseTracker:
                 "horizontal": False,
                 "horizontal_ready": False,
                 "horizontal_frames": 0,
+                "armed": False,
+                "arming_frames": 0,
                 "incremented": False,
             }
 
@@ -1477,6 +2200,44 @@ class PushupPhaseTracker:
             self.candidate_frames = 1 if phase_candidate else 0
         incremented = False
         required_phase_frames = int(self.cfg["minimum_phase_frames"])
+        initial_up_ready_frames = max(
+            required_phase_frames,
+            int(self.cfg.get("initial_up_ready_frames", 3)),
+        )
+        if not self.armed:
+            if phase_candidate == "up" and self.candidate_frames >= initial_up_ready_frames:
+                self.armed = True
+                self.phase = "up"
+                self.phase_frames = 1
+            elif (
+                bool(self.cfg.get("count_initial_down_to_up", False))
+                and phase_candidate == "down"
+                and self.candidate_frames >= required_phase_frames
+            ):
+                # The geometry selector has already rejected upright and
+                # kneeling preparation. An initially stable down pose is a
+                # genuine in-progress first repetition.
+                self.armed = True
+                self.phase = "down"
+                self.phase_frames = max(1, self.candidate_frames)
+                self.initial_down_seeded = True
+            return {
+                "count": self.count,
+                "phase": self.phase,
+                "candidate_phase": phase_candidate,
+                "filtered_angle": round(float(self.filtered_angle), 2),
+                "horizontal": True,
+                "horizontal_ready": self.horizontal_ready,
+                "horizontal_frames": self.horizontal_frames,
+                "armed": self.armed,
+                "initial_down_seeded": self.initial_down_seeded,
+                "arming_frames": self.candidate_frames if phase_candidate == "up" else 0,
+                "required_arming_frames": initial_up_ready_frames,
+                "required_phase_frames": required_phase_frames,
+                "fast_up_confirmation": False,
+                "phase_frames": self.phase_frames,
+                "incremented": False,
+            }
         fast_up_confirmation = bool(
             self.cfg.get("fast_up_confirmation", False)
             and self.phase == "down"
@@ -1511,6 +2272,10 @@ class PushupPhaseTracker:
             "horizontal": True,
             "horizontal_ready": self.horizontal_ready,
             "horizontal_frames": self.horizontal_frames,
+            "armed": self.armed,
+            "initial_down_seeded": self.initial_down_seeded,
+            "arming_frames": initial_up_ready_frames,
+            "required_arming_frames": initial_up_ready_frames,
             "required_phase_frames": required_phase_frames,
             "fast_up_confirmation": fast_up_confirmation,
             "phase_frames": self.phase_frames,
@@ -2154,18 +2919,38 @@ class LiveFramePacket:
 
 
 class LatestFrameStream:
-    """Continuously capture/record while inference consumes only the newest frame."""
+    """Continuously capture/record while inference consumes only the newest frame.
 
-    def __init__(self, capture: Any, raw_writer: AsyncTimelineVideoWriter):
+    A shared live camera reports ``False`` both for a permanent end-of-stream
+    and for a temporary read timeout. Treating the first timeout as EOF made a
+    nominal 30-second workout finish after an arbitrary 2--13 seconds. File
+    sources retain normal EOF semantics; live sources receive a bounded grace
+    period and fail explicitly if frames do not recover.
+    """
+
+    def __init__(
+        self,
+        capture: Any,
+        raw_writer: AsyncTimelineVideoWriter,
+        *,
+        live_source: bool = False,
+        maximum_stall_seconds: float = 6.0,
+    ):
         self.capture = capture
         self.raw_writer = raw_writer
+        self.live_source = bool(live_source)
+        self.maximum_stall_seconds = max(0.1, float(maximum_stall_seconds))
         self.condition = threading.Condition()
         self.latest: LiveFramePacket | None = None
         self.stop_requested = False
         self.finished = False
         self.error: BaseException | None = None
+        self.termination_reason: str | None = None
         self.captured_frames = 0
         self.overwritten_frames = 0
+        self.transient_read_timeouts = 0
+        self.stall_recoveries = 0
+        self.longest_stall_seconds = 0.0
         self.first_capture_timestamp: float | None = None
         self.last_capture_timestamp: float | None = None
         self.thread = threading.Thread(
@@ -2178,12 +2963,40 @@ class LatestFrameStream:
         self.thread.start()
 
     def _run(self) -> None:
+        stream_started = time.monotonic()
+        stall_started: float | None = None
         try:
             while not self.stop_requested:
                 ok, frame = self.capture.read()
                 if not ok or frame is None:
-                    break
+                    if not self.live_source:
+                        self.termination_reason = "source_eof"
+                        break
+                    now = time.monotonic()
+                    self.transient_read_timeouts += 1
+                    if stall_started is None:
+                        stall_started = self.last_capture_timestamp or stream_started
+                    stall_seconds = max(0.0, now - stall_started)
+                    self.longest_stall_seconds = max(
+                        self.longest_stall_seconds,
+                        stall_seconds,
+                    )
+                    if stall_seconds >= self.maximum_stall_seconds:
+                        self.termination_reason = "camera_stall"
+                        raise ReIDTestError(
+                            "live camera produced no frame for "
+                            f"{stall_seconds:.3f}s "
+                            f"(limit {self.maximum_stall_seconds:.3f}s)"
+                        )
+                    continue
                 captured_at = time.monotonic()
+                if stall_started is not None:
+                    self.longest_stall_seconds = max(
+                        self.longest_stall_seconds,
+                        max(0.0, captured_at - stall_started),
+                    )
+                    self.stall_recoveries += 1
+                    stall_started = None
                 source_position_ms = float(self.capture.get(cv2.CAP_PROP_POS_MSEC) or 0.0)
                 self.captured_frames += 1
                 if self.first_capture_timestamp is None:
@@ -2204,6 +3017,10 @@ class LatestFrameStream:
         except BaseException as exc:
             self.error = exc
         finally:
+            if self.termination_reason is None:
+                self.termination_reason = (
+                    "stop_requested" if self.stop_requested else "stream_finished"
+                )
             with self.condition:
                 self.finished = True
                 self.condition.notify_all()
@@ -2233,13 +3050,44 @@ class LatestFrameStream:
             raise ReIDTestError(f"latest-frame capture failed: {type(self.error).__name__}: {self.error}")
 
 
+def validate_live_count_completion(
+    *,
+    live_source: bool,
+    requested_duration: float,
+    counting_elapsed: float,
+    termination_reason: str,
+    maximum_frames: int,
+    interrupted: bool,
+) -> None:
+    """Reject a live workout that stopped before its authoritative time limit."""
+
+    if (
+        not live_source
+        or requested_duration <= 0
+        or interrupted
+        or maximum_frames > 0
+    ):
+        return
+    if termination_reason != "duration_reached":
+        raise ReIDTestError(
+            "live_count_ended_before_requested_duration:"
+            f"reason={termination_reason};"
+            f"elapsed={counting_elapsed:.3f};requested={requested_duration:.3f}"
+        )
+
+
 def draw_candidate(frame: np.ndarray, candidate: Candidate, selected: bool) -> None:
     x1, y1, x2, y2 = candidate.person.bbox
     color = (0, 210, 0) if selected else (0, 180, 255)
     cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+    label = (
+        f"id={candidate.identity_score:.3f} trk={candidate.tracklet_score:.3f}"
+        if candidate.feature.size
+        else f"geo={candidate.association_score:.3f} eligible={int(candidate.wide_body)}"
+    )
     cv2.putText(
         frame,
-        f"id={candidate.identity_score:.3f} trk={candidate.tracklet_score:.3f}",
+        label,
         (x1, max(20, y1 - 6)),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.55,
@@ -2283,7 +3131,9 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
     writer: TimelineVideoWriter | AsyncTimelineVideoWriter | None = None
     raw_writer: TimelineVideoWriter | AsyncTimelineVideoWriter | None = None
     latest_stream: LatestFrameStream | None = None
-    tracker: ContinuousIdentityTracker | AnonymousTargetTracker | None = None
+    tracker: ContinuousIdentityTracker | AnonymousTargetTracker | LowerHalfHorizontalTargetTracker | None = None
+    registered: list[dict[str, Any]] = []
+    face_reauth_verifier: FaceReauthenticationVerifier | None = None
     locked_identity: dict[str, Any] = {
         "name": session_identity,
         "person_id": session_identity,
@@ -2308,6 +3158,8 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
     source_frames = 0
     output_fps = float(config.get("output", {}).get("live_fps", config["camera"]["fps"]))
     synchronize_timeline = False
+    termination_reason = "not_started"
+    counting_elapsed = 0.0
 
     _write_state(
         state_file,
@@ -2357,17 +3209,25 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
             ) = acquire_database_identity_gallery(
                 capture, detector, reid, args.name, registered, config
             )
-            runtime_profile = {
-                "name": locked_identity["name"],
-                "person_id": locked_identity["person_id"],
-                "reid_gallery": runtime_gallery,
-                "reid_centroid": normalized(np.mean(runtime_gallery, axis=0)),
-            }
-            # The box is valid only when authentication and counting use the
-            # same camera/source coordinate system.
-            if identity_source == str(args.source):
-                runtime_profile["authenticated_bbox"] = authenticated_bbox
-            tracker = ContinuousIdentityTracker(runtime_profile, config)
+            if exercise == "push_up":
+                tracker = LowerHalfHorizontalTargetTracker(config, face_authenticated=True)
+            else:
+                runtime_profile = {
+                    "name": locked_identity["name"],
+                    "person_id": locked_identity["person_id"],
+                    "reid_gallery": runtime_gallery,
+                    "reid_centroid": normalized(np.mean(runtime_gallery, axis=0)),
+                }
+                # The box is valid only when authentication and counting use
+                # the same camera/source coordinate system.
+                if identity_source == str(args.source):
+                    runtime_profile["authenticated_bbox"] = authenticated_bbox
+                tracker = ContinuousIdentityTracker(runtime_profile, config)
+                face_reauth_verifier = FaceReauthenticationVerifier(
+                    locked_identity["name"],
+                    registered,
+                    config,
+                )
         else:
             face_acquisition = {
                 "skipped": True,
@@ -2375,7 +3235,11 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
                 "face_recognition": False,
                 "reid": False,
             }
-            tracker = AnonymousTargetTracker()
+            tracker = (
+                LowerHalfHorizontalTargetTracker(config, face_authenticated=False)
+                if exercise == "push_up"
+                else AnonymousTargetTracker()
+            )
         counter = PushupCounter(config) if exercise == "push_up" else LandmarkExerciseCounter(exercise, config)
         framing_policy = FitnessFramingEventPolicy(hold_seconds=float(config.get("fitness_framing", {}).get("hold_seconds", 1.2)), repeat_seconds=float(config.get("fitness_framing", {}).get("repeat_seconds", 10.0)))
         counter.tracker.count = initial_count
@@ -2434,7 +3298,14 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
                     synchronize_timeline,
                     queue_seconds=float(output_cfg.get("writer_queue_seconds", 5.0)),
                 )
-                latest_stream = LatestFrameStream(capture, raw_writer)
+                latest_stream = LatestFrameStream(
+                    capture,
+                    raw_writer,
+                    live_source=True,
+                    maximum_stall_seconds=float(
+                        output_cfg.get("live_capture_stall_timeout_seconds", 6.0)
+                    ),
+                )
                 latest_stream.start()
         else:
             input_fps = float(capture.get(cv2.CAP_PROP_FPS) or config["camera"]["fps"])
@@ -2475,11 +3346,15 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
             while not _STOP_REQUESTED:
                 now = time.monotonic()
                 if duration > 0 and now - session_started >= duration:
+                    termination_reason = "duration_reached"
                     break
                 if latest_stream is not None:
                     packet = latest_stream.read_latest(timeout=0.5)
                     if packet is None:
                         if latest_stream.finished:
+                            termination_reason = (
+                                latest_stream.termination_reason or "stream_finished"
+                            )
                             break
                         continue
                     frame = packet.frame
@@ -2493,9 +3368,11 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
                 else:
                     ok, frame = capture.read()
                     if not ok or frame is None:
+                        termination_reason = "source_eof"
                         break
                     captured_at = time.monotonic()
                     if source_finished(args.source, capture, end):
+                        termination_reason = "source_end"
                         break
                     frame_index += 1
                     source_time_seconds = float(capture.get(cv2.CAP_PROP_POS_MSEC) or 0.0) / 1000.0
@@ -2522,13 +3399,72 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
                 if len(people) > 1:
                     multi_person_frames += 1
                 selected, candidates, identity = tracker.update(frame, people, reid)
+                if (
+                    selected is None
+                    and face_reauth_verifier is not None
+                    and isinstance(tracker, ContinuousIdentityTracker)
+                    and tracker.reauthentication_required
+                ):
+                    try:
+                        face_match = face_reauth_verifier.check(
+                            frame,
+                            people,
+                            processed_frames,
+                        )
+                    except Exception as exc:
+                        face_match = None
+                        identity["face_reauth_error"] = f"{type(exc).__name__}: {exc}"
+                    identity.update(face_reauth_verifier.diagnostics())
+                    if face_match is not None:
+                        selected = next(
+                            (
+                                item
+                                for item in candidates
+                                if item.person is face_match["person"]
+                                or item.person.bbox == face_match["person"].bbox
+                            ),
+                            None,
+                        )
+                        if selected is not None:
+                            tracker.reauthenticate_face_target(
+                                selected.person.bbox,
+                                selected.feature,
+                            )
+                            identity.update(
+                                {
+                                    "state": "locked",
+                                    "selection_mode": "face_reauthenticated",
+                                    "freeze_reason": None,
+                                    "face_reauthentication_required": False,
+                                    "face_reauthenticated": True,
+                                    "face_reauth_score": round(
+                                        float(face_match["identity"]["score"]),
+                                        4,
+                                    ),
+                                    "face_reauth_database_margin": round(
+                                        float(face_match["identity"]["margin"]),
+                                        4,
+                                    ),
+                                    "lost_frames": 0,
+                                    "selected_bbox": list(selected.person.bbox),
+                                }
+                            )
+                            emit(
+                                "database_face_target_reauthenticated",
+                                name=locked_identity["name"],
+                                person_id=locked_identity["person_id"],
+                                bbox=list(selected.person.bbox),
+                                face_score=identity["face_reauth_score"],
+                                database_margin=identity["face_reauth_database_margin"],
+                                attempts=face_reauth_verifier.attempts,
+                            )
                 if selected is None:
                     counter.mark_missing()
                     pose_result = {
                         "valid": False,
                         "count": counter.count,
                         "phase": counter.phase,
-                        "reason": "identity_not_locked",
+                        "reason": identity.get("freeze_reason") or "identity_not_locked",
                     }
                 else:
                     selected_frames += 1
@@ -2629,7 +3565,18 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
                         events=str(events_path),
                     )
                 if max_frames and processed_frames >= max_frames:
+                    termination_reason = "max_frames_reached"
                     break
+
+        if _STOP_REQUESTED:
+            termination_reason = "interrupted"
+        counting_elapsed = max(0.0, time.monotonic() - session_started)
+
+        exercise_name = {
+            "push_up": "俯卧撑",
+            "squat": "深蹲",
+            "pull_up": "引体向上",
+        }[exercise]
 
         # Finalize and close MP4 containers before creating the upload manifest.
         # Publishing a manifest while OpenCV still owns the file can race the
@@ -2642,8 +3589,32 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
             writer.release()
         if raw_writer is not None:
             raw_writer.release()
+        validate_live_count_completion(
+            live_source=live_source,
+            requested_duration=duration,
+            counting_elapsed=counting_elapsed,
+            termination_reason=termination_reason,
+            maximum_frames=max_frames,
+            interrupted=_STOP_REQUESTED,
+        )
         if processed_frames > 0 and selected_frames == 0 and not _STOP_REQUESTED:
             raise ReIDTestError("no_exercise_person_detected")
+        if not _STOP_REQUESTED:
+            # Counting is authoritative at this point.  Announce it before H.264
+            # conversion, App upload, projector shutdown, head leveling and lidar
+            # recovery; those safety/recording tasks still finish synchronously.
+            _skill_event(
+                "complete",
+                (
+                    f"运动结束，你一共完成了{_spoken_repetition_count(counter.count)}"
+                    f"{exercise_name}。辛苦了，喝口水吧。"
+                ),
+                count=counter.count,
+                session_count=counter.count - initial_count,
+                elapsed_seconds=round(
+                    initial_elapsed + time.monotonic() - session_started, 3
+                ),
+            )
         app_video_encode: dict[str, Any] | None = None
         app_video_encode_error: str | None = None
         if raw_writer is not None and raw_writer.output_frames > 0 and raw_output.is_file():
@@ -2660,6 +3631,13 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
             "identity": locked_identity["name"],
             "person_id": locked_identity["person_id"],
             "identity_policy": identity_policy,
+            "counting_target_policy": (
+                "face_authenticated_then_lower_half_geometry"
+                if exercise == "push_up" and identity_policy == "face_and_reid"
+                else "lower_half_geometry"
+                if exercise == "push_up"
+                else identity_policy
+            ),
             "face_database": (
                 config["face"]["database"]
                 if identity_policy == "face_and_reid"
@@ -2678,6 +3656,17 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
             "valid_pose_frames": counter.valid_pose_frames,
             "pose_backend": getattr(counter, "pose_backend", "mediapipe"),
             "identity_reacquisitions": tracker.reacquisitions,
+            "face_reauthentications": getattr(tracker, "face_reauthentications", 0),
+            "body_reauthentications": getattr(tracker, "body_reauthentications", 0),
+            "identity_memory_size": len(
+                getattr(tracker, "identity_memory_gallery", [])
+            ),
+            "identity_memory_updates": getattr(tracker, "identity_memory_updates", 0),
+            "face_reauthentication": (
+                face_reauth_verifier.diagnostics()
+                if face_reauth_verifier is not None
+                else None
+            ),
             "switch_rejections": tracker.switch_rejections,
             "tracklet_gallery_size": len(tracker.tracklet_gallery),
             "tracklet_updates": tracker.tracklet_updates,
@@ -2685,6 +3674,9 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
             "adaptive_updates": tracker.adaptive_updates,
             "rolling_anchor_updates": tracker.rolling_anchor_updates,
             "face_acquisition": face_acquisition,
+            "requested_duration_seconds": round(duration, 3),
+            "counting_elapsed_seconds": round(counting_elapsed, 3),
+            "termination_reason": termination_reason,
             "elapsed_seconds": round(initial_elapsed + elapsed, 3),
             "effective_fps": round(processed_frames / max(elapsed, 1e-6), 3),
             "output_fps": round(output_fps, 3),
@@ -2703,6 +3695,9 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
             "latest_frame_mode": latest_stream is not None,
             "captured_frames": latest_stream.captured_frames if latest_stream is not None else processed_frames,
             "latest_overwritten_frames": latest_stream.overwritten_frames if latest_stream is not None else 0,
+            "camera_read_timeouts": latest_stream.transient_read_timeouts if latest_stream is not None else 0,
+            "camera_stall_recoveries": latest_stream.stall_recoveries if latest_stream is not None else 0,
+            "longest_camera_stall_seconds": round(latest_stream.longest_stall_seconds, 3) if latest_stream is not None else 0.0,
             "stale_inference_frames": stale_frames,
             "raw_writer_dropped_frames": (
                 raw_writer.frames_dropped
@@ -2730,11 +3725,6 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
             "app_video_manifest": str(app_video_manifest_path),
             "hardware_control": False,
         }
-        exercise_name = {
-            "push_up": "俯卧撑",
-            "squat": "深蹲",
-            "pull_up": "引体向上",
-        }[exercise]
         if app_video_encode is not None and app_video_output.is_file():
             app_video_manifest = {
                 "schema": 1,
@@ -2765,15 +3755,6 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
         _write_state(state_file, running=False, pid=None, **summary)
         if _STOP_REQUESTED:
             print(json.dumps({"event": "skill_interrupted", "skill_name": exercise, **summary}, ensure_ascii=False), flush=True)
-        else:
-            # This event is the authoritative end of counting.  The daemon speaks
-            # it immediately, independently of projector/head cleanup, and records
-            # it on the step so the later aggregate summary is not repeated.
-            _skill_event(
-                "complete",
-                f"运动结束，你一共完成了{_spoken_repetition_count(counter.count)}{exercise_name}。",
-                **summary,
-            )
         emit("count_complete", **summary)
         return 0
     except Exception as exc:
@@ -2787,6 +3768,23 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
             initial_count=initial_count,
             current_count=counter.count if counter is not None else initial_count,
             count=counter.count if counter is not None else initial_count,
+            requested_duration_seconds=round(duration, 3),
+            counting_elapsed_seconds=round(counting_elapsed, 3),
+            termination_reason=(
+                latest_stream.termination_reason
+                if latest_stream is not None and latest_stream.termination_reason
+                else termination_reason
+            ),
+            camera_read_timeouts=(
+                latest_stream.transient_read_timeouts
+                if latest_stream is not None
+                else 0
+            ),
+            camera_stall_recoveries=(
+                latest_stream.stall_recoveries
+                if latest_stream is not None
+                else 0
+            ),
             error=f"{type(exc).__name__}: {exc}",
             output=str(output),
         )
@@ -2800,6 +3798,8 @@ def command_count(args: argparse.Namespace, config: dict[str, Any]) -> int:
             raw_writer.release()
         if counter is not None:
             counter.release()
+        if face_reauth_verifier is not None:
+            face_reauth_verifier.close()
         if capture is not None:
             capture.release()
         if reid is not None and reid is not _RESIDENT_REID_OVERRIDE:

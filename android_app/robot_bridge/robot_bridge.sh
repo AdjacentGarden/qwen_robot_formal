@@ -6,6 +6,7 @@ PROJECT="${ROBOT_PROJECT:-$PROJECT_ROOT}"
 ENV_FILE="${ROBOT_BRIDGE_ENV:-/home/test/.config/robot_android_bridge.env}"
 PID_FILE="$ROOT/runtime/bridge.pid"
 LOG_FILE="$ROOT/runtime/bridge.log"
+SYSTEMD_SERVICE="ideal-robot-app-bridge.service"
 mkdir -p "$ROOT/runtime"
 
 alive() {
@@ -16,6 +17,24 @@ alive() {
   [[ -r "/proc/$pid/cmdline" ]] || return 1
   cmdline="$(tr '\0' ' ' <"/proc/$pid/cmdline" 2>/dev/null || true)"
   [[ "$cmdline" == *"robot_bridge.sh supervise"* || "$cmdline" == *"robot_bridge.sh foreground"* || "$cmdline" == *"android_app/robot_bridge/bridge.py"* ]]
+}
+
+adopt_systemd_worker() {
+  local candidates="" count=0 pid=""
+  for _ in $(seq 1 50); do
+    candidates="$(pgrep -f "^python3 $ROOT/bridge.py$" 2>/dev/null || true)"
+    count="$(wc -w <<<"$candidates" | tr -d ' ')"
+    if [[ "$count" == "1" ]]; then
+      pid="$(head -n 1 <<<"$candidates")"
+      echo "$pid" >"$PID_FILE"
+      alive && return 0
+    fi
+    # More than one worker is never healthy: do not silently adopt one and
+    # leave two identities fighting on the relay.
+    [[ "$count" -gt 1 ]] && return 2
+    sleep 0.1
+  done
+  return 1
 }
 
 load_environment() {
@@ -46,6 +65,18 @@ start() {
   if alive; then
     echo "robot bridge already running: pid=$(cat "$PID_FILE")"
     return
+  fi
+  # The production bridge is normally owned by systemd with Restart=always.
+  # During a service restart there is a short window with no PID file.  A
+  # standalone supervisor launched in that window would create a second robot
+  # identity and the relay would repeatedly disconnect both with code 4001.
+  if systemctl is-active --quiet "$SYSTEMD_SERVICE" 2>/dev/null; then
+    if adopt_systemd_worker; then
+      echo "robot bridge already managed by systemd: pid=$(cat "$PID_FILE")"
+      return
+    fi
+    echo "systemd bridge is active but does not have exactly one worker; refusing duplicate start" >&2
+    return 4
   fi
   rm -f "$PID_FILE"
   load_environment

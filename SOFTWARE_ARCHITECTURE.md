@@ -400,7 +400,7 @@ Nav2 Controller → /cmd_vel_nav → Velocity Smoother → /cmd_vel → 底盘�
 |---|---|---|
 | `origin` | `(0.0, 0.0, yaw=-π)` | 原点/餐厅区域 |
 | `white_wall` | `(-2.2, 0.1, yaw=-π/2)` | 客厅、运动投影点 |
-| `study_projection` | `(0.0, 2.6, yaw=π/2)` | 书房会议投影点 |
+| `study_projection` | `(0.0, 3.0, yaw=π/2)` | 书房会议投影点；Manager 网关坐标为 `(0.0, -3.0, -90°)` |
 
 拓扑关系为餐厅 ↔ 客厅 ↔ 书房。所有导航最终通过 Nav2 `/navigate_to_pose` Action 执行。
 

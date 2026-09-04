@@ -11,13 +11,17 @@ from local_skills import (
     RUNNER_RESULT_PREFIX,
     SEQUENCE_TOOL_NAME,
     LocalSkillBridge,
+    _action_explicitly_negated,
     _atomic_intent_supported,
+    _explicit_head_tasks,
+    _explicit_navigation_tasks,
     _recover_explicit_sequence_tasks,
     _repair_sequence_tasks,
     _normalized_schema,
     _tool_description,
     build_skill_start_speech,
     build_sequence_start_speech,
+    build_sequence_success_summary,
 )
 from skill_runner import (
     apply_realtime_execution_overrides,
@@ -73,6 +77,114 @@ class LocalSkillTests(unittest.TestCase):
             backend="subprocess",
         )
 
+    def test_sequence_success_summary_collapses_repeated_head_results(self):
+        tasks = [
+            {"name": "head_control", "arguments": {"action": "up"}},
+            {"name": "head_control", "arguments": {"action": "level"}},
+        ]
+        records = [
+            {"result": {"spoken_summary": "该操作已经完成。"}},
+            {"result": {"spoken_summary": "该操作已经完成。"}},
+        ]
+        summary = build_sequence_success_summary(tasks, records)
+        self.assertEqual(summary, "头部已经按你的顺序调整到平视状态了。")
+        self.assertEqual(summary.count("完成"), 0)
+
+    def test_sequence_success_summary_uses_one_final_head_state(self):
+        tasks = [
+            {"name": "head_control", "arguments": {"action": "up"}},
+            {"name": "head_control", "arguments": {"action": "down"}},
+        ]
+        records = [
+            {"result": {"spoken_summary": "抬头完成。"}},
+            {"result": {"spoken_summary": "低头完成。"}},
+        ]
+        self.assertEqual(
+            build_sequence_success_summary(tasks, records),
+            "头部已经按你的顺序调整到低头状态了。",
+        )
+
+    def test_sequence_success_summary_keeps_query_fact_without_generic_duplicates(self):
+        tasks = [
+            {"name": "media_player", "arguments": {"action": "stop"}},
+            {"name": "realtime_information", "arguments": {"action": "weather"}},
+        ]
+        records = [
+            {"result": {"spoken_summary": "播放已经停止。"}},
+            {"result": {"spoken_summary": "北京今天多云，气温二十八度。"}},
+        ]
+        summary = build_sequence_success_summary(tasks, records)
+        self.assertEqual(
+            summary,
+            "播放已经停止。北京今天多云，气温二十八度。",
+        )
+        self.assertNotIn("播放已经停止；", summary)
+
+    def test_generic_child_completions_are_collapsed_across_skill_groups(self):
+        cases = [
+            (
+                [
+                    {"name": "light_control", "arguments": {"action": "on"}},
+                    {"name": "light_control", "arguments": {"action": "off"}},
+                ],
+                "灯光已经按你的顺序调整好了。",
+            ),
+            (
+                [
+                    {"name": "media_player", "arguments": {"action": "play"}},
+                    {"name": "projector_control", "arguments": {"action": "stop"}},
+                ],
+                "播放和投影已经按你的顺序调整好了。",
+            ),
+            (
+                [
+                    {"name": "feeder_control", "arguments": {"action": "feed"}},
+                    {"name": "light_control", "arguments": {"action": "on"}},
+                ],
+                "这2项操作已经按你的顺序完成了。",
+            ),
+        ]
+        for tasks, expected in cases:
+            records = [
+                {"result": {"spoken_summary": "该操作已经完成。"}}
+                for _ in tasks
+            ]
+            with self.subTest(expected=expected):
+                summary = build_sequence_success_summary(tasks, records)
+                self.assertEqual(summary, expected)
+                self.assertNotIn("该操作", summary)
+
+    def test_executed_head_sequence_returns_one_aggregate_result(self):
+        bridge = self.production_bridge()
+        events: list[dict] = []
+        bridge.event_callback = events.append
+
+        def invoke(name, arguments, *_args, **_kwargs):
+            return {
+                "ok": True,
+                "validation_ok": True,
+                "executed": True,
+                "skill": name,
+                "arguments": arguments,
+                "spoken_summary": "该操作已经完成。",
+            }
+
+        with patch.object(bridge, "_invoke_atomic", side_effect=invoke):
+            result = bridge.invoke(
+                SEQUENCE_TOOL_NAME,
+                {
+                    "tasks": [
+                        {"name": "head_control", "arguments": {"action": "up"}},
+                        {"name": "head_control", "arguments": {"action": "level"}},
+                    ]
+                },
+                "先抬头，再恢复平视",
+                turn_id="42",
+            )
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["spoken_summary"], "头部已经按你的顺序调整到平视状态了。")
+        self.assertEqual([item["kind"] for item in events], ["acknowledgement"])
+
     def test_ordered_living_light_scene_is_repaired_to_atomic_sequence(self):
         bridge = self.production_bridge()
         with patch.object(
@@ -103,6 +215,221 @@ class LocalSkillTests(unittest.TestCase):
         self.assertEqual([item["name"] for item in repaired], ["navigation_goto", "light_control"])
         self.assertEqual(repaired[0]["arguments"]["point"], "study_projection")
         self.assertEqual(repaired[1]["arguments"]["action"], "off")
+
+    def test_multiple_navigation_destinations_are_preserved_in_spoken_order(self):
+        bridge = self.production_bridge()
+        tasks = [
+            {"name": "navigation_goto", "arguments": {"point": "origin"}},
+            {"name": "navigation_goto", "arguments": {"point": "origin"}},
+        ]
+        repaired = _repair_sequence_tasks(
+            tasks,
+            "先导航到客厅白墙，再导航到书房。",
+            bridge.scenario_catalog,
+        )
+        self.assertEqual(
+            [item["arguments"]["point"] for item in repaired],
+            ["white_wall", "study_projection"],
+        )
+        self.assertEqual(
+            [item["arguments"]["point"] for item in _explicit_navigation_tasks(
+                "先导航到书房，再导航回原点。"
+            )],
+            ["study_projection", "origin"],
+        )
+
+    def test_multiple_head_actions_are_recovered_in_spoken_order(self):
+        self.assertEqual(
+            [item["arguments"]["action"] for item in _explicit_head_tasks(
+                "先抬头，再恢复平视，最后低头。"
+            )],
+            ["up", "level", "down"],
+        )
+        bridge = self.production_bridge()
+        plan = bridge.recover_explicit_plan("请先抬头，然后再低头。")
+        self.assertEqual(plan["name"], SEQUENCE_TOOL_NAME)
+        self.assertEqual(
+            [item["arguments"]["action"] for item in plan["arguments"]["tasks"]],
+            ["up", "down"],
+        )
+        restored = bridge.recover_explicit_plan(
+            "先抬头，再恢复平视，然后低头，最后恢复平视。"
+        )
+        self.assertEqual(
+            [item["arguments"]["action"] for item in restored["arguments"]["tasks"]],
+            ["up", "level", "down", "level"],
+        )
+
+    def test_failed_nonwheel_phrasings_recover_without_narrow_keyword_loss(self):
+        bridge = self.production_bridge()
+        cases = {
+            "把头抬起来，底盘不要动。": ("head_control", {"action": "up"}),
+            "把头恢复到水平位置。": ("head_control", {"action": "level"}),
+            "把头调到一百八十五度。": ("head_control", {"action": "angle", "angle": 185}),
+            "播放七里香。": ("media_player", {"action": "play_music", "title": "七里香"}),
+            "我想听晴天。": ("media_player", {"action": "play_music", "title": "晴天"}),
+            "关闭当前娱乐视频。": ("media_player", {"action": "stop"}),
+            "用前摄拍一张，不需要人脸识别。": ("front_camera_capture", {}),
+            "看看机器人后方并保存一张图片。": ("back_camera_capture", {}),
+            "先别移动，识别一下我是谁。": ("face_recognition", {}),
+            "请确认面前是不是已注册用户。": ("face_recognition", {}),
+            "把今天的提醒列表念给我听。": ("reminder_query", {}),
+            "今天最高温和最低温大概多少？": ("realtime_information", {"action": "weather"}),
+            "你当前所在的大概位置是什么？": ("realtime_information", {"action": "indoor_location"}),
+            "周围最近的医院在哪里？": ("realtime_information", {"action": "nearby"}),
+            "现在附近道路堵不堵？": ("realtime_information", {"action": "traffic"}),
+            "查一下投食器在线吗。": ("feeder_control", {"action": "status"}),
+        }
+        for text, (name, arguments) in cases.items():
+            with self.subTest(text=text):
+                plan = bridge.recover_explicit_plan(text)
+                self.assertIsNotNone(plan)
+                self.assertEqual(plan["name"], name)
+                self.assertEqual(plan["arguments"], arguments)
+
+    def test_negation_scope_does_not_read_inside_recognition_word(self):
+        terms = ("识别", "看看我", "我是谁")
+        self.assertFalse(_action_explicitly_negated("先别移动，识别一下我是谁", terms))
+        self.assertTrue(_action_explicitly_negated("不要识别我是谁", terms))
+
+    def test_comma_separated_nonwheel_tasks_preserve_order_and_repetition(self):
+        bridge = self.production_bridge()
+        plan = bridge.recover_explicit_plan("原地打开灯、拍一张前方照片、再把灯关掉。")
+        self.assertEqual(plan["name"], SEQUENCE_TOOL_NAME)
+        self.assertEqual(
+            [
+                (item["name"], item["arguments"].get("action"))
+                for item in plan["arguments"]["tasks"]
+            ],
+            [
+                ("light_control", "on"),
+                ("front_camera_capture", None),
+                ("light_control", "off"),
+            ],
+        )
+
+    def test_transcript_repairs_empty_atomic_arguments_without_expanding_scope(self):
+        bridge = self.production_bridge()
+        with patch.object(
+            bridge,
+            "_invoke_atomic",
+            side_effect=lambda name, arguments, *_args, **_kwargs: {
+                "name": name,
+                "arguments": arguments,
+            },
+        ):
+            head = bridge.invoke("head_control", {}, "把头抬起来，底盘不要动。")
+            song = bridge.invoke("media_player", {}, "播放七里香。")
+            status = bridge.invoke("feeder_control", {"action": "feed"}, "查一下投食器在线吗。")
+        self.assertEqual(head, {"name": "head_control", "arguments": {"action": "up"}})
+        self.assertEqual(
+            song,
+            {"name": "media_player", "arguments": {"action": "play_music", "title": "七里香"}},
+        )
+        self.assertEqual(status, {"name": "feeder_control", "arguments": {"action": "status"}})
+
+    def test_invalid_feeder_quantities_are_rejected_before_dispatch(self):
+        bridge = self.production_bridge()
+        for text, arguments, error in (
+            ("投食五克，不能多也不能少。", {"action": "feed", "grams": 5}, "invalid_feed_grams"),
+            ("给豆豆一次投食一百份。", {"action": "feed", "portions": 100}, "invalid_feed_portions"),
+        ):
+            with self.subTest(text=text):
+                result = bridge.invoke("feeder_control", arguments, text)
+                self.assertFalse(result["validation_ok"])
+                self.assertFalse(result["executed"])
+                self.assertIn(error, result["error"])
+
+    def test_recovered_sequence_uses_continue_only_for_explicit_failure_clause(self):
+        bridge = self.production_bridge()
+        safe = bridge.recover_explicit_plan("先导航到客厅，然后给豆豆投食十克。")
+        continued = bridge.recover_explicit_plan(
+            "先导航到客厅，不管导航是否失败都继续给豆豆投食十克。"
+        )
+        self.assertEqual(safe["arguments"]["failure_policy"], "stop")
+        self.assertEqual(continued["arguments"]["failure_policy"], "continue")
+
+    def test_multiple_protected_scenes_are_recovered_without_atomic_expansion(self):
+        bridge = self.production_bridge()
+        movie = bridge.recover_explicit_plan("先暂停电影，然后继续播放电影。")
+        self.assertEqual(movie["name"], SEQUENCE_TOOL_NAME)
+        self.assertEqual(
+            [item["arguments"]["scenario"] for item in movie["arguments"]["tasks"]],
+            ["movie_projection_pause", "movie_projection_resume"],
+        )
+        mixed = bridge.recover_explicit_plan("先找豆豆，再陪我做运动。")
+        self.assertEqual(mixed["name"], SEQUENCE_TOOL_NAME)
+        self.assertEqual(
+            [item["arguments"]["scenario"] for item in mixed["arguments"]["tasks"]],
+            ["find_pet", "push_up_companion"],
+        )
+
+    def test_multiple_protected_scenes_execute_as_their_own_scenarios(self):
+        bridge = self.production_bridge()
+        tasks = [
+            {"name": "run_robot_scenario", "arguments": {"scenario": "movie_projection_pause"}},
+            {"name": "run_robot_scenario", "arguments": {"scenario": "movie_projection_resume"}},
+        ]
+        with patch.object(
+            bridge,
+            "_invoke_atomic",
+            side_effect=lambda name, *_args, **_kwargs: self.successful_result(name),
+        ):
+            result = bridge.invoke(
+                SEQUENCE_TOOL_NAME,
+                {"tasks": tasks},
+                "先暂停电影，然后继续播放电影。",
+                "scene-sequence-turn",
+            )
+        self.assertEqual(
+            [item["result"]["scenario"] for item in result["tasks"]],
+            ["movie_projection_pause", "movie_projection_resume"],
+        )
+
+    def test_movement_duration_is_preserved_for_each_clause(self):
+        bridge = self.production_bridge()
+        plan = bridge.recover_explicit_plan("先前进五秒，再后退三秒。")
+        self.assertEqual(
+            [item["arguments"]["duration"] for item in plan["arguments"]["tasks"]],
+            [5, 3],
+        )
+
+    def test_projection_stop_synonyms_keep_order_and_do_not_expand_feeding(self):
+        bridge = self.production_bridge()
+        cases = (
+            "把会议画面收起来，再去客厅",
+            "投影先停掉，接着回客厅",
+        )
+        for text in cases:
+            with self.subTest(text=text):
+                plan = bridge.recover_explicit_plan(text)
+                self.assertEqual(plan["name"], SEQUENCE_TOOL_NAME)
+                self.assertEqual(
+                    [
+                        item["arguments"].get("scenario", item["name"])
+                        for item in plan["arguments"]["tasks"]
+                    ],
+                    ["meeting_projection_stop", "navigation_goto"],
+                )
+                self.assertTrue(
+                    _atomic_intent_supported(
+                        "navigation_goto",
+                        {"point": "white_wall"},
+                        text,
+                        in_sequence=True,
+                    )[0]
+                )
+        feed = bridge.recover_explicit_plan("先关投影，然后给豆豆喂十克")
+        self.assertEqual(
+            [
+                item["arguments"].get("scenario", item["name"])
+                for item in feed["arguments"]["tasks"]
+            ],
+            ["meeting_projection_stop", "feeder_control"],
+        )
+        direct = bridge.recover_explicit_plan("给豆豆喂十克")
+        self.assertEqual(direct["name"], "feeder_control")
+        self.assertEqual(direct["arguments"]["grams"], 10)
 
     def test_negated_light_scene_is_removed_but_other_tasks_remain(self):
         bridge = self.production_bridge()
@@ -159,7 +486,7 @@ class LocalSkillTests(unittest.TestCase):
     def test_short_location_query_and_homophone_destinations_are_supported(self):
         self.assertTrue(
             _atomic_intent_supported(
-                "realtime_information", {"action": "location"}, "先查当前位置，再去书房"
+                "realtime_information", {"action": "indoor_location"}, "先查当前位置，再去书房"
             )[0]
         )
         self.assertTrue(
@@ -379,7 +706,7 @@ class LocalSkillTests(unittest.TestCase):
         self.assertFalse(
             _atomic_intent_supported(
                 "realtime_information",
-                {"action": "location"},
+                {"action": "indoor_location"},
                 "你知道理想公司吗",
             )[0]
         )
@@ -388,7 +715,29 @@ class LocalSkillTests(unittest.TestCase):
                 self.assertTrue(
                     _atomic_intent_supported(
                         "realtime_information",
-                        {"action": "location"},
+                        {"action": "indoor_location"},
+                        text,
+                    )[0]
+                )
+        for action, text in (
+            ("indoor_location", "你在家里哪个区域"),
+            ("external_location", "GPS定位在哪里"),
+            ("external_location", "你现在在哪个城市"),
+        ):
+            with self.subTest(action=action, text=text):
+                self.assertTrue(
+                    _atomic_intent_supported(
+                        "realtime_information",
+                        {"action": action},
+                        text,
+                    )[0]
+                )
+        for text in ("我的手机GPS定位在哪里", "豆豆现在在哪里", "我现在在哪里"):
+            with self.subTest(non_robot_location=text):
+                self.assertFalse(
+                    _atomic_intent_supported(
+                        "realtime_information",
+                        {"action": "external_location" if "GPS" in text else "indoor_location"},
                         text,
                     )[0]
                 )
@@ -617,7 +966,10 @@ class LocalSkillTests(unittest.TestCase):
             bridge = LocalSkillBridge(spec_dir=root, backend="subprocess")
             properties = bridge.tool_schemas[0]["function"]["parameters"]["properties"]
             self.assertEqual(set(properties), {"action"})
-            self.assertEqual(properties["action"]["enum"], ["on", "off"])
+            self.assertEqual(
+                properties["action"]["enum"],
+                ["on", "internal_on", "meeting_pause", "meeting_resume", "status"],
+            )
 
     def test_projector_defaults_to_dry_run(self):
         with tempfile.TemporaryDirectory() as directory:

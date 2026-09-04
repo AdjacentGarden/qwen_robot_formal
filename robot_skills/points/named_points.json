@@ -28,7 +28,7 @@
     "display_name": "书房白墙",
     "aliases": ["书房", "书房白墙", "书房投影点", "书房会议点"],
     "x": 0.0,
-    "y": 2.6,
+    "y": 3.0,
     "yaw": 1.5708,
     "frame_id": "map",
     "configured": true,

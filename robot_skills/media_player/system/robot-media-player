@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CONTAINER="android_0"
+ACTION="${1:-}"
+ITEM="${2:-}"
+
+json_ok() { printf '{"ok":true,"action":"%s","item":"%s"}\n' "$ACTION" "$ITEM"; }
+json_error() { printf '{"ok":false,"action":"%s","error":"%s"}\n' "$ACTION" "$1"; exit 1; }
+
+case "$ACTION:$ITEM" in
+  play-audio:relax_one) PATH_IN_ANDROID="/sdcard/Music/relax_one.mp3" ;;
+  play-audio:relax_two) PATH_IN_ANDROID="/sdcard/Music/relax_two.mp3" ;;
+  play-audio:qili_xiang) PATH_IN_ANDROID="/sdcard/Music/qili_xiang.mp3" ;;
+  play-audio:qing_tian) PATH_IN_ANDROID="/sdcard/Music/qing_tian.mp3" ;;
+  play-video:big_buck_bunny) PATH_IN_ANDROID="/sdcard/Movies/big_buck_bunny.mp4" ;;
+  play-video-projection:big_buck_bunny) PATH_IN_ANDROID="/sdcard/Movies/big_buck_bunny.mp4" ;;
+  pause:|resume:|stop:|status:) PATH_IN_ANDROID="" ;;
+  *) json_error "unsupported_media_or_action" ;;
+esac
+
+sudo_cmd=(/usr/bin/docker exec "$CONTAINER")
+"${sudo_cmd[@]}" true >/dev/null 2>&1 || json_error "android_container_unavailable"
+
+case "$ACTION" in
+  play-audio)
+    "${sudo_cmd[@]}" test -f "$PATH_IN_ANDROID" >/dev/null 2>&1 || json_error "media_file_missing"
+    "${sudo_cmd[@]}" am force-stop com.android.music >/dev/null
+    "${sudo_cmd[@]}" am start -n com.android.music/.MediaPlaybackActivity -a android.intent.action.VIEW -d "file://$PATH_IN_ANDROID" -t audio/mpeg >/dev/null
+    ;;
+  play-video|play-video-projection)
+    "${sudo_cmd[@]}" test -f "$PATH_IN_ANDROID" >/dev/null 2>&1 || json_error "media_file_missing"
+    if [[ "$ACTION" == "play-video-projection" ]]; then
+      surface_pid="$(/usr/bin/pidof surfaceflinger | /usr/bin/awk '{print $1}')"
+      [[ -n "$surface_pid" ]] || json_error "surfaceflinger_pid_missing"
+      /usr/bin/nsenter -t "$surface_pid" -m -p -- /system/bin/settings put system accelerometer_rotation 0
+      /usr/bin/nsenter -t "$surface_pid" -m -p -- /system/bin/settings put system user_rotation 2
+      /usr/bin/nsenter -t "$surface_pid" -m -p -- /system/bin/cmd window user-rotation lock 2
+      /usr/bin/nsenter -t "$surface_pid" -m -p -- /system/bin/cmd window fixed-to-user-rotation enabled
+      /usr/bin/nsenter -t "$surface_pid" -m -p -- /system/bin/cmd window set-ignore-orientation-request true
+      [[ ! -x /usr/local/libexec/robot-projection-prep ]] || /usr/local/libexec/robot-projection-prep
+    fi
+    "${sudo_cmd[@]}" /system/bin/settings put global policy_control 'immersive.full=*'
+    "${sudo_cmd[@]}" am force-stop android.rk.RockVideoPlayer >/dev/null
+    "${sudo_cmd[@]}" am start -n android.rk.RockVideoPlayer/.VideoPlayActivity -a android.intent.action.VIEW -d "file://$PATH_IN_ANDROID" -t video/mp4 >/dev/null
+    "${sudo_cmd[@]}" sh -c "sleep 1.0; input tap 960 500"
+    ;;
+  pause) "${sudo_cmd[@]}" input keyevent 127 >/dev/null ;;
+  resume) "${sudo_cmd[@]}" input keyevent 126 >/dev/null ;;
+  stop)
+    "${sudo_cmd[@]}" input keyevent 86 >/dev/null 2>&1 || true
+    "${sudo_cmd[@]}" am force-stop com.android.music >/dev/null 2>&1 || true
+    "${sudo_cmd[@]}" am force-stop android.rk.RockVideoPlayer >/dev/null 2>&1 || true
+    ;;
+  status) ;;
+esac
+json_ok

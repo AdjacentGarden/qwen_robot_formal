@@ -1,0 +1,44 @@
+collision_monitor:
+  ros__parameters:
+    use_sim_time: true
+    enabled: false
+    # base_frame_id: base_footprint
+    # # odom_frame_id: odom
+    # cmd_vel_in_topic: cmd_vel_smoothed
+    # cmd_vel_out_topic: cmd_vel
+    # state_topic: collision_monitor_state
+    # transform_tolerance: 0.2
+    # source_timeout: 0.6
+    # base_shift_correction: true
+    # stop_pub_timeout: 1.0
+    # enable_stamped_cmd_vel: false
+    # polygons: [PolygonStop, PolygonSlow]
+    # observation_sources: [front_tof]
+
+    # # 30cm stop
+    # PolygonStop:
+    #   type: polygon
+    #   points: [0.45, 0.25, 0.45, -0.25, 0.00, -0.25, 0.00, 0.25]
+    #   action_type: stop
+    #   max_points: 0
+    #   visualize: true
+    #   polygon_pub_topic: polygon_stop
+    #   enabled: true
+      
+    # # 60cm slow
+    # PolygonSlow:
+    #   type: polygon
+    #   points: [0.75, 0.25, 0.75, -0.25, 0.45, -0.25, 0.45, 0.25]
+    #   action_type: slowdown
+    #   max_points: 0
+    #   slowdown_ratio: 0.3
+    #   visualize: true
+    #   polygon_pub_topic: polygon_slow
+    #   enabled: true
+
+    # front_tof:
+    #   type: range
+    #   topic: /tof400f/range
+    #   obstacles_angle: 0.01745
+    #   source_timeout: 0.6
+    #   enabled: true

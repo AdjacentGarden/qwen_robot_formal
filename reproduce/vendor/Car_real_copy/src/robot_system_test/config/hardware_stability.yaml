@@ -1,0 +1,51 @@
+# All limits are deliberately configurable because real sensor rates vary by firmware.
+startup_timeout_sec: 20.0
+sample_duration_sec: 30.0
+shutdown_timeout_sec: 8.0
+cooldown_sec: 3.0
+zero_cmd_vel_during_test: true
+
+expected_nodes:
+  - /rplidar_node
+  - /imu_cartographer_publisher
+  - /ros_robot_controller
+  - /tof_publisher_node
+  - /wheel_joint_state_publisher
+
+topics:
+  scan:
+    name: /scan
+    type: sensor_msgs/msg/LaserScan
+    min_hz: 5.0
+    max_gap_sec: 0.5
+    max_invalid_ratio: 0.50
+    min_messages: 20
+  imu:
+    name: /imu
+    type: sensor_msgs/msg/Imu
+    min_hz: 50.0
+    max_gap_sec: 0.10
+    max_invalid_ratio: 0.01
+    min_messages: 100
+  tof:
+    name: /tof400f/range
+    type: sensor_msgs/msg/Range
+    min_hz: 1.8
+    max_gap_sec: 0.65
+    max_invalid_ratio: 0.20
+    min_messages: 20
+  motor_speed:
+    name: /motor_speed
+    type: ros_robot_controller_msgs/msg/MotorsState
+    min_hz: 10.0
+    max_gap_sec: 0.25
+    max_invalid_ratio: 0.0
+    min_messages: 30
+  joint_states:
+    name: /joint_states
+    type: sensor_msgs/msg/JointState
+    min_hz: 10.0
+    max_gap_sec: 0.25
+    max_invalid_ratio: 0.0
+    min_messages: 30
+

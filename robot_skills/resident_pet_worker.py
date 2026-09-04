@@ -20,6 +20,7 @@ from pathlib import Path
 from resident_runtime_server import ResidentSkills, ThreadRoutingStream, recv_request, send_response
 from resident_camera_ipc import open_capture
 from car_real_contract import EXTERNAL_CMD_VEL_TOPIC, manager_allows_motion
+from pet_tracking.centering import PetCenteringController
 
 
 ROOT = Path(__file__).resolve().parent
@@ -174,6 +175,13 @@ def scan_pet_360(pet, detector, ros, stop_event, request):
     revolutions = max(0.9, min(1.15, float(request.get("revolutions", 1.0))))
     timeout_sec = max(8.0, min(60.0, float(request.get("timeout_sec", 42.0))))
     minimum_confirmations = max(1, min(5, int(request.get("minimum_confirmations", 2))))
+    centering = PetCenteringController(
+        center_tolerance_ratio=float(request.get("center_tolerance_ratio", 0.08)),
+        confirmation_frames=int(request.get("center_confirmation_frames", 3)),
+        minimum_turn_speed=0.055,
+        maximum_turn_speed=min(0.15, max(0.08, abs(angular_speed) * 0.5)),
+        search_speed=min(0.15, max(0.08, abs(angular_speed) * 0.5)),
+    )
     output = Path(str(request.get("output") or STATE / f"pet_scan_{int(time.time())}.jpg"))
     output.parent.mkdir(parents=True, exist_ok=True)
     stop_event.clear()
@@ -191,13 +199,16 @@ def scan_pet_360(pet, detector, ros, stop_event, request):
     frames = 0
     best_score = 0.0
     found = False
+    detected = False
     found_path = None
+    last_alignment = None
     target_angle = 2.0 * math.pi * revolutions
     publish_stop = threading.Event()
+    commanded_angular = angular_speed
 
     def publish_loop():
         while not publish_stop.is_set() and not stop_event.is_set():
-            ros._publish_twist(0.0, angular_speed)
+            ros._publish_twist(0.0, commanded_angular)
             publish_stop.wait(0.08)
 
     publisher = threading.Thread(target=publish_loop, name="pet_scan_velocity", daemon=True)
@@ -215,6 +226,20 @@ def scan_pet_360(pet, detector, ros, stop_event, request):
                         score = float(getattr(detection, "score", getattr(detection, "confidence", 0.0)) or 0.0)
                         best_score = max(best_score, score)
                     if confirmations >= minimum_confirmations:
+                        detected = True
+                        target = max(
+                            detections,
+                            key=lambda item: (
+                                float(getattr(item, "score", getattr(item, "confidence", 0.0)) or 0.0),
+                                max(1.0, float(item.rect.right - item.rect.left) * float(item.rect.bottom - item.rect.top)),
+                            ),
+                        )
+                        target_center = (float(target.rect.left) + float(target.rect.right)) * 0.5
+                        decision = centering.observe(target_center, width)
+                        last_alignment = decision.public()
+                        commanded_angular = decision.speed_right - decision.speed_left
+                    if confirmations >= minimum_confirmations and decision.centered:
+                        commanded_angular = 0.0
                         annotated = frame.copy()
                         for detection in detections:
                             rect = detection.rect
@@ -230,6 +255,10 @@ def scan_pet_360(pet, detector, ros, stop_event, request):
                     # allowed unrelated one-frame false positives to accumulate
                     # during a full revolution and eventually become a match.
                     confirmations = 0
+                    if detected:
+                        decision = centering.missing()
+                        last_alignment = decision.public()
+                        commanded_angular = decision.speed_right - decision.speed_left
 
             current = ros.current_yaw()
             if current.get("available"):
@@ -244,7 +273,10 @@ def scan_pet_360(pet, detector, ros, stop_event, request):
             else:
                 accumulated = abs(angular_speed) * (time.monotonic() - started)
                 yaw_source = "time_fallback"
-            if accumulated >= target_angle - math.radians(6.0):
+            # Completing the nominal revolution is only a not-found terminal
+            # condition.  Once a pet has been detected, keep the bounded scan
+            # alive until the box is centred (or the overall timeout expires).
+            if not detected and accumulated >= target_angle - math.radians(6.0):
                 break
 
         elapsed = time.monotonic() - started
@@ -254,6 +286,8 @@ def scan_pet_360(pet, detector, ros, stop_event, request):
         return {
             "ok": bool(found or completed) and not cancelled,
             "found": found,
+            "detected": detected,
+            "centered": found,
             "status": status,
             "pet": target_pet,
             "source": source,
@@ -266,6 +300,7 @@ def scan_pet_360(pet, detector, ros, stop_event, request):
             "yaw_source": yaw_source,
             "elapsed_sec": round(elapsed, 3),
             "image": found_path,
+            "alignment": last_alignment,
         }
     finally:
         publish_stop.set()

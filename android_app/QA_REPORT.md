@@ -41,3 +41,20 @@
 APK：`release/ideal-robot-qwen-realtime-20260818.apk`
 
 APK SHA-256：`88af5a5f4974c25e03b0685c9b2a24fde084ee1147e41d2883afa3384bc54ce2`
+
+## 2026-08-23 Car_real_copy 适配复验
+
+- 未修改 `/home/test/Car_real_copy`；部署前后代码差异指纹一致。
+- 修复 Manager 状态误判：头部动作导致 sensor gate 临时关闭时，App 保持“运行中”，并单独显示导航暂不可用；新启动验收仍要求导航与语音真实就绪。
+- 修复短暂 Qwen 会话重连误报：本地语音进程存活与云端会话就绪分开上报。
+- 中继加入机器人实例隔离；错误实例的真实连接被拒绝，当前机器人连接保持在线。
+- App 优先重试最近健康的 Tailscale 地址，避免每次抖动都先等待不可达的局域网备用地址。
+- Python App/桥接/服务/地图回归：35/35 通过（机器人端桥接专项 18/18 通过；中继依赖测试在本机构建环境通过）。
+- 前端和端到端语音/运动视频契约：全部通过。
+- 无硬件实时中继测试：120 秒收到 565 条消息，最大消息间隔 706 ms，期间 0 次断线；追加 30 秒复验收到 148 条消息，最大间隔 582 ms。
+- 真实无硬件指令：`request_state`、`program_status`、已运行状态下的 `program_start` 均成功；麦克风关闭/恢复闭环成功并恢复为开启状态。
+- Android：`testDebugUnitTest`、`lintDebug`、`assembleDebug` 全部通过；生产依赖安全审计为 0 个已知漏洞。
+- APK 包名：`com.lixiang.robot.companion.fixed`
+- APK 版本：`202608231 / 2.3.0-car-real-copy-adapter`
+- APK：`release/ideal-robot-qwen-2.3.0-car-real-copy-adapter.apk`
+- APK SHA-256：`6c21b1a47411b3ae6a3767f1065d8eae4cef6e19169978ad2b04291c9870359b`

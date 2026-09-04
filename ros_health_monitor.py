@@ -21,6 +21,8 @@ from typing import Any, Dict
 
 FRESH_SAMPLE_SECONDS = 2.5
 REQUIRED_STABLE_SAMPLES = 3
+LIFECYCLE_REQUEST_INTERVAL_SECONDS = 0.75
+LIFECYCLE_REQUEST_TIMEOUT_SECONDS = 2.0
 
 
 def evaluate_readiness(snapshot: Dict[str, Any], now: float) -> Dict[str, Any]:
@@ -35,23 +37,30 @@ def evaluate_readiness(snapshot: Dict[str, Any], now: float) -> Dict[str, Any]:
     manager = snapshot.get("manager") or {}
     base = bool(snapshot.get("cmd_vel_subscribers", 0)) and fresh("scan") and fresh("imu")
     odometry = fresh("odom")
+    # Car_real_copy runs Cartographer in localization mode and publishes /map
+    # directly, so a Nav2 map_server is intentionally absent.  Requiring an
+    # active map_server here leaves startup stuck even though the live map,
+    # planner, navigator, actions and TF chain are all ready.
     navigation = (
-        lifecycle.get("map_server") == "active"
-        and lifecycle.get("planner_server") == "active"
+        lifecycle.get("planner_server") == "active"
         and lifecycle.get("bt_navigator") == "active"
         and bool(snapshot.get("map_received"))
         and bool(actions.get("compute_path_to_pose"))
         and bool(actions.get("navigate_to_pose"))
         and bool(snapshot.get("tf_ready"))
     )
+    # MappingNavigationManager is the owner of base, localization, Nav2 and the
+    # sensor gate.  Its NAVIGATION state is published only after those parts
+    # are active.  Keep the independent component checks above as diagnostics,
+    # but do not make a second, fallible lifecycle cache capable of vetoing the
+    # manager's authoritative ready state.  In particular, a lifecycle request
+    # sent to a Nav2 process which is then restarted can otherwise remain
+    # pending forever even though the replacement process is healthy.
     manager_ready = (
         str(manager.get("state") or "").upper() == "NAVIGATION"
         and manager.get("sensor_gate_enabled") is True
         and str(manager.get("sensor_gate_state") or "").lower() == "ready"
         and not bool(manager.get("control_conflict"))
-        and base
-        and odometry
-        and navigation
     )
     return {
         "base": base,
@@ -106,7 +115,13 @@ class HealthMonitor:
             },
         }
         self.stable_counts = {"base": 0, "odometry": 0, "navigation": 0, "manager": 0}
-        self.pending_lifecycle: Dict[str, Any] = {}
+        # name -> (future, monotonic start time, request generation).  The
+        # generation prevents a late reply from an old Nav2 process from
+        # overwriting the state of its replacement.
+        self.pending_lifecycle: Dict[str, tuple[Any, float, int]] = {}
+        self.lifecycle_generations: Dict[str, int] = {
+            name: 0 for name in ("map_server", "planner_server", "bt_navigator")
+        }
         self.last_lifecycle_request = 0.0
 
         rclpy.init(args=None)
@@ -182,29 +197,74 @@ class HealthMonitor:
         elif key == "attempt":
             value = int(value)
         with self.lock:
+            previous = self.snapshot["manager"].get(key)
             self.snapshot["manager"][key] = value
+            if key == "state" and value != previous and value != "NAVIGATION":
+                self._invalidate_lifecycle_requests_locked()
+
+    def _invalidate_lifecycle_requests_locked(self, name: str | None = None) -> None:
+        """Forget requests addressed to a lifecycle process that may have exited."""
+        names = (name,) if name is not None else tuple(self.lifecycle_generations)
+        for node_name in names:
+            self.lifecycle_generations[node_name] += 1
+            pending = self.pending_lifecycle.pop(node_name, None)
+            if pending is not None:
+                future = pending[0]
+                try:
+                    future.cancel()
+                except Exception:
+                    pass
+            self.snapshot["lifecycle"][node_name] = "unknown"
 
     def request_lifecycle_states(self, now: float) -> None:
-        if now - self.last_lifecycle_request < 0.75:
+        if now - self.last_lifecycle_request < LIFECYCLE_REQUEST_INTERVAL_SECONDS:
             return
         self.last_lifecycle_request = now
         for name, client in self.lifecycle_clients.items():
             pending = self.pending_lifecycle.get(name)
-            if pending is not None and not pending.done():
-                continue
+            if pending is not None:
+                future, started_at, _generation = pending
+                if not future.done() and now - started_at < LIFECYCLE_REQUEST_TIMEOUT_SECONDS:
+                    continue
+                # A reply which did not arrive before the deadline belongs to
+                # an unavailable or replaced lifecycle server.  Retire it and
+                # allow the next request to use the currently discovered one.
+                if not future.done():
+                    with self.lock:
+                        self._invalidate_lifecycle_requests_locked(name)
+                else:
+                    # A completed callback normally removes itself.  This is a
+                    # defensive cleanup for unusual executor callback ordering.
+                    self.pending_lifecycle.pop(name, None)
             if not client.service_is_ready():
                 with self.lock:
+                    self._invalidate_lifecycle_requests_locked(name)
                     self.snapshot["lifecycle"][name] = "unknown"
                 continue
             future = client.call_async(self.GetState.Request())
-            self.pending_lifecycle[name] = future
+            with self.lock:
+                self.lifecycle_generations[name] += 1
+                generation = self.lifecycle_generations[name]
+                self.pending_lifecycle[name] = (future, now, generation)
 
-            def completed(result_future: Any, node_name: str = name) -> None:
+            def completed(
+                result_future: Any,
+                node_name: str = name,
+                request_generation: int = generation,
+            ) -> None:
                 try:
                     label = str(result_future.result().current_state.label or "unknown").lower()
                 except Exception:
                     label = "unknown"
                 with self.lock:
+                    current = self.pending_lifecycle.get(node_name)
+                    if (
+                        current is None
+                        or current[0] is not result_future
+                        or current[2] != request_generation
+                    ):
+                        return
+                    self.pending_lifecycle.pop(node_name, None)
                     self.snapshot["lifecycle"][node_name] = label
 
             future.add_done_callback(completed)
@@ -215,7 +275,9 @@ class HealthMonitor:
         with self.lock:
             manager_publishers = int(self.node.count_publishers("/mapping_manager/state"))
             if manager_publishers <= 0:
-                self.snapshot["manager"]["state"] = "not_running"
+                if self.snapshot["manager"]["state"] != "not_running":
+                    self.snapshot["manager"]["state"] = "not_running"
+                    self._invalidate_lifecycle_requests_locked()
             self.snapshot["cmd_vel_subscribers"] = int(
                 self.node.count_subscribers("/cmd_vel_external")
             )

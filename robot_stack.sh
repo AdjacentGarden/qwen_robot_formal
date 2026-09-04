@@ -15,6 +15,7 @@ HEALTH_LOG_FILE="$LOG_DIR/health_monitor.log"
 MANAGER_READY_TIMEOUT="${QWEN_MANAGER_READY_TIMEOUT:-330}"
 MANAGER_START_ATTEMPTS="${QWEN_MANAGER_START_ATTEMPTS:-2}"
 MANAGER_RETRY_DELAY="${QWEN_MANAGER_RETRY_DELAY_SEC:-5}"
+EXISTING_MANAGER_READY_TIMEOUT="${QWEN_EXISTING_MANAGER_READY_TIMEOUT:-75}"
 INSTALLED_MAP="$CAR_ROOT/install/robot_bringup/share/robot_bringup/map/map.pbstream"
 mkdir -p "$RUN_DIR" "$LOG_DIR"
 MANAGER_REUSED=0
@@ -138,6 +139,27 @@ manager_ready() {
   [[ "$(health_value ready.manager 2>/dev/null || true)" == "true" ]]
 }
 
+wait_existing_manager_ready() {
+  local deadline state event
+  deadline=$((SECONDS + EXISTING_MANAGER_READY_TIMEOUT))
+  while manager_graph_present && ((SECONDS < deadline)); do
+    if manager_ready; then
+      return 0
+    fi
+    state="$(health_value manager.state 2>/dev/null || true)"
+    event="$(health_value manager.event 2>/dev/null || true)"
+    if [[ "$state" == "SAFE_STOP" ]]; then
+      echo "[manager] 已有 Manager 处于 SAFE_STOP：${event:-unknown reason}" >&2
+      return 1
+    fi
+    # A freshly created read-only health monitor needs a short DDS discovery
+    # window before it can see the already healthy transient-local state.  Do
+    # not tear down that Manager merely because the first sample is incomplete.
+    sleep 0.2
+  done
+  return 1
+}
+
 start_manager_once() {
   local pid
   if manager_ready; then
@@ -147,7 +169,13 @@ start_manager_once() {
   fi
   MANAGER_REUSED=0
   if manager_graph_present; then
-    echo "[manager] 已存在但未就绪，拒绝叠加第二个 Manager" >&2
+    echo "[manager] 检测到已有 Manager，等待健康状态收敛，不叠加第二个实例"
+    if wait_existing_manager_ready; then
+      MANAGER_REUSED=1
+      echo "[manager] 已有 Manager 健康状态确认完成，直接复用"
+      return 0
+    fi
+    echo "[manager] 已有 Manager 在 ${EXISTING_MANAGER_READY_TIMEOUT}s 内仍未就绪，拒绝叠加第二个 Manager" >&2
     return 1
   fi
   rm -f "$MANAGER_PID_FILE"

@@ -1,0 +1,85 @@
+defaults:
+  # 10 Hz 定时器实际常见为 9.9x Hz，默认允许 5% 调度误差。
+  rate_tolerance_percent: 5.0
+  # 真机驱动可能使用 monotonic 时间，而 ROS/仿真使用 epoch 或 /clock。
+  # 固定偏移超过此值时自动归一化，延迟测试将测量相对延迟和抖动。
+  normalize_clock_offset: true
+  clock_offset_threshold_ms: 60000.0
+
+profiles:
+  hardware:
+    nodes:
+      # 驱动节点名称随真机驱动、component container 和仿真插件变化；
+      # 实际硬件链路仍由下面的 publisher、频率和延迟规则严格验证。
+      - any_of: [/ros_robot_controller, /controller_manager, /gazebo]
+        required: false
+      - any_of: [/rplidar_node, /gazebo]
+        required: false
+      - any_of: [/rf2o_laser_odometry, /gazebo]
+        required: false
+      - any_of: [/ekf_filter_node, /gazebo]
+        required: false
+    topics:
+      /scan:
+        type: sensor_msgs/msg/LaserScan
+        publishers: {min: 1, max: 1}
+        subscribers: {min: 1}
+        min_hz: 5.0
+        max_delay_ms: 300.0
+        max_backlog_growth_ms: 100.0
+      /imu:
+        type: sensor_msgs/msg/Imu
+        publishers: {min: 1, max: 1}
+        subscribers: {min: 1}
+        min_hz: 20.0
+        max_delay_ms: 200.0
+        max_backlog_growth_ms: 80.0
+      /odom:
+        type: nav_msgs/msg/Odometry
+        publishers: {min: 1}
+        subscribers: {min: 1}
+        min_hz: 10.0
+        max_delay_ms: 250.0
+        max_backlog_growth_ms: 100.0
+  integration:
+    nodes:
+      - /motion_controller
+      - /wall_alignment
+      - /controller_server
+      - /planner_server
+      - /bt_navigator
+    topics:
+      /cmd_vel:
+        type: geometry_msgs/msg/Twist
+        # Manager keeps a direct zero-only SAFE_STOP emergency publisher.
+        publishers: {min: 1, max: 2}
+        allowed_publisher_nodes: [/motion_controller, /mapping_navigation_manager]
+        subscribers: {min: 1, max: 1}
+        allowed_subscriber_nodes: [/robot_diff_drive_controller, /ros_robot_controller]
+      /cmd_vel_nav_smoothed:
+        type: geometry_msgs/msg/Twist
+        publishers: {min: 1, max: 1}
+        allowed_publisher_nodes: [/velocity_smoother]
+        subscribers: {min: 1}
+        allowed_subscriber_nodes: [/motion_controller]
+      /scan_gated:
+        type: sensor_msgs/msg/LaserScan
+        publishers: {min: 1, max: 1}
+        subscribers: {min: 3}
+        min_hz: 5.0
+        max_delay_ms: 350.0
+        max_backlog_growth_ms: 120.0
+      /odom:
+        type: nav_msgs/msg/Odometry
+        publishers: {min: 1}
+        subscribers: {min: 2}
+        min_hz: 10.0
+        max_delay_ms: 250.0
+        max_backlog_growth_ms: 100.0
+      /map:
+        type: nav_msgs/msg/OccupancyGrid
+        publishers: {min: 1}
+        subscribers: {min: 1}
+        min_hz: 0.1
+        max_delay_ms: 3000.0
+        max_backlog_growth_ms: 500.0

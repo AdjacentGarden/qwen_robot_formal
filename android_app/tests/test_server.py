@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from starlette.websockets import WebSocketDisconnect
 
 
 def make_client(tmp_path: Path, monkeypatch):
@@ -20,6 +21,7 @@ def make_client(tmp_path: Path, monkeypatch):
     module.THUMBS.mkdir()
     module.APP_TOKEN = "app-test-token"
     module.ROBOT_TOKEN = "robot-test-token"
+    module.ROBOT_INSTANCE_ID = ""
     module.hub = module.Hub()
     return TestClient(module.app), module
 
@@ -76,6 +78,23 @@ def test_robot_and_app_websocket_relay(tmp_path, monkeypatch):
                 phone.send_json({"id": "c1", "action": "light", "state": "on"})
                 assert robot.receive_json()["action"] == "light"
                 assert phone.receive_json()["ok"] is True
+
+
+def test_robot_instance_fencing_rejects_stale_bridge_copy(tmp_path, monkeypatch):
+    client, module = make_client(tmp_path, monkeypatch)
+    module.ROBOT_INSTANCE_ID = "current-robot-instance"
+    with client:
+        with pytest.raises(WebSocketDisconnect) as rejected:
+            with client.websocket_connect(
+                "/ws/robot?token=robot-test-token&instance_id=stale-copy"
+            ):
+                pass
+        assert rejected.value.code == 4403
+        with client.websocket_connect(
+            "/ws/robot?token=robot-test-token&instance_id=current-robot-instance"
+        ) as robot:
+            robot.send_json({"type": "hello", "robot": {"name": "test-robot"}})
+            assert module.hub.robot_instance_id == "current-robot-instance"
 
 
 def test_program_state_relay(tmp_path, monkeypatch):

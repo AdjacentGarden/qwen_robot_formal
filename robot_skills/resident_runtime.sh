@@ -47,6 +47,8 @@ cleanup_failed_start() {
   rm -f "$PID_FILE" "$SOCKET" "$PET_PID_FILE" "$PET_SOCKET" "$CAMERA_PID_FILE" "$CAMERA_MANIFEST"
 }
 
+source "$ROOT/resident_camera_startup.sh"
+
 case "$ACTION" in
   start)
     mkdir -p "$STATE"
@@ -74,21 +76,8 @@ case "$ACTION" in
     export RESIDENT_CAMERA_MANIFEST="$CAMERA_MANIFEST"
     export RESIDENT_EXTERNAL_PET_WORKER=1
     export PET_TRACKING_RKNN_DEVICE="${PET_TRACKING_RKNN_DEVICE:-0004:41:00.0}"
-    nohup taskset -c "$RESIDENT_CPUSET" python3 "$ROOT/resident_camera_broker.py" >>"$CAMERA_LOG_FILE" 2>&1 &
-    camera_pid=$!
-    echo "$camera_pid" >"$CAMERA_PID_FILE"
-    camera_deadline=$((SECONDS + 12))
-    while (( SECONDS < camera_deadline )); do
-      [[ -f "$CAMERA_MANIFEST" && -f "$CAMERA_STATUS_FILE" ]] && break
-      if ! kill -0 "$camera_pid" 2>/dev/null; then
-        tail -n 100 "$CAMERA_LOG_FILE" || true
-        cleanup_failed_start "" "" "$camera_pid"
-        exit 1
-      fi
-      sleep 0.1
-    done
-    if [[ ! -f "$CAMERA_MANIFEST" || ! -f "$CAMERA_STATUS_FILE" ]]; then
-      echo "resident camera broker startup timed out"
+    if ! start_checked_camera_broker; then
+      echo "resident camera startup check failed"
       tail -n 100 "$CAMERA_LOG_FILE" || true
       cleanup_failed_start "" "" "$camera_pid"
       exit 1

@@ -10,7 +10,7 @@
   "certification_notes": [],
   "certification_status": "unchecked",
   "demo_script": [],
-  "description": "Find/track pets. action=find rotates in place, stops immediately when the pet is found, remains stationary while recording a five-second clip, and writes the app upload manifest; it does not follow the pet. Tracking is only performed by the explicit track actions.",
+  "description": "Find/track pets. action=find rotates in place, starts the five-second App video on first detection, continues a bounded in-place alignment until the target box is stable in the image centre, and only then stops; it does not follow the pet. Tracking is only performed by the explicit track actions.",
   "entrypoint": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/pet_tracking/run.sh",
   "examples": [],
   "id": "pet_tracking",

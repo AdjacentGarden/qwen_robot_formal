@@ -15,6 +15,8 @@ from typing import List, Optional
 import warnings
 import queue
 from contextlib import contextmanager
+from centering import PetCenteringController
+from video_recording import PetVideoError, record_frames
 
 _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 _ROOT = os.path.dirname(_CURRENT_DIR)
@@ -495,6 +497,7 @@ class PetTrackingSystem:
             self._lock = threading.Lock()
             self._stop = threading.Event()
             self.ret, self.frame = self.cap.read()
+            self.last_frame_at = time.monotonic() if self.ret else 0.0
 
             self.thread = threading.Thread(target=self._update, daemon=True)
             self.thread.start()
@@ -507,6 +510,7 @@ class PetTrackingSystem:
                     with self._lock:
                         self.ret = ret
                         self.frame = frame
+                        self.last_frame_at = time.monotonic()
                 else:
                     time.sleep(0.005)
 
@@ -515,7 +519,7 @@ class PetTrackingSystem:
 
         def read(self):
             with self._lock:
-                if self.frame is not None:
+                if self.frame is not None and time.monotonic() - self.last_frame_at <= 0.5:
                     return self.ret, self.frame.copy()
             return False, None
 
@@ -1268,18 +1272,26 @@ class PetTrackingSystem:
         return None
 
     @staticmethod
-    def _record_found_video_for_app(cap, first_frame, duration_sec=5.0):
-        """Record a stationary post-detection clip and publish it to the app outbox.
+    def _record_found_video_for_app(
+        cap,
+        first_frame,
+        duration_sec=5.0,
+        frame_callback=None,
+    ):
+        """Record the post-detection clip and publish it to the app outbox.
 
-        The caller owns ``cap`` and has already stopped the chassis.  Reusing that
-        capture avoids reopening /dev/video22 and keeps the resident pet model and
-        camera broker hot.  The bridge watches ``skills/runtime/exploration`` for
-        the atomically-created ``video_ready.json`` manifest.
+        The clip begins on the first positive detection.  When a callback is
+        supplied it may continue the bounded visual alignment while recording;
+        reusing the capture avoids reopening /dev/video22.  The bridge watches
+        ``skills/runtime/exploration`` for the atomically-created manifest.
         """
         duration_sec = max(0.2, float(duration_sec))
         fps = 15.0
         session = SKILL_DIR.parent / "runtime" / "exploration" / f"pet_search_{int(time.time() * 1000)}"
-        session.mkdir(parents=True, exist_ok=False)
+        try:
+            session.mkdir(parents=True, exist_ok=False)
+        except OSError as exc:
+            raise PetVideoError(f"post_detection_video_directory_failed:{exc}") from exc
         raw_path = session / "doudou_found_raw.mp4"
         final_path = session / "doudou_found_5s.mp4"
 
@@ -1287,51 +1299,40 @@ class PetTrackingSystem:
         if frame is None or not getattr(frame, "size", 0):
             ok, frame = cap.read()
             if not ok or frame is None:
-                raise RuntimeError("post_detection_camera_frame_unavailable")
+                raise PetVideoError("post_detection_camera_frame_unavailable")
         height, width = frame.shape[:2]
         writer = cv2.VideoWriter(
             str(raw_path), cv2.VideoWriter_fourcc(*"mp4v"), fps, (width, height)
         )
         if not writer.isOpened():
-            raise RuntimeError("post_detection_video_writer_open_failed")
+            raise PetVideoError("post_detection_video_writer_open_failed")
 
-        started = time.monotonic()
-        next_frame = started
-        written = 0
         try:
-            while time.monotonic() - started < duration_sec:
-                if written == 0:
-                    current = frame
-                    ok = True
-                else:
-                    ok, current = cap.read()
-                if ok and current is not None:
-                    if current.shape[1] != width or current.shape[0] != height:
-                        current = cv2.resize(current, (width, height), interpolation=cv2.INTER_LINEAR)
-                    writer.write(current)
-                    written += 1
-                next_frame += 1.0 / fps
-                time.sleep(max(0.0, next_frame - time.monotonic()))
+            recording = record_frames(cap, writer, frame, duration_sec, fps, frame_callback)
         finally:
             writer.release()
 
+        written = recording["written_frames"]
         minimum_frames = int(duration_sec * fps * 0.70)
         if written < minimum_frames:
-            raise RuntimeError(f"post_detection_video_too_few_frames:{written}")
-        conversion = subprocess.run(
-            [
-                "ffmpeg", "-y", "-loglevel", "error", "-i", str(raw_path),
-                "-an", "-c:v", "libx264", "-preset", "veryfast", "-crf", "23",
-                "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(final_path),
-            ],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.PIPE,
-            text=True,
-            timeout=45.0,
-            check=False,
-        )
+            raise PetVideoError(f"post_detection_video_too_few_frames:{written}")
+        try:
+            conversion = subprocess.run(
+                [
+                    "ffmpeg", "-y", "-loglevel", "error", "-i", str(raw_path),
+                    "-an", "-c:v", "libx264", "-preset", "veryfast", "-crf", "23",
+                    "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(final_path),
+                ],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=45.0,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise PetVideoError(f"post_detection_transcode_failed:{exc}") from exc
         if conversion.returncode != 0 or not final_path.is_file():
-            raise RuntimeError(f"post_detection_transcode_failed:{conversion.stderr[-300:]}")
+            raise PetVideoError(f"post_detection_transcode_failed:{conversion.stderr[-300:]}")
         try:
             raw_path.unlink()
         except OSError:
@@ -1343,6 +1344,7 @@ class PetTrackingSystem:
             "title": "豆豆找到了",
             "video_path": str(final_path),
             "duration_sec": duration_sec,
+            "recording": recording,
             "created_at": time.time(),
             "frame_count": written,
             "width": width,
@@ -1351,8 +1353,11 @@ class PetTrackingSystem:
         }
         ready = session / "video_ready.json"
         temporary = ready.with_suffix(".tmp")
-        temporary.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
-        temporary.replace(ready)
+        try:
+            temporary.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+            temporary.replace(ready)
+        except OSError as exc:
+            raise PetVideoError(f"post_detection_video_manifest_failed:{exc}") from exc
         return manifest
 
     @staticmethod
@@ -1507,9 +1512,16 @@ class PetTrackingSystem:
         detector = None
         detector_owned = False
         cap = None
-        found = False
+        detected = False
+        centered = False
         error = None
+        video_error = None
         video_manifest = None
+        first_detected_at = None
+        centered_at = None
+        alignment_deadline = None
+        last_target_center = None
+        last_alignment = None
         try:
             search_timeout = max(0.1, float(timeout_sec if timeout_sec is not None else PetTrackingSystem.FIND_SEARCH_TIMEOUT_SEC))
         except (TypeError, ValueError):
@@ -1528,6 +1540,86 @@ class PetTrackingSystem:
         else:
             target_classes = ["cat", "dog"]
 
+        center_tolerance = float(os.getenv("PET_FIND_CENTER_TOLERANCE_RATIO", "0.08"))
+        center_confirmations = int(os.getenv("PET_FIND_CENTER_CONFIRM_FRAMES", "3"))
+        center_timeout = max(2.0, float(os.getenv("PET_FIND_CENTER_TIMEOUT_SEC", "8.0")))
+        centering = PetCenteringController(
+            center_tolerance_ratio=center_tolerance,
+            confirmation_frames=center_confirmations,
+            minimum_turn_speed=float(os.getenv("PET_FIND_CENTER_MIN_TURN_SPEED", "0.055")),
+            maximum_turn_speed=float(os.getenv("PET_FIND_CENTER_MAX_TURN_SPEED", "0.10")),
+            turn_gain=float(os.getenv("PET_FIND_CENTER_TURN_GAIN", "0.18")),
+            search_speed=float(os.getenv("PET_FIND_SEARCH_SPIN_SPEED", "0.10")),
+        )
+
+        def choose_target(detections, width):
+            nonlocal last_target_center
+            candidates = []
+            for detection in detections:
+                rect = detection.rect
+                center_x = (float(rect.left) + float(rect.right)) * 0.5
+                area = max(1.0, float(rect.right - rect.left) * float(rect.bottom - rect.top))
+                score = float(getattr(detection, "score", getattr(detection, "confidence", 0.0)) or 0.0)
+                candidates.append((detection, center_x, score, area))
+            if not candidates:
+                return None
+            if last_target_center is None:
+                selected = max(candidates, key=lambda item: (item[2], item[3]))
+            else:
+                selected = min(
+                    candidates,
+                    key=lambda item: abs(item[1] - last_target_center) / max(1.0, float(width)),
+                )
+            last_target_center = selected[1]
+            return selected[0]
+
+        def annotate_and_center(frame):
+            nonlocal centered, centered_at, last_alignment
+            h, w = frame.shape[:2]
+            detections = detector.detect(frame, w, h, target_classes=target_classes)
+            vis = frame.copy()
+            left_edge = int(w * (0.5 - centering.center_tolerance_ratio))
+            right_edge = int(w * (0.5 + centering.center_tolerance_ratio))
+            cv2.line(vis, (left_edge, 0), (left_edge, h), (255, 180, 0), 2)
+            cv2.line(vis, (right_edge, 0), (right_edge, h), (255, 180, 0), 2)
+            target = choose_target(detections, w)
+            if target is None:
+                decision = centering.missing()
+            else:
+                rect = target.rect
+                target_center = (float(rect.left) + float(rect.right)) * 0.5
+                decision = centering.observe(target_center, w)
+            last_alignment = decision.public()
+            PetTrackingSystem.set_motor(
+                board,
+                speed_right=decision.speed_right,
+                speed_left=decision.speed_left,
+            )
+            for detection in detections:
+                rect = detection.rect
+                x1, y1 = int(rect.left), int(rect.top)
+                x2, y2 = int(rect.right), int(rect.bottom)
+                is_target = detection is target
+                colour = (0, 255, 0) if is_target else (0, 190, 255)
+                cv2.rectangle(vis, (x1, y1), (x2, y2), colour, 3 if is_target else 2)
+                if is_target:
+                    label = "CENTERED" if decision.centered else "ALIGNING"
+                    cv2.putText(
+                        vis,
+                        label,
+                        (x1, max(20, y1 - 10)),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.8,
+                        colour,
+                        2,
+                    )
+            if decision.centered and not centered:
+                centered = True
+                centered_at = time.time()
+                PetTrackingSystem.set_motor(board, 0.0, 0.0)
+            PetTrackingSystem._show_frame("Pet Search", vis, 1)
+            return vis
+
         try:
             detector, detector_owned = runtime_models.acquire_or_create(
                 "pet_detector",
@@ -1541,7 +1633,11 @@ class PetTrackingSystem:
 
             cap = PetTrackingSystem.CameraReader(video_source)
 
-            while cap.isOpened() and (time.time() - start_time) < search_timeout:
+            while cap.isOpened():
+                now = time.time()
+                deadline = alignment_deadline if detected else start_time + search_timeout
+                if deadline is not None and now >= deadline:
+                    break
                 ret, frame = cap.read()
 
                 if not ret or frame is None:
@@ -1569,42 +1665,38 @@ class PetTrackingSystem:
                     2,
                 )
 
-                if dets:
-                    found = True
-
-                    PetTrackingSystem.set_motor(board, 0.0, 0.0)
-
-                    for det in dets:
-                        x1 = int(det.rect.left)
-                        y1 = int(det.rect.top)
-                        x2 = int(det.rect.right)
-                        y2 = int(det.rect.bottom)
-
-                        cv2.rectangle(
-                            vis,
-                            (x1, y1),
-                            (x2, y2),
-                            (0, 255, 0),
-                            3,
+                if dets and not detected:
+                    detected = True
+                    first_detected_at = time.time()
+                    alignment_deadline = first_detected_at + center_timeout
+                    # Recording starts on the first positive detection.  Its
+                    # callback keeps running detection and centering on the
+                    # same camera frames, so video capture never delays the
+                    # turn towards the pet and never opens the camera twice.
+                    try:
+                        video_manifest = PetTrackingSystem._record_found_video_for_app(
+                            cap,
+                            frame,
+                            duration_sec=5.0,
+                            frame_callback=annotate_and_center,
                         )
+                    except PetVideoError as exc:
+                        # Finding/centering remain authoritative even when the
+                        # optional app recording or transcoding fails.
+                        video_error = str(exc)
+                    if centered:
+                        break
+                    # Video transcoding is not physical alignment time.  Give
+                    # the controller the unused part of its bounded centering
+                    # budget after recording completes.
+                    alignment_deadline = time.time() + max(2.0, center_timeout - 5.0)
+                    continue
 
-                        cv2.putText(
-                            vis,
-                            "FOUND",
-                            (x1, max(20, y1 - 10)),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            1,
-                            (0, 255, 0),
-                            2,
-                        )
-
-                    PetTrackingSystem._show_frame("Pet Search", vis, 800)
-                    video_manifest = PetTrackingSystem._record_found_video_for_app(
-                        cap,
-                        vis,
-                        duration_sec=5.0,
-                    )
-                    break
+                if detected:
+                    annotate_and_center(frame)
+                    if centered:
+                        break
+                    continue
 
                 PetTrackingSystem._show_frame("Pet Search", vis, 1)
 
@@ -1613,6 +1705,9 @@ class PetTrackingSystem:
                     speed_right=0.10,
                     speed_left=-0.10,
                 )
+
+            if detected and not centered and error is None:
+                error = "pet_detected_but_not_centered"
 
         except Exception as exc:
             error = str(exc)
@@ -1627,7 +1722,8 @@ class PetTrackingSystem:
             if detector_owned:
                 detector.release()
 
-            if error is None and found:
+            found = bool(detected and centered and error is None)
+            if found:
                 speak(f"这里有一只{pet_name}")
             elif error is None:
                 speak(f"抱歉，我没有发现{pet_name}")
@@ -1647,15 +1743,32 @@ class PetTrackingSystem:
                 "mode": "find",
                 "pet": target_pet,
                 "source": str(video_source),
-                "found": bool(found and error is None),
+                "detected": bool(detected),
+                "centered": bool(centered),
+                "found": found,
                 "state": "error" if error else ("found" if found else "not_found"),
                 "elapsed_sec": elapsed_sec,
                 "timeout_sec": search_timeout,
+                "center_timeout_sec": center_timeout,
+                "center_tolerance_ratio": centering.center_tolerance_ratio,
+                "center_confirmation_frames": centering.confirmation_frames,
+                "first_detected_after_sec": (
+                    round(first_detected_at - start_time, 3)
+                    if first_detected_at is not None
+                    else None
+                ),
+                "centered_after_detection_sec": (
+                    round(centered_at - first_detected_at, 3)
+                    if centered_at is not None and first_detected_at is not None
+                    else None
+                ),
+                "alignment": last_alignment,
                 "video": video_manifest,
+                "video_error": video_error,
                 "video_status": (
                     str(video_manifest.get("status"))
                     if isinstance(video_manifest, dict)
-                    else ("not_required" if not found else "failed")
+                    else ("not_required" if not detected else "failed")
                 ),
             }
             if error:

@@ -1,15 +1,19 @@
 {
   "name": "realtime_information",
-  "description_zh": "查询当前时间、实时天气、当前粗略位置、附近地点和实时交通信息。",
+  "description_zh": "查询当前时间、实时天气、室内地图位置、外部配置位置、附近地点、实时交通和外部目的地的驾车/公交地铁方案比较。",
   "allowed_actions": [
     "current_time",
     "weather",
     "location",
+    "indoor_location",
+    "external_location",
     "nearby",
-    "traffic"
+    "traffic",
+    "commute_recommendation"
   ],
   "resources": [
-    "network"
+    "network",
+    "localization_read"
   ],
   "configuration_file": "config.json",
   "location_priority": [

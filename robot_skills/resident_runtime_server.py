@@ -372,6 +372,7 @@ class ResidentSkills:
             sample_provider=self._head_feedback_sample,
             resource_provider=self.resources.status,
             projection_active_provider=self._persistent_projection_active,
+            level_recovery_needed_provider=self._level_gate_recovery_needed,
             correction=self._automatic_head_level,
             state_path=STATE_DIR / "head_pose_supervisor.json",
             level_angle=float(os.getenv("HEAD_LEVEL_ANGLE", "185")),
@@ -388,6 +389,30 @@ class ResidentSkills:
     def _head_feedback_sample(self) -> tuple[float, float] | None:
         with self.runtime.head_feedback_condition:
             return self.runtime.latest_head_roll
+
+    @staticmethod
+    def _project_localization_guard_enabled() -> bool:
+        """Whether the Qwen layer performs its own post-tilt map validation.
+
+        Car_real_copy already owns sensor-gate recovery and reports its final
+        ready/failed state.  Keep the project-side validator available for
+        diagnostics, but leave it disabled by default so a normal Cartographer
+        submap resize cannot trigger a second close/reopen loop.
+        """
+
+        return os.getenv("QWEN_PROJECT_LOCALIZATION_GUARD", "0").strip().lower() in {
+            "1", "true", "yes", "on",
+        }
+
+    def _level_gate_recovery_needed(self) -> bool:
+        """Return true when a level intent still lacks a usable sensor gate."""
+
+        if not self._project_localization_guard_enabled():
+            return False
+        snapshot = self.runtime.car_feedback_snapshot()
+        enabled = snapshot.get("sensor_gate_enabled")
+        state = str(snapshot.get("sensor_gate_state") or "").strip().lower()
+        return enabled is not True or state != "ready"
 
     @staticmethod
     def _persistent_projection_active() -> bool:
@@ -431,14 +456,235 @@ class ResidentSkills:
     def _set_lidar_live(self, enable: bool, timeout: float = 2.0) -> dict[str, Any]:
         """Delegate to Car_real_copy's motion-controller sensor gate."""
 
+        # Enabling an already-ready gate is not idempotent in Car_real_copy:
+        # the service deliberately starts a fresh scan/IMU/odom/TF/map recovery
+        # window.  Several project-level cleanup paths used to call ``level``
+        # immediately after ``projector_control off`` had already levelled the
+        # head.  That second request restarted the whole recovery cycle and
+        # delayed the final spoken result without adding any safety evidence.
+        snapshot = self.runtime.car_feedback_snapshot()
+        enabled = snapshot.get("sensor_gate_enabled")
+        state = str(snapshot.get("sensor_gate_state") or "").strip().lower()
+        if bool(enable) and enabled is True and state == "ready":
+            return {
+                "called": False,
+                "ok": True,
+                "live": True,
+                "enabled": True,
+                "state": "ready",
+                "message": "already_ready",
+            }
+        if not bool(enable) and enabled is False and state == "disabled":
+            return {
+                "called": False,
+                "ok": True,
+                "live": False,
+                "enabled": False,
+                "state": "disabled",
+                "message": "already_disabled",
+            }
+        if bool(enable) and enabled is True and state == "recovering":
+            sequence = int((snapshot.get("sequences") or {}).get("sensor_gate_state", 0))
+            feedback = self.runtime.wait_for_car_feedback(
+                "sensor_gate_state",
+                after_sequence=sequence,
+                predicate=lambda value: str(value).strip().lower() == "ready",
+                timeout_sec=max(float(timeout), 16.0),
+            )
+            return {
+                "called": False,
+                "ok": bool(feedback.get("ok")),
+                "live": True if feedback.get("ok") else None,
+                "enabled": True,
+                "state": feedback.get("value", state),
+                "message": "joined_existing_recovery",
+                "feedback": feedback,
+                "error": None if feedback.get("ok") else feedback.get("error"),
+            }
+
+        minimum_timeout = float(os.getenv(
+            "SENSOR_GATE_ENABLE_TIMEOUT_SEC" if enable
+            else "SENSOR_GATE_DISABLE_TIMEOUT_SEC",
+            "16.0" if enable else "20.0",
+        ))
         result = self.runtime.set_sensor_gate_enabled(
             bool(enable),
-            timeout_sec=max(float(timeout), 16.0 if enable else 3.0),
+            timeout_sec=max(float(timeout), minimum_timeout),
         )
         return {
             "called": True,
             "live": bool(enable) if result.get("ok") else None,
             **result,
+        }
+
+    def _confirm_level_for_lidar(
+        self,
+        angle: float,
+        *,
+        timeout_sec: float | None = None,
+    ) -> dict[str, Any]:
+        """Require a tighter, longer level window before reopening sensors.
+
+        Car_real_copy remains the only motor controller.  This project-layer
+        check consumes its existing IMU feedback and deliberately separates
+        ordinary head-command acceptance from the stricter lidar contract.
+        """
+
+        tolerance = max(
+            0.2, float(os.getenv("HEAD_LIDAR_LEVEL_TOLERANCE_DEG", "2.0"))
+        )
+        stable_sec = max(
+            0.2, float(os.getenv("HEAD_LIDAR_LEVEL_STABLE_SEC", "0.8"))
+        )
+        maximum_span = max(
+            0.05, float(os.getenv("HEAD_LIDAR_LEVEL_MAX_SPAN_DEG", "0.2"))
+        )
+        maximum_rate = max(
+            0.05, float(os.getenv("HEAD_LIDAR_LEVEL_MAX_RATE_DPS", "0.3"))
+        )
+        maximum_instant_rate = max(
+            maximum_rate,
+            float(os.getenv("HEAD_LIDAR_LEVEL_MAX_INSTANT_RATE_DPS", "1.0")),
+        )
+        rebound_guard = max(
+            0.0, float(os.getenv("HEAD_LIDAR_LEVEL_REBOUND_GUARD_SEC", "0.35"))
+        )
+        maximum_age = max(
+            0.05, float(os.getenv("HEAD_LIDAR_LEVEL_MAX_FEEDBACK_AGE_SEC", "0.5"))
+        )
+        timeout = max(
+            stable_sec + 0.2,
+            float(
+                timeout_sec
+                if timeout_sec is not None
+                else os.getenv("HEAD_LIDAR_LEVEL_CONFIRM_TIMEOUT_SEC", "7.0")
+            ),
+        )
+        result = self.runtime.wait_for_head_target(
+            angle,
+            tolerance_deg=tolerance,
+            maximum_rate_dps=maximum_rate,
+            maximum_instant_rate_dps=maximum_instant_rate,
+            maximum_roll_span_deg=maximum_span,
+            stable_sec=stable_sec,
+            rebound_guard_sec=rebound_guard,
+            timeout_sec=timeout,
+            maximum_feedback_age_sec=maximum_age,
+            require_rate_stability=True,
+        )
+        return {
+            **result,
+            "criteria": {
+                "tolerance_deg": tolerance,
+                "stable_sec": stable_sec,
+                "maximum_roll_span_deg": maximum_span,
+                "maximum_rate_dps": maximum_rate,
+                "maximum_instant_rate_dps": maximum_instant_rate,
+                "rebound_guard_sec": rebound_guard,
+                "maximum_feedback_age_sec": maximum_age,
+                "timeout_sec": timeout,
+            },
+        }
+
+    def _recover_lidar_after_level(self, *, timeout: float) -> dict[str, Any]:
+        """Run the one project-owned recovery barrier after physical leveling.
+
+        The raw scan preflight happens while Car_real_copy still gates data from
+        RF2O/Cartographer.  Only a fresh, stable, baseline-compatible scan may
+        reopen the gate.  Post-open health is then compared with the pre-tilt
+        pose/map; a discontinuity closes the gate again and blocks every base
+        command through ``ensure_car_motion_authorized``.
+        """
+
+        if not self._project_localization_guard_enabled():
+            gate = self._set_lidar_live(True, timeout=timeout)
+            return {
+                "ok": bool(gate.get("ok")),
+                "state": "ready" if gate.get("ok") else gate.get("state"),
+                "called": bool(gate.get("called")),
+                "message": "car_real_copy_sensor_gate_authoritative",
+                "gate": gate,
+                "error": None if gate.get("ok") else (
+                    gate.get("error") or "sensor_gate_recovery_failed"
+                ),
+            }
+
+        car = self.runtime.car_feedback_snapshot()
+        integrity = self.runtime.localization_integrity_snapshot()
+        gate_ready = (
+            car.get("sensor_gate_enabled") is True
+            and str(car.get("sensor_gate_state", "")).strip().lower() == "ready"
+        )
+        if gate_ready and str(integrity.get("state")) == "ready":
+            return {
+                "ok": True,
+                "called": False,
+                "state": "ready",
+                "message": "already_ready_and_validated",
+                "integrity": integrity,
+            }
+
+        # A resident process may be restarted while the Car gate is disabled.
+        # Create a conservative local baseline rather than reopening blindly.
+        if integrity.get("baseline") is None:
+            self.runtime.begin_head_tilt_session(
+                action="level_recovery_without_prior_session",
+                target_angle=float(os.getenv("HEAD_LEVEL_ANGLE", "185")),
+            )
+
+        preflight = self.runtime.wait_for_level_scan_preflight(
+            timeout_sec=float(os.getenv("HEAD_LEVEL_SCAN_PREFLIGHT_TIMEOUT_SEC", "4.0")),
+            minimum_samples=int(os.getenv("HEAD_LEVEL_SCAN_PREFLIGHT_MIN_SAMPLES", "6")),
+        )
+        if not preflight.get("ok"):
+            return {
+                "ok": False,
+                "called": False,
+                "state": "disabled",
+                "error": "level_scan_preflight_failed",
+                "preflight": preflight,
+                "integrity": self.runtime.localization_integrity_snapshot(),
+            }
+
+        gate = self._set_lidar_live(True, timeout=timeout)
+        if not gate.get("ok"):
+            self.runtime.mark_localization_invalid(
+                "sensor_gate_recovery_failed", gate=gate, preflight=preflight
+            )
+            return {
+                "ok": False,
+                "error": "sensor_gate_recovery_failed",
+                "preflight": preflight,
+                "gate": gate,
+                "integrity": self.runtime.localization_integrity_snapshot(),
+            }
+
+        validation = self.runtime.validate_localization_recovery(
+            timeout_sec=float(os.getenv("HEAD_POST_GATE_VALIDATION_TIMEOUT_SEC", "6.0"))
+        )
+        if not validation.get("ok"):
+            quarantine = self._set_lidar_live(False, timeout=3.0)
+            self.runtime.mark_localization_invalid(
+                "post_gate_localization_discontinuity",
+                validation=validation,
+                quarantine=quarantine,
+            )
+            return {
+                "ok": False,
+                "error": "post_gate_localization_discontinuity",
+                "preflight": preflight,
+                "gate": gate,
+                "validation": validation,
+                "quarantine": quarantine,
+                "integrity": self.runtime.localization_integrity_snapshot(),
+            }
+        return {
+            "ok": True,
+            "state": "ready",
+            "preflight": preflight,
+            "gate": gate,
+            "validation": validation,
+            "integrity": self.runtime.localization_integrity_snapshot(),
         }
 
     def _load_module(self, key: str, path: Path):
@@ -767,7 +1013,7 @@ class ResidentSkills:
         interval: float = 0.05,
         discovery_timeout: float = 0.8,
         feedback_timeout: float = 8.0,
-        feedback_tolerance: float = 5.0,
+        feedback_tolerance: float = 7.0,
         feedback_stable_sec: float = 0.15,
         feedback_max_roll_span: float = 1.5,
         feedback_max_rate: float = 4.0,
@@ -808,14 +1054,140 @@ class ResidentSkills:
                 )
             return result
 
+        operation_started = time.monotonic()
+        timing: dict[str, Any] = {
+            "post_navigation_settle_sec": 0.0,
+            "current_confirmation_sec": 0.0,
+            "guard_disable_sec": 0.0,
+            "command_sec": 0.0,
+            "strict_level_confirmation_sec": 0.0,
+            "retry_command_sec": 0.0,
+            "gate_recovery_sec": 0.0,
+            "retry_count": 0,
+        }
+
+        def timed_finish(result: dict[str, Any]) -> dict[str, Any]:
+            timing["total_sec"] = round(time.monotonic() - operation_started, 3)
+            return finish({**result, "timing": timing})
+
         with self.head_control_lock:
             level_angle = defaults["level"]
             tilting = abs(angle - level_angle) > 4
-            guard_before = self._set_lidar_live(False) if tilting else {
-                "called": False, "ok": True, "message": "already_guarded_or_leveling"
-            }
-            if tilting and not guard_before.get("ok"):
-                return finish({
+            effective_tolerance = max(0.1, float(feedback_tolerance))
+            if not tilting:
+                effective_tolerance = min(
+                    effective_tolerance,
+                    float(os.getenv("HEAD_LEVEL_FEEDBACK_TOLERANCE_DEG", "5.0")),
+                )
+
+            # In a compound navigation -> up/down task, Nav2 can report
+            # success shortly before Cartographer's final map/TF corrections
+            # settle.  Wait only the remainder of a small bounded window
+            # before capturing the level baseline and disabling the sensor
+            # gate.  Level recovery itself is intentionally not delayed.
+            if tilting:
+                settle_started = time.monotonic()
+                post_navigation_settle = (
+                    self.runtime.wait_for_post_navigation_head_settle()
+                )
+                timing["post_navigation_settle_sec"] = round(
+                    time.monotonic() - settle_started, 3
+                )
+                timing["post_navigation_settle"] = post_navigation_settle
+
+            current_started = time.monotonic()
+            try:
+                current_confirmation = self.runtime.wait_for_head_target(
+                    angle,
+                    tolerance_deg=effective_tolerance,
+                    maximum_rate_dps=max(0.1, float(feedback_max_rate)),
+                    maximum_roll_span_deg=max(0.1, float(feedback_max_roll_span)),
+                    stable_sec=max(0.0, float(feedback_stable_sec)),
+                    timeout_sec=max(
+                        0.2,
+                        float(os.getenv("HEAD_IDEMPOTENT_CONFIRM_TIMEOUT_SEC", "0.45")),
+                    ),
+                    maximum_feedback_age_sec=max(0.05, float(feedback_max_age)),
+                )
+            except Exception as exc:
+                current_confirmation = {
+                    "ok": False,
+                    "error": f"current_pose_check_failed:{type(exc).__name__}:{exc}",
+                }
+            timing["current_confirmation_sec"] = round(
+                time.monotonic() - current_started, 3
+            )
+
+            strict_confirmation: dict[str, Any] | None = None
+            if current_confirmation.get("ok") and not tilting:
+                strict_started = time.monotonic()
+                strict_confirmation = self._confirm_level_for_lidar(angle)
+                timing["strict_level_confirmation_sec"] += round(
+                    time.monotonic() - strict_started, 3
+                )
+
+            # Idempotent commands may skip the motor, but level may only skip
+            # after it also satisfies the stricter lidar-resume contract.
+            already_safe = bool(
+                current_confirmation.get("ok")
+                and (tilting or (strict_confirmation or {}).get("ok"))
+            )
+            if already_safe:
+                gate_started = time.monotonic()
+                if tilting:
+                    if self._project_localization_guard_enabled():
+                        self.runtime.begin_head_tilt_session(
+                            action=action, target_angle=angle
+                        )
+                    gate = self._set_lidar_live(False)
+                else:
+                    gate = self._recover_lidar_after_level(
+                        timeout=float(os.getenv(
+                            "HEAD_LOCALIZATION_RECOVERY_TIMEOUT_SEC", "18.0"
+                        ))
+                    )
+                timing["gate_recovery_sec"] = round(
+                    time.monotonic() - gate_started, 3
+                )
+                gate_ok = bool(gate.get("ok"))
+                return timed_finish({
+                    "ok": gate_ok,
+                    "skill": "head_control",
+                    "action": action,
+                    "angle": angle,
+                    "topic": "/step_motor_angle",
+                    "subscribers": int(self.head_pub.get_subscription_count()),
+                    "feedback": current_confirmation,
+                    "project_confirmation": strict_confirmation or current_confirmation,
+                    "acceptance": {
+                        "source": "already_at_target",
+                        "tolerance_deg": effective_tolerance,
+                        "strict_lidar_level": not tilting,
+                    },
+                    "service": gate,
+                    "already_at_target": True,
+                    "head_motion_skipped": True,
+                    "error": (
+                        None if gate_ok
+                        else "lidar_guard_not_ready" if tilting
+                        else "sensor_gate_recovery_failed"
+                    ),
+                    "transport": "car_real_copy_motion_controller",
+                })
+
+            # Any physical head movement, including a correction toward level,
+            # happens with Cartographer's scan/IMU/odom inputs gated.
+            if self._project_localization_guard_enabled():
+                self.runtime.begin_head_tilt_session(
+                    action=action, target_angle=angle
+                )
+            guard_started = time.monotonic()
+            guard_before = self._set_lidar_live(False)
+            timing["guard_disable_sec"] = round(
+                time.monotonic() - guard_started, 3
+            )
+            if not guard_before.get("ok"):
+                return timed_finish({
                     "ok": False,
                     "skill": "head_control",
                     "action": action,
@@ -827,6 +1199,8 @@ class ResidentSkills:
                     "error": "lidar_guard_not_ready",
                     "transport": "resident_ros_participant",
                 })
+
+            command_started = time.monotonic()
             feedback = self.runtime.command_head(
                 angle,
                 repeat=repeat,
@@ -834,21 +1208,157 @@ class ResidentSkills:
                 discovery_timeout=discovery_timeout,
                 feedback_timeout=feedback_timeout,
             )
+            timing["command_sec"] = round(time.monotonic() - command_started, 3)
             subscribers = int(feedback.get("subscribers", 0))
             delivered = subscribers > 0
-            at_target = bool(feedback.get("ok"))
-            # Manager and motion_controller jointly keep every base source at
-            # zero until this enable request reaches the fully recovered
-            # ``ready`` state (fresh gated scan/IMU/odom/TF/map).
-            guard_after = (
-                self._set_lidar_live(True, timeout=float(os.getenv(
-                    "HEAD_LOCALIZATION_RECOVERY_TIMEOUT_SEC", "18.0"
-                )))
-                if not tilting and at_target
-                else guard_before
-            )
-            guard_ok = bool(guard_after.get("ok"))
-            return finish({
+            manager_at_target = bool(feedback.get("ok"))
+            retry_feedback: dict[str, Any] | None = None
+
+            if not tilting and delivered:
+                strict_started = time.monotonic()
+                strict_confirmation = self._confirm_level_for_lidar(angle)
+                timing["strict_level_confirmation_sec"] += round(
+                    time.monotonic() - strict_started, 3
+                )
+
+                # One bounded retry is reserved for a genuinely offset head.
+                # If it is already inside the strict angular window but merely
+                # needs a longer stable dwell, do not kick the motor again.
+                strict_error = strict_confirmation.get("error_deg")
+                strict_tolerance = float(
+                    (strict_confirmation.get("criteria") or {}).get(
+                        "tolerance_deg", 2.0
+                    )
+                )
+                retry_enabled = os.getenv(
+                    "HEAD_LEVEL_BOUNDED_RETRY_ENABLED", "1"
+                ).strip().lower() not in {"0", "false", "no", "off"}
+                retry_eligible = bool(
+                    retry_enabled
+                    and not strict_confirmation.get("ok")
+                    and strict_confirmation.get("available")
+                    and strict_error is not None
+                    and abs(float(strict_error)) > strict_tolerance
+                )
+                if retry_eligible:
+                    timing["retry_count"] = 1
+                    retry_started = time.monotonic()
+                    retry_feedback = self.runtime.command_head(
+                        angle,
+                        repeat=repeat,
+                        interval=interval,
+                        discovery_timeout=discovery_timeout,
+                        feedback_timeout=feedback_timeout,
+                    )
+                    timing["retry_command_sec"] = round(
+                        time.monotonic() - retry_started, 3
+                    )
+                    strict_started = time.monotonic()
+                    strict_confirmation = self._confirm_level_for_lidar(angle)
+                    timing["strict_level_confirmation_sec"] += round(
+                        time.monotonic() - strict_started, 3
+                    )
+
+                at_target = bool(strict_confirmation.get("ok"))
+                project_confirmation = strict_confirmation
+            else:
+                project_confirmation = None
+                if delivered and not manager_at_target:
+                    confirm_started = time.monotonic()
+                    project_confirmation = self.runtime.wait_for_head_target(
+                        angle,
+                        tolerance_deg=effective_tolerance,
+                        maximum_rate_dps=max(0.1, float(feedback_max_rate)),
+                        maximum_roll_span_deg=max(0.1, float(feedback_max_roll_span)),
+                        stable_sec=max(0.0, float(feedback_stable_sec)),
+                        timeout_sec=max(
+                            0.2,
+                            float(os.getenv("HEAD_ADAPTER_CONFIRM_TIMEOUT_SEC", "1.2")),
+                        ),
+                        maximum_feedback_age_sec=max(0.05, float(feedback_max_age)),
+                    )
+                    timing["strict_level_confirmation_sec"] += round(
+                        time.monotonic() - confirm_started, 3
+                    )
+
+                    # A freshly started head controller can occasionally miss
+                    # its first tilted target even though the command was
+                    # delivered and the lidar gate is already safely disabled.
+                    # Retry exactly once, and only when fresh project feedback
+                    # confirms that the head is still outside the accepted
+                    # tilted window.  The normal success path is unchanged and
+                    # pays no extra latency; unavailable/stale feedback never
+                    # causes another physical command.
+                    project_error = project_confirmation.get("error_deg")
+                    tilt_retry_enabled = os.getenv(
+                        "HEAD_TILT_BOUNDED_RETRY_ENABLED", "1"
+                    ).strip().lower() not in {"0", "false", "no", "off"}
+                    tilt_retry_eligible = bool(
+                        tilting
+                        and tilt_retry_enabled
+                        and project_confirmation.get("available")
+                        and not project_confirmation.get("ok")
+                        and project_error is not None
+                        and abs(float(project_error)) > effective_tolerance
+                    )
+                    if tilt_retry_eligible:
+                        timing["retry_count"] = 1
+                        retry_started = time.monotonic()
+                        retry_feedback = self.runtime.command_head(
+                            angle,
+                            repeat=repeat,
+                            interval=interval,
+                            discovery_timeout=discovery_timeout,
+                            feedback_timeout=feedback_timeout,
+                        )
+                        timing["retry_command_sec"] = round(
+                            time.monotonic() - retry_started, 3
+                        )
+                        manager_at_target = bool(retry_feedback.get("ok"))
+                        if not manager_at_target:
+                            confirm_started = time.monotonic()
+                            project_confirmation = self.runtime.wait_for_head_target(
+                                angle,
+                                tolerance_deg=effective_tolerance,
+                                maximum_rate_dps=max(
+                                    0.1, float(feedback_max_rate)
+                                ),
+                                maximum_roll_span_deg=max(
+                                    0.1, float(feedback_max_roll_span)
+                                ),
+                                stable_sec=max(
+                                    0.0, float(feedback_stable_sec)
+                                ),
+                                timeout_sec=max(
+                                    0.2,
+                                    float(os.getenv(
+                                        "HEAD_ADAPTER_CONFIRM_TIMEOUT_SEC", "1.2"
+                                    )),
+                                ),
+                                maximum_feedback_age_sec=max(
+                                    0.05, float(feedback_max_age)
+                                ),
+                            )
+                            timing["strict_level_confirmation_sec"] += round(
+                                time.monotonic() - confirm_started, 3
+                            )
+                at_target = manager_at_target or bool(
+                    project_confirmation and project_confirmation.get("ok")
+                )
+
+            gate_after = guard_before
+            if not tilting and at_target:
+                gate_started = time.monotonic()
+                gate_after = self._recover_lidar_after_level(
+                    timeout=float(os.getenv(
+                        "HEAD_LOCALIZATION_RECOVERY_TIMEOUT_SEC", "18.0"
+                    )),
+                )
+                timing["gate_recovery_sec"] = round(
+                    time.monotonic() - gate_started, 3
+                )
+            guard_ok = bool(gate_after.get("ok"))
+            return timed_finish({
                 "ok": delivered and at_target and guard_ok,
                 "skill": "head_control",
                 "action": action,
@@ -856,10 +1366,26 @@ class ResidentSkills:
                 "topic": "/step_motor_angle",
                 "subscribers": subscribers,
                 "feedback": feedback,
-                "service": guard_after,
+                "retry_feedback": retry_feedback,
+                "project_confirmation": project_confirmation,
+                "acceptance": {
+                    "source": (
+                        "strict_project_level_confirmation"
+                        if not tilting and at_target
+                        else "car_real_copy"
+                        if manager_at_target
+                        else "project_stable_imu_confirmation"
+                        if at_target
+                        else "unconfirmed"
+                    ),
+                    "tolerance_deg": effective_tolerance,
+                    "strict_lidar_level": not tilting,
+                },
+                "service": gate_after,
                 "error": (
                     None if delivered and at_target and guard_ok
                     else "no_subscribers" if not delivered
+                    else "head_level_not_safe_for_lidar" if not tilting and not at_target
                     else "head_target_unconfirmed" if not at_target
                     else "sensor_gate_recovery_failed"
                 ),
@@ -876,10 +1402,11 @@ class ResidentSkills:
         parser.add_argument("--interval", type=float, default=0.05)
         parser.add_argument("--discovery-timeout", type=float, default=0.8)
         parser.add_argument("--service-timeout", type=float, default=0.45)
-        # Car_real_copy stops inside a 5 degree head deadband, so the
-        # physical arrival gate must use the same tolerance.
+        # Car_real_copy's controller result can be slightly stricter than the
+        # mechanically usable tilted pose.  The project therefore accepts a
+        # fresh, stable IMU pose within 7 degrees; level remains capped at 5.
         parser.add_argument("--feedback-timeout", type=float, default=12.0)
-        parser.add_argument("--feedback-tolerance", type=float, default=5.0)
+        parser.add_argument("--feedback-tolerance", type=float, default=7.0)
         parser.add_argument("--feedback-stable-sec", type=float, default=0.15)
         parser.add_argument("--feedback-max-roll-span", type=float, default=1.5)
         parser.add_argument("--feedback-max-rate", type=float, default=4.0)

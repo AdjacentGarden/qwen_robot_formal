@@ -9,10 +9,12 @@ V11 权威来源：`/home/test/single_function/realtime_information`
 ```bash
 cd /home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/realtime_information
 bash run.sh --action current_time
-bash run.sh --action weather --location 北京市顺义区
+bash run.sh --action indoor_location --query '你现在在哪里'
+bash run.sh --action external_location --query '你现在在哪个城市'
+bash run.sh --action weather --location 北京市朝阳区
 bash run.sh --action location
-bash run.sh --action nearby --query 美食 --location 北京市顺义区
-bash run.sh --action traffic --location 北京市顺义区
+bash run.sh --action nearby --query 美食 --location 北京市朝阳区
+bash run.sh --action traffic --location 北京市朝阳区
 ```
 
 执行真实硬件动作前，请确认对应摄像头、ROS/Nav2 或家电服务已准备好。

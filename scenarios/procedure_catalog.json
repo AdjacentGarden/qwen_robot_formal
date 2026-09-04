@@ -408,13 +408,6 @@
             "count"
           ],
           "dependency_policy": "completion",
-          "run_if": {
-            "field": {
-              "step": "count",
-              "path": "skipped",
-              "truthy": false
-            }
-          },
           "silent_result": true
         },
         {
@@ -426,11 +419,6 @@
             "projector_off"
           ],
           "dependency_policy": "completion",
-          "run_if": {
-            "any_failed": [
-              "projector_off"
-            ]
-          },
           "silent_result": true
         }
       ],
@@ -555,7 +543,6 @@
           "arguments": {},
           "depends_on": ["count"],
           "dependency_policy": "completion",
-          "run_if": {"field": {"step": "count", "path": "skipped", "truthy": false}},
           "silent_result": true
         },
         {
@@ -565,7 +552,6 @@
           "arguments": {},
           "depends_on": ["projector_off"],
           "dependency_policy": "completion",
-          "run_if": {"any_failed": ["projector_off"]},
           "silent_result": true
         }
       ],
@@ -650,7 +636,6 @@
           "arguments": {},
           "depends_on": ["count"],
           "dependency_policy": "completion",
-          "run_if": {"field": {"step": "count", "path": "skipped", "truthy": false}},
           "silent_result": true
         },
         {
@@ -660,7 +645,6 @@
           "arguments": {},
           "depends_on": ["projector_off"],
           "dependency_policy": "completion",
-          "run_if": {"any_failed": ["projector_off"]},
           "silent_result": true
         }
       ],
@@ -1080,6 +1064,7 @@
           "depends_on": [
             "off"
           ],
+          "dependency_policy": "completion",
           "silent_result": true
         }
       ],

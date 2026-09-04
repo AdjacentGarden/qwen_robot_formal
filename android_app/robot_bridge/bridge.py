@@ -5,6 +5,7 @@ import argparse
 import asyncio
 import base64
 import contextlib
+import hashlib
 import json
 import math
 import os
@@ -41,6 +42,20 @@ LINK_HEARTBEAT_INTERVAL_SEC = 0.75
 MAP_SEND_MIN_INTERVAL_SEC = 2.0
 ASYNC_STATUS_TIMEOUT_SEC = 1.5
 WEBSOCKET_SEND_TIMEOUT_SEC = 8.0
+MANAGER_HEALTH_MAX_AGE_SEC = 3.0
+
+
+def bridge_instance_id() -> str:
+    """Return a stable, non-secret identity for duplicate-connection fencing."""
+
+    configured = str(os.environ.get("ROBOT_BRIDGE_INSTANCE_ID") or "").strip()
+    if re.fullmatch(r"[A-Za-z0-9_-]{16,128}", configured):
+        return configured
+    try:
+        machine = Path("/etc/machine-id").read_text(encoding="utf-8").strip()
+    except OSError:
+        machine = socket.gethostname()
+    return hashlib.sha256(f"{machine}:{PROJECT}".encode("utf-8")).hexdigest()
 
 
 def load_microphone_state() -> Dict[str, Any]:
@@ -254,6 +269,60 @@ class ProgramController:
             "voice": str(project / "realtime_chat.py"),
         }
 
+    def _service_running(self) -> bool:
+        """Return whether this project's resident supervisor still owns a live process.
+
+        The voice worker is intentionally launched with a relative argv, so searching
+        for an absolute ``realtime_chat.py`` path is not reliable.  The resident
+        service PID is ownership-scoped and remains stable for the lifetime of the
+        complete Qwen process group.
+        """
+
+        path = self.project / "runtime/resident_service/service.pid"
+        try:
+            pid = int(path.read_text(encoding="utf-8").strip())
+        except (OSError, TypeError, ValueError):
+            return False
+        if pid <= 0:
+            return False
+        try:
+            os.kill(pid, 0)
+        except OSError:
+            return False
+        return self._pid_matches(pid, str(self.project / "run.sh"))
+
+    def _voice_process_running(self) -> bool:
+        """Recognize both resident-service and direct terminal launches.
+
+        A user may legitimately start ``bash run.sh --execute-skills`` from the
+        project directory.  That launch has no resident-service PID file, but its
+        realtime worker and App control socket still belong to this project.
+        Checking process cwd prevents another copied project from being mistaken
+        for the active voice worker.
+        """
+
+        if self._service_running():
+            return True
+        try:
+            processes = tuple(Path("/proc").iterdir())
+        except OSError:
+            return False
+        for proc in processes:
+            if not proc.name.isdigit():
+                continue
+            try:
+                cmdline = (proc / "cmdline").read_bytes().replace(b"\0", b" ").decode(
+                    "utf-8", "replace"
+                )
+                if "realtime_chat.py" not in cmdline:
+                    continue
+                cwd = (proc / "cwd").resolve()
+            except OSError:
+                continue
+            if cwd == self.project or str(self.project) in cmdline:
+                return True
+        return False
+
     @staticmethod
     def _process_running(pattern: str) -> bool:
         return subprocess.run(
@@ -286,18 +355,75 @@ class ProgramController:
         except Exception:
             return False
 
-    def _manager_ready(self) -> bool:
+    def _manager_runtime_status(self) -> Dict[str, Any]:
+        """Separate Manager liveness from temporary navigation availability.
+
+        Car_real_copy deliberately disables the lidar gate while the head is raised
+        or lowered.  That makes navigation temporarily unavailable, but it does not
+        mean the Manager or the complete robot program stopped.  Treating the gate
+        as a process-liveness requirement made the App report ``partial`` after a
+        successful head action.
+        """
+
         path = self.project / "runtime/robot_stack/health.json"
         try:
             value = json.loads(path.read_text(encoding="utf-8"))
             manager = value.get("manager") or {}
-            return bool(
-                (value.get("ready") or {}).get("manager")
-                and str(manager.get("state") or "").upper() == "NAVIGATION"
-                and str(manager.get("sensor_gate_state") or "").lower() == "ready"
+            updated_at = float(value.get("updated_at") or 0.0)
+            age_sec = max(0.0, time.time() - updated_at)
+            state = str(manager.get("state") or "unknown").upper()
+            gate_state = str(manager.get("sensor_gate_state") or "unknown").lower()
+            gate_enabled = manager.get("sensor_gate_enabled")
+            publishers = int(value.get("manager_publishers") or 0)
+            fresh = updated_at > 0.0 and age_sec <= MANAGER_HEALTH_MAX_AGE_SEC
+            operational = bool(
+                fresh
+                and publishers == 1
+                and state == "NAVIGATION"
+                and not bool(manager.get("control_conflict"))
             )
+            navigation_ready = bool(
+                operational
+                and gate_enabled is True
+                and gate_state == "ready"
+                and (value.get("ready") or {}).get("manager")
+            )
+            if navigation_ready:
+                mode = "navigation_ready"
+            elif operational and gate_enabled is False:
+                mode = "head_motion"
+            elif operational and gate_state == "recovering":
+                mode = "sensor_recovering"
+            elif operational:
+                mode = "navigation_temporarily_unavailable"
+            else:
+                mode = "manager_unavailable"
+            return {
+                "operational": operational,
+                "navigation_ready": navigation_ready,
+                "mode": mode,
+                "state": state,
+                "sensor_gate_enabled": gate_enabled,
+                "sensor_gate_state": gate_state,
+                "health_age_sec": round(age_sec, 3),
+                "manager_publishers": publishers,
+            }
         except Exception:
-            return False
+            return {
+                "operational": False,
+                "navigation_ready": False,
+                "mode": "manager_health_unavailable",
+                "state": "UNKNOWN",
+                "sensor_gate_enabled": None,
+                "sensor_gate_state": "unknown",
+                "health_age_sec": None,
+                "manager_publishers": 0,
+            }
+
+    def _manager_ready(self) -> bool:
+        """Strict readiness used only to validate a complete fresh startup."""
+
+        return bool(self._manager_runtime_status().get("navigation_ready"))
 
     def wait_for_voice_ready(self, timeout: float = 10.0) -> bool:
         """Wait through a short Qwen idle-session reconnect.
@@ -316,13 +442,22 @@ class ProgramController:
 
     def status(self) -> Dict[str, Any]:
         if self.dry_run:
-            return {"state": "dry_run", "components": {name: True for name in self.COMPONENT_NAMES}}
+            return {
+                "state": "dry_run",
+                "components": {name: True for name in self.COMPONENT_NAMES},
+                "capabilities": {"navigation_ready": True, "voice_ready": True},
+                "runtime_mode": "dry_run",
+            }
         components = {name: self._process_running(pattern) for name, pattern in self.process_patterns.items()}
-        components["manager"] = bool(components.get("manager") and self._manager_ready())
-        # run.sh intentionally starts the voice process with a relative argv,
-        # so an absolute pgrep pattern can report a false negative. The local
-        # control socket is the authoritative readiness check used by the App.
-        components["voice"] = self._qwen_voice_connected()
+        manager = self._manager_runtime_status()
+        components["manager"] = bool(components.get("manager") and manager["operational"])
+        # A short Qwen cloud-session rotation must not make a healthy local
+        # resident look stopped.  Keep process liveness and cloud readiness as
+        # separate signals; App voice still checks ``voice_ready`` before use.
+        voice_ready = self._qwen_voice_connected()
+        components["voice"] = bool(
+            self._voice_process_running() and APP_CONTROL_SOCKET.is_socket()
+        )
         service_transition = None
         try:
             service_state = json.loads(self.service_state_file.read_text(encoding="utf-8"))
@@ -343,7 +478,23 @@ class ProgramController:
             state = "stopped"
         else:
             state = "partial"
-        return {"state": state, "components": components, "timestamp": time.time()}
+        capabilities = {
+            "navigation_ready": bool(manager["navigation_ready"]),
+            "voice_ready": bool(voice_ready),
+            "sensor_gate_enabled": manager["sensor_gate_enabled"],
+            "sensor_gate_state": manager["sensor_gate_state"],
+        }
+        runtime_mode = manager["mode"]
+        if state == "running" and not voice_ready:
+            runtime_mode = "voice_reconnecting"
+        return {
+            "state": state,
+            "components": components,
+            "capabilities": capabilities,
+            "runtime_mode": runtime_mode,
+            "manager": manager,
+            "timestamp": time.time(),
+        }
 
     def _run(self, argv: list[str], timeout: float) -> Dict[str, Any]:
         completed = subprocess.run(
@@ -399,7 +550,13 @@ class ProgramController:
             program = self.status()
             components = program.get("components") or {}
             missing = [name for name in self.COMPONENT_NAMES if not components.get(name)]
-            if program.get("state") != "running" or missing:
+            capabilities = program.get("capabilities") or {}
+            if (
+                program.get("state") != "running"
+                or missing
+                or not capabilities.get("navigation_ready")
+                or not capabilities.get("voice_ready")
+            ):
                 # The App's start button means complete robot startup. Never
                 # report success for a voice-only or otherwise partial stack.
                 # Roll back survivors so the next press starts deterministically.
@@ -410,6 +567,8 @@ class ProgramController:
                     )
                 raise RuntimeError(
                     "program_incomplete_after_start: missing=" + ",".join(missing)
+                    + f" navigation_ready={bool(capabilities.get('navigation_ready'))}"
+                    + f" voice_ready={bool(capabilities.get('voice_ready'))}"
                 )
             return {"status": "started", "program": program, "service": service}
 
@@ -423,12 +582,19 @@ class ProgramController:
 
 
 class Bridge:
-    def __init__(self, servers: list[str], token: str, dry_run: bool) -> None:
+    def __init__(
+        self,
+        servers: list[str],
+        token: str,
+        dry_run: bool,
+        instance_id: str = "",
+    ) -> None:
         self.servers = list(dict.fromkeys(server.rstrip("/") for server in servers if server.strip()))
         if not self.servers:
             raise ValueError("at_least_one_relay_server_is_required")
         self.server = self.servers[0]
         self.token = token
+        self.instance_id = instance_id or bridge_instance_id()
         self.dry_run = dry_run
         self.ros = RosAdapter(dry_run=dry_run)
         self.program = ProgramController(PROJECT, dry_run=dry_run)
@@ -440,8 +606,39 @@ class Bridge:
         self.microphone_state: Dict[str, Any] = load_microphone_state()
         self.command_lock = asyncio.Lock()
         self.send_lock = asyncio.Lock()
+        # Program startup can outlive one flaky phone/relay websocket.  Keep
+        # the real operation on the bridge object instead of making it a child
+        # of a single connection's command task.
+        self._program_start_task: asyncio.Task | None = None
+        self._program_stop_task: asyncio.Task | None = None
         self.last_telemetry_monotonic = 0.0
         self.last_map_sent_monotonic = 0.0
+
+    async def durable_program_operation(self, operation: str) -> Dict[str, Any]:
+        """Run start/stop once even if the App websocket reconnects mid-call."""
+
+        if operation not in {"start", "stop"}:
+            raise ValueError(f"unsupported_program_operation:{operation}")
+        attribute = f"_program_{operation}_task"
+        task = getattr(self, attribute, None)
+        if task is None or task.done():
+            function = self.program.start if operation == "start" else self.program.stop
+            task = asyncio.create_task(
+                asyncio.to_thread(function),
+                name=f"durable-program-{operation}",
+            )
+            # Retrieve a possible exception even when the original connection
+            # disappeared and no waiter survived.  An overlapping request from
+            # a reconnected App shares this still-running operation.
+            task.add_done_callback(
+                lambda completed: (
+                    None
+                    if completed.cancelled()
+                    else completed.exception()
+                )
+            )
+            setattr(self, attribute, task)
+        return await asyncio.shield(task)
 
     @staticmethod
     def qwen_control_request(request: Dict[str, Any], timeout: float = 150.0) -> Dict[str, Any]:
@@ -713,7 +910,7 @@ class Bridge:
             elif action == "program_start":
                 self.program_state = {**self.program.status(), "state": "starting"}
                 await self.send({"type": "program_status", "program": self.program_state, "timestamp": time.time()})
-                result = await asyncio.to_thread(self.program.start)
+                result = await self.durable_program_operation("start")
                 self.program_state = result["program"]
             elif action == "program_stop":
                 self.program_state = {**self.program.status(), "state": "stopping"}
@@ -721,7 +918,7 @@ class Bridge:
                 with contextlib.suppress(Exception):
                     await asyncio.to_thread(self.qwen_control_request, {"op": "cancel_all"}, 12.0)
                 await asyncio.to_thread(self.ros.stop)
-                result = await asyncio.to_thread(self.program.stop)
+                result = await self.durable_program_operation("stop")
                 self.program_state = result["program"]
             elif action == "program_status":
                 self.program_state = await asyncio.to_thread(self.program.status)
@@ -969,7 +1166,14 @@ class Bridge:
         while True:
             for server in self.servers:
                 self.server = server
-                uri = server.replace("http://", "ws://").replace("https://", "wss://") + "/ws/robot?token=" + self.token
+                query = urllib.parse.urlencode({
+                    "token": self.token,
+                    "instance_id": self.instance_id,
+                })
+                uri = (
+                    server.replace("http://", "ws://").replace("https://", "wss://")
+                    + "/ws/robot?" + query
+                )
                 established = False
                 try:
                     async with websockets.connect(
@@ -1008,6 +1212,10 @@ def main() -> int:
     parser.add_argument("--server", default="", help="single relay URL (backward compatible)")
     parser.add_argument("--servers", default="", help="comma-separated relay URLs")
     parser.add_argument("--token", default=os.environ.get("ROBOT_BRIDGE_TOKEN", ""))
+    parser.add_argument(
+        "--instance-id",
+        default=os.environ.get("ROBOT_BRIDGE_INSTANCE_ID", ""),
+    )
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     if not args.token:
@@ -1020,7 +1228,7 @@ def main() -> int:
         or "http://100.125.188.94:8765,http://10.249.188.197:8765"
     )
     servers = [item.strip() for item in configured.split(",") if item.strip()]
-    asyncio.run(Bridge(servers, args.token, args.dry_run).run())
+    asyncio.run(Bridge(servers, args.token, args.dry_run, args.instance_id).run())
     return 0
 
 

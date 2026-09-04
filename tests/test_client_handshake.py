@@ -877,6 +877,75 @@ class ClientHandshakeTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("不得再次调用", combined_prompt)
         self.assertNotIn("安全模拟校验通过", combined_prompt)
 
+    async def test_atomic_multi_calls_are_promoted_to_one_sequence_per_turn(self) -> None:
+        calls: list[tuple[str, dict, str]] = []
+
+        class Bridge:
+            scenario_catalog = None
+            current_turn_id = ""
+
+            @staticmethod
+            def recover_explicit_plan(_text):
+                return {
+                    "name": "run_skill_sequence",
+                    "arguments": {
+                        "tasks": [
+                            {"name": "head_control", "arguments": {"action": "up"}},
+                            {"name": "head_control", "arguments": {"action": "down"}},
+                        ],
+                        "failure_policy": "stop",
+                    },
+                }
+
+            @staticmethod
+            def invoke(name, arguments, user_text, *_context):
+                calls.append((name, dict(arguments), user_text))
+                return {
+                    "ok": False,
+                    "validation_ok": True,
+                    "executed": False,
+                    "mode": "dry_run",
+                    "skill": name,
+                    "spoken_summary": "安全模拟校验通过，但这组任务没有实际执行。",
+                }
+
+        args = SimpleNamespace()
+        with tempfile.TemporaryDirectory() as directory:
+            client = RealtimeConversation(
+                args,
+                "sk-test",
+                JsonLogger(Path(directory) / "events.jsonl"),
+            )
+            websocket = FakeWebSocket()
+            websocket.events = []
+            client.websocket = websocket
+            client.skill_bridge = Bridge()
+            await client.accept_input_transcript("请先抬头，然后再低头")
+            first = await client.handle_function_call(
+                {
+                    "call_id": "head-up",
+                    "name": "head_control",
+                    "arguments": '{"action":"up"}',
+                }
+            )
+            second = await client.handle_function_call(
+                {
+                    "call_id": "head-down",
+                    "name": "head_control",
+                    "arguments": '{"action":"down"}',
+                }
+            )
+
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0][0], "run_skill_sequence")
+        self.assertEqual(
+            [item["arguments"]["action"] for item in calls[0][1]["tasks"]],
+            ["up", "down"],
+        )
+        self.assertEqual(first["skill"], "run_skill_sequence")
+        self.assertEqual(second["mode"], "merged_into_sequence")
+        self.assertTrue(second["deduplicated"])
+
     async def test_executed_skill_is_recorded_in_command_memory(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

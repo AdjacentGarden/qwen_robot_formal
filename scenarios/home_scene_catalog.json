@@ -11,7 +11,7 @@
   },
   "planner_rules": [
     "所有动作基于千问端到端流式语音会话；不得改走本地ASR、DeepSeek或本地TTS回答链路。",
-    "第一次听到‘哈喽/哈啰/Hello理想（同学）’或自然同义问候时执行一次homecoming_welcome；允许语音转写省略‘同学’，但必须同时包含问候词和‘理想’；用户明确要求重播欢迎画面时也执行，普通后续问候不重复播放。",
+    "每次听到‘哈喽/哈啰/Hello理想（同学）’或自然同义问候时都执行homecoming_welcome；允许语音转写省略‘同学’，但必须同时包含问候词和‘理想’；同一轮的重复工具调用仍只执行一次，用户明确要求重播欢迎画面时也执行。",
     "用户说今天很累、好疲惫、下班太累或表达身体疲劳时，先自然回应并只询问‘那需要放个电影放松一下吗？’，此时不得调用硬件。用户同意看电影时执行movie_projection；用户只拒绝电影且没有提出其他安排时，再询问‘好的，那需要我陪您做运动吗？’，仍不得立即运动；用户同意后才执行push_up_companion。用户拒绝电影时若同时明确说俯卧撑、深蹲、会议等其他安排，直接执行对应任务，不再默认引导运动。",
     "‘不看了、已经坐了一天、今天很累’本身不是休息灯光指令，绝对不能调用rest_lighting；此时只自然建议起身活动，等待用户明确同意后再执行运动。",
     "运动默认播放运动示范视频并使用人脸识别和持续ReID。只有用户明确说不用身份识别、不看脸或不用ReID时，才把identity_policy设为anonymous。",
@@ -26,11 +26,11 @@
   "skill_resources": {"welcome_projection": ["projector"]},
   "procedures": {
     "homecoming_welcome": {
-      "description": "第一次自然问候或用户强制要求时执行欢迎回家：先说欢迎回家，低头播放三秒欢迎画面，结束后恢复平视；不导航、不抬头追踪人物。",
+      "description": "每次明确说哈喽、哈啰或Hello理想（同学），或用户强制要求时，都执行欢迎回家：先说欢迎回家，低头播放三秒欢迎画面，结束后恢复平视；不导航、不抬头追踪人物。",
       "semantic_examples": ["哈喽理想同学", "哈啰理想同学", "Hello理想同学", "哈喽理想", "哈啰理想", "Hello理想", "理想同学我回来了", "再播放一次欢迎回家"],
       "parameters": {},
       "effects": ["welcome_projection=off", "head=level"],
-      "composition_rules": ["首次问候只触发一次；明确要求重播不受限制。", "调用工具前只说一次欢迎回家，成功结果不重复。", "低头成功后播放三秒；无论视频成功失败都恢复平视。", "不包含导航、身份识别、ReID、跟踪或底盘移动。"],
+      "composition_rules": ["每一轮明确的哈喽、哈啰或Hello理想（同学）问候都触发完整场景；只对同一轮重复工具调用去重。", "调用工具前只说一次欢迎回家，成功结果不重复。", "低头成功后将欢迎图片旋转180度全屏显示三秒；无论图片显示成功失败都恢复平视。", "不包含导航、身份识别、ReID、跟踪或底盘移动。"],
       "steps": [
         {"id": "head_down", "skill": "head_control", "action": "down", "arguments": {}, "depends_on": [], "silent_result": true},
         {"id": "welcome_video", "skill": "welcome_projection", "action": "play", "arguments": {"duration": 3}, "depends_on": ["head_down"], "silent_result": true},
@@ -138,20 +138,23 @@
       ]
     },
     "meeting_projection": {
-      "description": "导航到书房投影点，抬头并循环播放会议内容。现场语音和App语音共用本过程。",
+      "description": "带默认参数的会议投影模板：默认导航到书房、抬头并循环播放会议内容；用户明确指定原地、地点或不要抬头时只覆盖对应参数。现场语音和App语音共用本过程。",
       "semantic_examples": ["陪我一起开个会吧", "开始会议投影", "把会议内容投出来"],
       "parameters": {
         "point": {"type": "string", "enum": ["origin", "white_wall", "study_projection"], "default": "study_projection"},
-        "stay_put": {"type": "boolean", "default": false}
+        "stay_put": {"type": "boolean", "default": false},
+        "navigate": {"type": "boolean", "default": true},
+        "head": {"type": "string", "enum": ["up", "keep"], "default": "up"},
+        "content": {"type": "string", "enum": ["meeting"], "default": "meeting"}
       },
       "effects": ["robot_at=study_projection", "meeting_projection=on"],
       "steps": [
-        {"id": "navigate", "skill": "navigation_goto", "action": "goto", "arguments": {"point": {"$arg": "point", "default": "study_projection"}}, "enabled_if": {"argument": "stay_put", "equals": false}, "depends_on": [], "silent_result": true},
-        {"id": "head_up", "skill": "head_control", "action": "up", "arguments": {}, "depends_on": ["navigate"], "silent_result": true},
+        {"id": "navigate", "skill": "navigation_goto", "action": "goto", "arguments": {"point": {"$arg": "point", "default": "study_projection"}}, "enabled_if": {"argument": "navigate", "equals": true}, "depends_on": [], "silent_result": true},
+        {"id": "head_up", "skill": "head_control", "action": "up", "arguments": {}, "enabled_if": {"argument": "head", "equals": "up"}, "depends_on": ["navigate"], "silent_result": true},
         {"id": "project", "skill": "projector_control", "action": "meeting_presentation_on", "arguments": {}, "depends_on": ["head_up"], "silent_result": true}
       ],
       "outcomes": [
-        {"name": "all_success_here", "when": {"all_ok": ["navigate", "head_up", "project"], "field": {"step": "navigate", "path": "intentional_skip", "equals": true}}, "text": "已经在当前位置抬头并投影好会议内容了。"},
+        {"name": "all_success_here", "when": {"all_ok": ["navigate", "head_up", "project"], "field": {"step": "navigate", "path": "intentional_skip", "equals": true}}, "text": "已经在当前位置投影好会议内容了。"},
         {"name": "all_success", "when": {"all_ok": ["navigate", "head_up", "project"]}, "text": "已经投影好会议内容了。"},
         {"name": "navigation_failed", "when": {"any_executed_failed": ["navigate"]}, "text": "我刚才没能到达指定的会议投影位置，所以没有抬头或开始投影。"},
         {"name": "head_failed_here", "when": {"any_executed_failed": ["head_up"], "field": {"step": "navigate", "path": "intentional_skip", "equals": true}}, "text": "我留在了当前位置，不过头部没有抬到投影角度，所以没有播放会议内容。"},
@@ -171,9 +174,17 @@
       ],
       "outcomes": [
         {"name": "success", "when": {"all_ok": ["light_off", "navigate"]}, "text": "好的，已经帮你调整好灯光了，安心休息一会儿吧。"},
+        {"name": "light_auth_failed", "when": {"all_ok": ["navigate"], "any_executed_failed": ["light_off"], "field": {"step": "light_off", "path": "failure_reason", "equals": "auth_expired_or_invalid"}}, "text": "我已经回到客厅，不过灯光控制登录已失效，需要重新登录后才能关灯。"},
+        {"name": "light_offline", "when": {"all_ok": ["navigate"], "any_executed_failed": ["light_off"], "field": {"step": "light_off", "path": "failure_reason", "equals": "device_offline"}}, "text": "我已经回到客厅，不过灯具当前离线，所以没能关灯。"},
+        {"name": "light_timeout", "when": {"all_ok": ["navigate"], "any_executed_failed": ["light_off"], "field": {"step": "light_off", "path": "failure_reason", "equals": "service_timeout"}}, "text": "我已经回到客厅，不过连接灯光服务超时，所以没能关灯。"},
+        {"name": "light_network_failed", "when": {"all_ok": ["navigate"], "any_executed_failed": ["light_off"], "field": {"step": "light_off", "path": "failure_reason", "equals": "network_unavailable"}}, "text": "我已经回到客厅，不过当前网络连不上灯光服务，所以没能关灯。"},
         {"name": "light_failed", "when": {"all_ok": ["navigate"], "any_executed_failed": ["light_off"]}, "text": "我已经回到客厅，不过灯光刚才没有调整成功。"},
         {"name": "navigation_failed", "when": {"all_ok": ["light_off"], "any_executed_failed": ["navigate"]}, "text": "灯光已经调整好了，不过我刚才没能顺利回到客厅。"},
-        {"name": "both_failed", "when": {"any_executed_failed": ["light_off", "navigate"]}, "text": "灯光调整和回到客厅刚才都没有正常完成。"}
+        {"name": "both_auth_failed", "when": {"all_executed_failed": ["light_off", "navigate"], "field": {"step": "light_off", "path": "failure_reason", "equals": "auth_expired_or_invalid"}}, "text": "灯光控制登录已失效，需要重新登录；导航也单独执行了，但刚才没能顺利回到客厅。"},
+        {"name": "both_light_offline", "when": {"all_executed_failed": ["light_off", "navigate"], "field": {"step": "light_off", "path": "failure_reason", "equals": "device_offline"}}, "text": "灯具当前离线，所以没能关灯；导航也单独执行了，但刚才没能顺利回到客厅。"},
+        {"name": "both_light_timeout", "when": {"all_executed_failed": ["light_off", "navigate"], "field": {"step": "light_off", "path": "failure_reason", "equals": "service_timeout"}}, "text": "连接灯光服务超时，所以没能关灯；导航也单独执行了，但刚才没能顺利回到客厅。"},
+        {"name": "both_light_network_failed", "when": {"all_executed_failed": ["light_off", "navigate"], "field": {"step": "light_off", "path": "failure_reason", "equals": "network_unavailable"}}, "text": "当前网络连不上灯光服务，所以没能关灯；导航也单独执行了，但刚才没能顺利回到客厅。"},
+        {"name": "both_failed", "when": {"all_executed_failed": ["light_off", "navigate"]}, "text": "关灯没有成功；导航也单独执行了，但刚才没能顺利回到客厅。"}
       ]
     }
   }

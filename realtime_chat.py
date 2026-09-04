@@ -23,10 +23,12 @@ from typing import Any
 from local_skills import (
     DEFAULT_ENABLED_SKILLS,
     DEFAULT_SPEC_DIR,
+    SCENARIO_TOOL_NAME,
     SEQUENCE_TOOL_NAME,
     LocalSkillBridge,
 )
 from memory_store import MemoryStore
+from intent_policy import enforce_turn_tool_policy, normalize_user_intent
 from skill_runner import running_controller_conflicts
 from skill_event_audio import QwenSkillEventSpeaker
 from projection_occlusion_observer import (
@@ -48,6 +50,48 @@ from realtime_core import (
     build_websocket_url,
     pcm_rms,
 )
+
+
+FITNESS_COMPLETION_SKILLS = {
+    "push_up_companion": "push_up",
+    "pull_up_companion": "pull_up",
+    "squat_companion": "squat",
+}
+
+# ALSA keeps delivering frames while the local microphone is muted so its
+# device buffer cannot grow indefinitely.  When the App turns the microphone
+# back on, discard a very short settling window and reset Qwen's server-side
+# audio buffer before accepting speech.  Without this transition the first
+# utterance can be reduced to a tiny VAD fragment (61 ms in the field log).
+MICROPHONE_RESUME_SETTLE_SECONDS = 0.35
+
+# A blocking PortAudio output stream must not be left running while no PCM is
+# available.  On the robot that keeps the TAS6424 amplifier awake with an empty
+# buffer, produces repeated ALSA underruns on the next utterance, and exposes
+# the amplifier's analogue idle noise.  This timeout matches the old
+# speaker-safe playback tail, so microphone turn-taking latency is unchanged.
+SPEAKER_IDLE_STOP_SECONDS = 0.1
+
+
+def delivered_fitness_completion(
+    speaker: QwenSkillEventSpeaker | None,
+    *,
+    tool_name: str,
+    arguments: dict[str, Any],
+    result: dict[str, Any],
+    turn_id: str | int,
+) -> dict[str, Any] | None:
+    """Find an already-enqueued authoritative fitness completion sentence."""
+    if speaker is None or tool_name != SCENARIO_TOOL_NAME or not result.get("ok"):
+        return None
+    skill_name = FITNESS_COMPLETION_SKILLS.get(str(arguments.get("scenario") or ""))
+    if skill_name is None:
+        return None
+    return speaker.delivered_event(
+        turn_id=turn_id,
+        kind="complete",
+        skill_names={skill_name},
+    )
 
 
 def load_microphone_enabled(path: Path, default: bool = True) -> bool:
@@ -118,7 +162,7 @@ E. 否定短语是约束，不是待执行动作。“我不想开灯，导航�
    - “关闭投影，但别移动，然后查时间”中“别移动”不是 task，两个正向任务是 meeting_projection_stop、realtime_information(current_time)。
    - “先拍照，再录五秒视频”必须保留拍照和录像两项，时长属于录像参数而不是新任务。
    - “导航到书房以后开始会议投影”是一个完整 meeting_projection(point=study_projection) 场景，因为该场景自身已经包含导航；不得再额外添加 navigation_goto。
-16. 身份、时间和位置必须守住能力边界：用户问“你知道我是谁吗、我是谁、认得我吗”时调用 face_recognition，不用记忆猜人脸；询问现在几点、年月日、星期几时调用 realtime_information(action=current_time)，不得用模型训练知识猜时钟。realtime_information(action=location) 只表示机器人的粗略地理位置，绝不能拿它回答手机、用户、宠物或其他设备在哪里。当前没有安全且独立的实时电量读取能力；用户询问机器人电量时直接说明暂时无法读取，不调用任何工具，不猜百分比。
+16. 身份、时间和位置必须守住能力边界：用户问“你知道我是谁吗、我是谁、认得我吗”时调用 face_recognition，不用记忆猜人脸；询问现在几点、年月日、星期几时调用 realtime_information(action=current_time)，不得用模型训练知识猜时钟。用户泛问“你在哪里、机器人当前位置、现在在哪个房间、家里哪个区域”时默认调用 realtime_information(action=indoor_location)，根据实时地图定位回答客厅、书房或餐厅；只有用户明确询问“外部位置、GPS、经纬度、在哪个城市、哪个街道”等外部地理位置时才调用 realtime_information(action=external_location)。在机器人对话中，未提手机、用户或其他对象的“GPS定位在哪里”默认指机器人；只有明确提到手机或用户时才拒绝。external_location 返回配置的区域位置，不得冒充 GPS 实测值。位置工具只表示机器人，绝不能拿它回答手机、用户、宠物或其他设备在哪里。当前没有安全且独立的实时电量读取能力；用户询问机器人电量时直接说明暂时无法读取，不调用任何工具，不猜百分比。
 17. 当前没有手机定位、打电话和发送消息能力。用户找手机或要求定位手机时不要调用任何位置工具，也不得假装正在查找。根据问法自然回应：用户说手机找不到或请求帮忙时，先明确自己不能定位，再建议使用手机厂商的查找设备功能；用户直接问手机在哪里时，说明自己没有手机定位权限，因此查不到当前位置。两种问法不要回复成完全相同的一句话。
 18. 音乐和娱乐视频统一调用 media_player。用户只说“想听歌、放点音乐、听歌放松”时用 play_music 且不强迫用户先选歌；用户只说“想看好看的/娱乐视频”时用 play_video。选歌、换歌、暂停、继续、结束、查询列表或状态均调用对应 action。播放器本身不等于投影场景，不得顺带移动底盘或头部。
 18A. “电影”是需要投到墙上的受保护场景，不等同于普通娱乐视频。用户表达今天很累、身体疲惫或做了很多事很累，但没有同时提出其他任务时，只用一句简短关心承接，然后必须以“那需要放个电影放松一下吗？”结束；这一轮不得调用任何工具。用户明确同意看电影后调用 movie_projection；默认去书房，明确说原地时保留 stay_put=true。用户只拒绝电影、没有提出其他安排时，必须只说“好的，那需要我陪您做运动吗？”，仍不得调用工具；用户同意后调用 push_up_companion。这里的“您”是该演示话术的唯一称呼例外。若用户在拒绝电影的同一句话中直接提出俯卧撑、深蹲、会议或其他任务，立即按实际任务执行，不再默认询问运动。电影的暂停、继续和结束分别调用 movie_projection_pause、movie_projection_resume、movie_projection_stop；结束必须同时关闭投影并恢复平视。
@@ -332,8 +376,18 @@ class AudioEngine:
             rate=OUTPUT_RATE,
             output=True,
             frames_per_buffer=max(240, OUTPUT_RATE // 50),
+            start=False,
             **output_args,
         )
+        # PortAudio's PulseAudio plug-in creates an uncorked sink-input even
+        # when start=False.  Merely calling stop_stream() while PortAudio
+        # already reports the stream as stopped is a no-op, leaving the
+        # TAS6424 amplifier powered and producing analogue idle hiss.  A
+        # start/stop transition immediately after opening establishes the
+        # genuinely corked state without writing any samples.
+        if not self.output_stream.is_active():
+            self.output_stream.start_stream()
+        self.output_stream.stop_stream()
         self.output_queue: queue.Queue[tuple[int, bytes] | None] = queue.Queue(maxsize=256)
         self.generation = 0
         self.playing = threading.Event()
@@ -419,8 +473,15 @@ class AudioEngine:
     def _play_loop(self) -> None:
         while not self.closed.is_set():
             try:
-                item = self.output_queue.get(timeout=0.1)
+                item = self.output_queue.get(timeout=SPEAKER_IDLE_STOP_SECONDS)
             except queue.Empty:
+                # Only the playback worker starts and stops this stream.  That
+                # preserves the single-owner rule used to avoid PortAudio
+                # teardown races while allowing PulseAudio to cork the stream
+                # and suspend the hardware amplifier between utterances.
+                with contextlib.suppress(Exception):
+                    if self.output_stream.is_active():
+                        self.output_stream.stop_stream()
                 self.playing.clear()
                 continue
             if item is None:
@@ -428,12 +489,20 @@ class AudioEngine:
             generation, pcm = item
             if generation != self.generation:
                 continue
+            if not self.output_stream.is_active():
+                self.output_stream.start_stream()
             self.playing.set()
             for offset in range(0, len(pcm), self.output_slice_bytes):
                 if self.closed.is_set() or generation != self.generation:
                     break
-                self.output_stream.write(pcm[offset : offset + self.output_slice_bytes])
+                self.output_stream.write(
+                    pcm[offset : offset + self.output_slice_bytes],
+                    exception_on_underflow=False,
+                )
                 self.last_playback_at = time.monotonic()
+        with contextlib.suppress(Exception):
+            if self.output_stream.is_active():
+                self.output_stream.stop_stream()
         self.playing.clear()
 
     def close(self) -> None:
@@ -555,6 +624,7 @@ class RealtimeConversation:
         self.function_call_started_at: dict[asyncio.Task[Any], float] = {}
         self.skill_dispatch_lock = asyncio.Lock()
         self.task_coordinator = InterruptibleTaskCoordinator()
+        self.resume_prompt_binding: dict[str, Any] | None = None
         self.coordinator_owner_call_id = ""
         self.preempted_call_ids: set[str] = set()
         self.preempted_turn_ids: set[int] = set()
@@ -579,6 +649,7 @@ class RealtimeConversation:
             enabled=bool(getattr(args, "persistent_memory", True)),
             max_history_items=int(getattr(args, "memory_max_history_items", 1000)),
             max_facts=int(getattr(args, "memory_max_facts", 200)),
+            profile_path=getattr(args, "memory_profile_config", None),
         )
         self.pending_tool_followup = False
         self.pending_tool_followup_prompts: list[str] = []
@@ -588,6 +659,11 @@ class RealtimeConversation:
         self.quarantined_output_transcripts: list[str] = []
         self.turn_recovery_plan: dict[str, Any] | None = None
         self.turn_had_function_call = False
+        # Qwen Realtime occasionally emits several atomic function calls even
+        # though the prompt requires one run_skill_sequence call.  Claim the
+        # compiled sequence once per committed turn so those atomics can never
+        # race or bypass the sequence failure policy.
+        self.forced_sequence_turns: set[int] = set()
         self.control_socket = Path(
             getattr(args, "app_control_socket", Path(__file__).with_name("runtime") / "app_control.sock")
         )
@@ -602,6 +678,10 @@ class RealtimeConversation:
             self.microphone_state_file,
             default=True,
         )
+        # Startup is already guarded by the normal audio/session readiness
+        # checks.  Only an explicit disabled -> enabled transition needs this
+        # additional settling deadline.
+        self.local_microphone_ready_monotonic = 0.0
         self.control_server: asyncio.AbstractServer | None = None
         self.skill_event_speaker: QwenSkillEventSpeaker | None = None
         self.projection_occlusion_observer: ProjectionOcclusionObserver | None = None
@@ -957,6 +1037,13 @@ class RealtimeConversation:
                 }
             )
         self._remember_local_assistant_speech(value)
+        if event_id.startswith("ask-resume-"):
+            self.resume_prompt_binding = {
+                "text": value,
+                "turn_id": self.user_turn_id,
+                "created": time.monotonic(),
+                "snapshot": self.task_coordinator.suspended,
+            }
         self.logger.write("task_coordinator_speech", kind=kind, text=value)
 
     @staticmethod
@@ -992,6 +1079,7 @@ class RealtimeConversation:
         return None
 
     async def _apply_resume_decision(self, accepted: bool) -> None:
+        self.resume_prompt_binding = None
         snapshot = self.task_coordinator.suspended
         if snapshot is None:
             self.task_coordinator.discard()
@@ -1081,13 +1169,21 @@ class RealtimeConversation:
 
     def microphone_status_payload(self) -> dict[str, Any]:
         audio_health = self.microphone_health_payload()
+        resume_deadline = float(
+            getattr(self, "local_microphone_ready_monotonic", 0.0) or 0.0
+        )
+        resume_remaining = max(0.0, resume_deadline - time.monotonic())
+        recovering = bool(self.local_microphone_enabled and resume_remaining > 0.0)
         return {
             "enabled": self.local_microphone_enabled,
             "accepting_local_voice": bool(
                 self.connected
                 and self.local_microphone_enabled
+                and not recovering
                 and audio_health["healthy"]
             ),
+            "recovering": recovering,
+            "ready_after_ms": int(round(resume_remaining * 1000.0)),
             "app_voice_enabled": True,
             **audio_health,
         }
@@ -1143,32 +1239,42 @@ class RealtimeConversation:
                     raise ValueError("microphone_enabled_must_be_boolean")
                 changed = enabled != self.local_microphone_enabled
                 self.local_microphone_enabled = enabled
+                if changed and enabled:
+                    self.local_microphone_ready_monotonic = (
+                        time.monotonic() + MICROPHONE_RESUME_SETTLE_SECONDS
+                    )
+                elif not enabled:
+                    self.local_microphone_ready_monotonic = 0.0
                 await asyncio.to_thread(
                     save_microphone_enabled,
                     self.microphone_state_file,
                     enabled,
                 )
-                # Discard any partial local utterance already buffered by the
-                # cloud. App audio uses send_external_audio and is intentionally
-                # not cancelled or gated by this local-microphone preference.
+                # Reset on both edges.  Clearing only while disabling left a
+                # stale VAD segment alive when local capture resumed, which
+                # could clip the first real utterance.  App audio uses
+                # send_external_audio and is intentionally not cancelled or
+                # gated by this local-microphone preference.
                 if (
-                    not enabled
-                    and self.websocket is not None
+                    self.websocket is not None
                     and not self.external_audio_active
                 ):
                     with contextlib.suppress(Exception):
                         await self.send({"type": "input_audio_buffer.clear"})
+                microphone_status = self.microphone_status_payload()
                 self.logger.write(
                     "local_microphone_changed",
                     enabled=enabled,
                     changed=changed,
                     app_voice_enabled=True,
+                    recovering=microphone_status["recovering"],
+                    ready_after_ms=microphone_status["ready_after_ms"],
                 )
                 response = {
                     "ok": True,
                     "status": "enabled" if enabled else "disabled",
                     "changed": changed,
-                    "microphone": self.microphone_status_payload(),
+                    "microphone": microphone_status,
                 }
             elif operation == "cancel_all":
                 if self.skill_bridge is not None:
@@ -1327,7 +1433,10 @@ class RealtimeConversation:
                 "当用户询问你记得什么、刚才说过什么或过去保存的偏好时，调用 memory_query。"
                 "当用户问上一条执行指令时用 scope=command_history、query_type=latest；"
                 "问往前数两条或倒数第二条时用 query_type=offset、offset=1；"
-                "问最开始一条时用 query_type=first；问今天、昨天、前天或具体时间段时用 query_type=time_range，"
+                "问最近两条或前两轮指令时用 query_type=recent、limit=2；"
+                "问最开始一条时用 query_type=first；问从最早开始的第二条或第N条时用 query_type=ordinal、position=N；"
+                "问几点让你做某件事时用 query_type=search 并填写该动作的关键词，必须依据返回的 time 回答；"
+                "问今天、昨天、前天或具体时间段时用 query_type=time_range，"
                 "并填写 date_period 或 start_time/end_time；不得只靠当前聊天窗口猜答案。"
                 "仅当用户明确要求‘记住’时调用 memory_save；仅当用户明确要求‘忘记或删除’时调用 memory_delete。"
                 "如果查询确实没有结果，只能说没有找到相关记录。"
@@ -1349,13 +1458,15 @@ class RealtimeConversation:
                 "参数不完整时先追问，不得猜测。不要用孤立关键词选工具：地点不等于导航或灯光，公司不等于位置，"
                 "会议不等于自动投影。语音标点不可靠，应按谓词、对象、上下文和常见搭配理解整句。"
                 "多动作请求必须保留全部正向动作且不得增加隐含动作；‘不要开灯、不要投影’是约束，不能创建灯光或投影任务。"
-                "询问公司在哪里是知识问题，不是机器人 location 查询；泛问房间有什么也不是摄像头命令。"
+                "询问公司在哪里是知识问题，不是机器人位置查询；泛问房间有什么也不是摄像头命令。"
                 "一次响应包含多个工具调用时，等待全部工具结果后再统一回复。"
                 "特别注意：executed=false 或 error=dry_run_only_not_executed 表示仅完成安全校验，"
                 "绝对不能播报设备已经动作，必须明确说没有实际执行。用户明确说“导航到、去、前往”"
                 "某地点时直接调用 navigation_goto(point=地点)，不得用 navigation_list 代替或先查询列表。"
                 "用户询问身份时必须调用 face_recognition；询问当前日期时间时必须调用 "
-                "realtime_information(action=current_time)。当前不提供电量工具，询问电量时坦率说明无法读取。"
+                "realtime_information(action=current_time)。泛问机器人在哪里时用 indoor_location；只有明确问 GPS、"
+                "经纬度、城市、街道或外部地理位置时用 external_location，且后者只是配置区域而非 GPS 实测。"
+                "当前不提供电量工具，询问电量时坦率说明无法读取。"
                 "机器人位置工具不能用于找手机；当前没有手机定位能力，必须坦率说明不能做到。"
             )
             if self.skill_bridge.scenario_catalog is not None:
@@ -2008,6 +2119,10 @@ class RealtimeConversation:
         )
         self.last_user_text = transcript
         self.user_turn_id += 1
+        self.forced_sequence_turns = {
+            value for value in self.forced_sequence_turns
+            if value >= self.user_turn_id - 64
+        }
         # Direct text/app inputs do not create a VAD utterance.  Reusing the
         # last audio utterance id for them would overwrite its turn binding and
         # let a delayed call pick up the later text.
@@ -2022,10 +2137,12 @@ class RealtimeConversation:
         for stale_utterance_id in sorted(self.committed_input_utterances)[:-64]:
             self.committed_input_utterances.pop(stale_utterance_id, None)
         self.current_user_turn_received_at = time.time()
+        normalized_turn_intent = normalize_user_intent(transcript)
         self.committed_user_turns[self.user_turn_id] = {
             "text": transcript,
             "assistant_context": self.turn_assistant_context,
             "received_at": self.current_user_turn_received_at,
+            "normalized_intent": normalized_turn_intent,
         }
         # This is only a race-proofing ledger, not conversational memory.
         # Bound it so a long-running resident process cannot grow forever.
@@ -2043,21 +2160,52 @@ class RealtimeConversation:
         self.logger.write("input_transcript", text=transcript, turn_id=self.user_turn_id)
 
         resume_decision: bool | None = None
-        if self.task_coordinator.state == "awaiting_resume" and self.task_coordinator.suspended is not None:
+        if (
+            self.task_coordinator.state == "awaiting_resume"
+            and self.task_coordinator.suspended is not None
+            and normalized_turn_intent.get("domain") != "memory"
+        ):
             resume_decision = self._classify_resume_reply(
                 transcript,
                 self.task_coordinator.suspended.task_name,
             )
-        self.turn_recovery_plan = (
-            {"internal_resume_decision": resume_decision}
-            if resume_decision is not None
-            else (
+            if resume_decision is not None:
+                binding = self.resume_prompt_binding or {}
+                current_question = (
+                    binding.get("snapshot") is self.task_coordinator.suspended
+                    and binding.get("text") == self.turn_assistant_context
+                    and binding.get("turn_id") == self.user_turn_id - 1
+                    and time.monotonic() - binding.get("created", 0.0) <= 120.0
+                )
+                task_terms = {
+                    "push_up": ("运动", "俯卧撑"), "pull_up": ("运动", "引体向上"),
+                    "squat": ("运动", "深蹲"), "navigation_goto": ("导航", "路程"),
+                    "pet_tracking": ("找狗", "找豆豆", "宠物"),
+                    "person_tracking": ("找人", "人员寻找", "跟踪"),
+                }.get(self.task_coordinator.suspended.task_name, ("刚才的任务",))
+                explicit_task = any(term in transcript for term in task_terms)
+                if not current_question and not explicit_task:
+                    # An old suspended task must not steal "yes" from the
+                    # latest pet/media/etc clarification. Keep its snapshot
+                    # available for a later explicit request to resume it.
+                    resume_decision = None
+        if resume_decision is not None:
+            self.turn_recovery_plan = {"internal_resume_decision": resume_decision}
+        elif normalized_turn_intent.get("domain") == "memory":
+            # This is a read-only local recovery path.  It both avoids a
+            # second cloud turn when Qwen omits the tool and prevents action
+            # keywords inside a history question from becoming hardware work.
+            self.turn_recovery_plan = {
+                "name": "memory_query",
+                "arguments": dict(normalized_turn_intent.get("parameters") or {}),
+            }
+        else:
+            self.turn_recovery_plan = (
                 self.skill_bridge.recover_explicit_plan(transcript)
                 if self.skill_bridge is not None
                 and hasattr(self.skill_bridge, "recover_explicit_plan")
                 else None
             )
-        )
         if (
             self.turn_recovery_plan is None
             and self.skill_bridge is not None
@@ -2194,6 +2342,7 @@ class RealtimeConversation:
         signature = ""
         scoped_signature = ""
         duplicate = False
+        merged_into_sequence = False
         try:
             arguments = json.loads(raw_arguments)
             if not isinstance(arguments, dict):
@@ -2205,7 +2354,73 @@ class RealtimeConversation:
                 "spoken_summary": "本地功能参数不正确，没有执行。",
             }
         else:
-            if not call_id:
+            committed_intent = dict(
+                self.committed_user_turns.get(call_turn_id, {}).get("normalized_intent")
+                or normalize_user_intent(call_user_text)
+            )
+            original_name = name
+            original_arguments = dict(arguments)
+            name, arguments, policy_reason = enforce_turn_tool_policy(
+                committed_intent,
+                name,
+                arguments,
+            )
+            if name != original_name or arguments != original_arguments:
+                raw_arguments = json.dumps(arguments, ensure_ascii=False)
+                self.logger.write(
+                    "turn_tool_policy_rewrite",
+                    turn_id=call_turn_id,
+                    original_skill=original_name,
+                    enforced_skill=name,
+                    reason=policy_reason,
+                    normalized_intent=committed_intent,
+                )
+            # The transcript is the authoritative source for an explicit
+            # multi-action request.  If the model bypasses the sequence tool
+            # and emits atomics, promote the first call to the locally compiled
+            # sequence and merge every later call from the same turn into it.
+            # This happens before task snapshots and dispatch, so long-task
+            # interruption and failure handling see the real aggregate task.
+            if (
+                self.skill_bridge is not None
+                and not bool(value.get("_coordinator_resume"))
+                and hasattr(self.skill_bridge, "recover_explicit_plan")
+                and not self.memory_store.is_tool(name)
+            ):
+                recovered_plan = self.skill_bridge.recover_explicit_plan(call_user_text)
+                if (
+                    isinstance(recovered_plan, dict)
+                    and str(recovered_plan.get("name") or "") == "run_skill_sequence"
+                    and isinstance(recovered_plan.get("arguments"), dict)
+                ):
+                    if call_turn_id in self.forced_sequence_turns:
+                        merged_into_sequence = True
+                        duplicate = True
+                    else:
+                        self.forced_sequence_turns.add(call_turn_id)
+                        original_name = name
+                        name = "run_skill_sequence"
+                        arguments = dict(recovered_plan["arguments"])
+                        raw_arguments = json.dumps(arguments, ensure_ascii=False)
+                        self.logger.write(
+                            "atomic_calls_promoted_to_sequence",
+                            turn_id=call_turn_id,
+                            original_skill=original_name,
+                            task_count=len(arguments.get("tasks") or []),
+                            failure_policy=arguments.get("failure_policy", "stop"),
+                        )
+            if merged_into_sequence:
+                result = {
+                    "ok": True,
+                    "validation_ok": True,
+                    "executed": False,
+                    "device_state_changed": False,
+                    "mode": "merged_into_sequence",
+                    "deduplicated": True,
+                    "skill": "run_skill_sequence",
+                    "spoken_summary": "",
+                }
+            elif not call_id:
                 result = {
                     "ok": False,
                     "error": "missing_call_id",
@@ -2417,24 +2632,66 @@ class RealtimeConversation:
                 )
             if self.skill_event_speaker is not None and not was_preempted:
                 summary = str(result.get("spoken_summary") or "").strip()
+                scenario_name = str(
+                    arguments.get("scenario")
+                    if "arguments" in locals() and isinstance(arguments, dict)
+                    else ""
+                )
+                if (
+                    name == SCENARIO_TOOL_NAME
+                    and result.get("ok")
+                    and scenario_name in FITNESS_COMPLETION_SKILLS
+                ):
+                    # Normally the completion sentence was delivered many seconds
+                    # earlier.  This short bounded join closes the rare race where
+                    # cloud synthesis is still finishing as cleanup returns.  If
+                    # it failed, the aggregate result below remains the fallback.
+                    await self.skill_event_speaker.wait_idle(timeout=1.5)
+                live_fitness_completion = delivered_fitness_completion(
+                    self.skill_event_speaker,
+                    tool_name=name,
+                    arguments=(
+                        arguments
+                        if "arguments" in locals() and isinstance(arguments, dict)
+                        else {}
+                    ),
+                    result=result,
+                    turn_id=call_turn_id,
+                )
                 if summary:
-                    self.skill_event_speaker.submit_from_thread(
-                        {
-                            "event_id": call_id,
-                            "turn_id": call_turn_id,
-                            "skill_name": name,
-                            "kind": "result",
-                            "text": summary,
-                        }
-                    )
-                    self.logger.write(
-                        "authoritative_result_speech_queued",
-                        skill=name,
-                        call_id=call_id,
-                        turn_id=call_turn_id,
-                        text=summary,
-                    )
-                    self._remember_local_assistant_speech(summary)
+                    if live_fitness_completion is not None:
+                        delivered_text = str(
+                            live_fitness_completion.get("text") or ""
+                        ).strip()
+                        self.logger.write(
+                            "authoritative_result_speech_suppressed",
+                            skill=name,
+                            call_id=call_id,
+                            turn_id=call_turn_id,
+                            reason="fitness_completion_already_delivered",
+                            delivered_text=delivered_text,
+                            aggregate_text=summary,
+                        )
+                        if delivered_text:
+                            self._remember_local_assistant_speech(delivered_text)
+                    else:
+                        self.skill_event_speaker.submit_from_thread(
+                            {
+                                "event_id": call_id,
+                                "turn_id": call_turn_id,
+                                "skill_name": name,
+                                "kind": "result",
+                                "text": summary,
+                            }
+                        )
+                        self.logger.write(
+                            "authoritative_result_speech_queued",
+                            skill=name,
+                            call_id=call_id,
+                            turn_id=call_turn_id,
+                            text=summary,
+                        )
+                        self._remember_local_assistant_speech(summary)
                 # The result is still written to Qwen's conversation so later
                 # turns can reason over it, but the dedicated event speaker is
                 # the sole owner of this turn's final status.  This prevents a
@@ -2530,6 +2787,11 @@ class RealtimeConversation:
         while not self.stop_event.is_set():
             pcm = await asyncio.to_thread(self.audio.read_microphone)
             if not self.local_microphone_enabled:
+                continue
+            if time.monotonic() < float(
+                getattr(self, "local_microphone_ready_monotonic", 0.0) or 0.0
+            ):
+                # Keep draining ALSA but do not upload its transition frames.
                 continue
             health = self.microphone_health_payload()
             if health["digital_silence"]:
@@ -2652,6 +2914,7 @@ class RealtimeConversation:
         tool_results: list[dict[str, Any]] = []
         audio_by_response: dict[int, bytearray] = {}
         transcripts: list[str] = []
+        expect_tool = bool(getattr(self.args, "tool_test_expect_tool", True))
         while True:
             remaining = deadline - time.monotonic()
             if remaining <= 0:
@@ -2683,6 +2946,37 @@ class RealtimeConversation:
             if event_type == "response.done":
                 response_done_count += 1
                 followup_created = await self.create_tool_followup_if_needed()
+                # Text-injected tool tests have no ASR transcript event, while
+                # production audio turns recover an explicit local plan from
+                # accept_input_transcript().  Mirror that safety path here so
+                # the cloud matrix also verifies model omissions instead of
+                # reporting a false failure for an otherwise recoverable
+                # command.
+                if (
+                    not tool_results
+                    and response_done_count == 1
+                    and expect_tool
+                    and hasattr(self.skill_bridge, "recover_explicit_plan")
+                ):
+                    recovered = self.skill_bridge.recover_explicit_plan(text)
+                    if recovered is not None:
+                        recovered_result = await self.handle_function_call(
+                            {
+                                "call_id": f"tool_test_recovery_{self.user_turn_id}_{uuid.uuid4().hex[:8]}",
+                                "name": str(recovered.get("name") or ""),
+                                "arguments": json.dumps(
+                                    dict(recovered.get("arguments") or {}),
+                                    ensure_ascii=False,
+                                ),
+                                "_synthetic_local": True,
+                            },
+                            turn_id=self.user_turn_id,
+                            user_text=text,
+                            assistant_context=self.turn_assistant_context,
+                        )
+                        tool_results.append(recovered_result)
+                        self.pending_tool_followup = True
+                        followup_created = await self.create_tool_followup_if_needed()
                 await self.inject_next_turn_style_hint()
                 if not tool_results:
                     break
@@ -2714,7 +3008,6 @@ class RealtimeConversation:
                 wav.setsampwidth(SAMPLE_WIDTH)
                 wav.setframerate(OUTPUT_RATE)
                 wav.writeframes(all_audio)
-        expect_tool = bool(getattr(self.args, "tool_test_expect_tool", True))
         result = {
             "ok": bool(
                 (
@@ -2947,6 +3240,12 @@ def parser() -> argparse.ArgumentParser:
     value.add_argument("--persistent-memory", action=argparse.BooleanOptionalAction, default=True)
     value.add_argument("--memory-dir", type=Path, default=Path("runtime/memory"))
     value.add_argument(
+        "--memory-profile-config",
+        type=Path,
+        default=Path("config/resident_profile.json"),
+        help="稳定的住户/部署事实配置；与用户动态保存的长期记忆分开",
+    )
+    value.add_argument(
         "--memory-history-turns",
         type=int,
         default=0,
@@ -3071,6 +3370,7 @@ async def async_main(args: argparse.Namespace) -> int:
             enabled=args.persistent_memory,
             max_history_items=args.memory_max_history_items,
             max_facts=args.memory_max_facts,
+            profile_path=args.memory_profile_config,
         )
         memory_tools = [item["function"]["name"] for item in memory_store.tool_schemas]
         report = {

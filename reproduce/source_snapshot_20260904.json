@@ -1,0 +1,4761 @@
+{
+  "date": "2026-09-04",
+  "description": "Published source hashes; excludes private configuration, runtime data and binary model/media artifacts.",
+  "files": [
+    {
+      "path": "PROJECT_COPY_INFO.json",
+      "bytes": 710,
+      "sha256": "6a7e0156f74c10bdf22fd88a154c45b5ab0a769ed174c51a0a9d32fb211c72fa"
+    },
+    {
+      "path": "README.md",
+      "bytes": 13908,
+      "sha256": "63c120a283a2fe8c68e4a54d2877f0fc08283cccbc61c441eec681de3a1fe365"
+    },
+    {
+      "path": "REPRODUCIBILITY.md",
+      "bytes": 4518,
+      "sha256": "3fceafcd8322de9c155f503e0e0a0e0a4bb88826a63db9d10f2ebb9f2c9d283c"
+    },
+    {
+      "path": "SOFTWARE_ARCHITECTURE.md",
+      "bytes": 32163,
+      "sha256": "1f0343b9244414e97c077d8284eaab7658b410344fe66c62a5808e335b969e1d"
+    },
+    {
+      "path": "android_app/.gitignore",
+      "bytes": 107,
+      "sha256": "659046a48592bd335842db63dbef3756da1a759573ac37c80213e30152fb2d52"
+    },
+    {
+      "path": "android_app/HANDOFF_README.md",
+      "bytes": 1366,
+      "sha256": "ed21d8ff0fa7eeace1f7c4a7ab60b8435b8a0e867415f0efc96429e7dac08f63"
+    },
+    {
+      "path": "android_app/QA_REPORT.md",
+      "bytes": 4892,
+      "sha256": "20baa84dbf512dc19fc2a41b068296959bf79e2b970c1ad665c57142d41a8819"
+    },
+    {
+      "path": "android_app/README.md",
+      "bytes": 2160,
+      "sha256": "9b2ffe7cb03d7c60dd17bf9fd3dd1e05c02982694502a0528ed28f9a37c299a1"
+    },
+    {
+      "path": "android_app/android/.gitignore",
+      "bytes": 1824,
+      "sha256": "065e4a92a240fe11a0ea230491ad9dabef143f5fd5a3e6884ad6f0395666a971"
+    },
+    {
+      "path": "android_app/android/app/.gitignore",
+      "bytes": 26,
+      "sha256": "99c54e51ee601a60fbde8016b2cbf717483bc2e92773be86c9247d02a7fa6ea4"
+    },
+    {
+      "path": "android_app/android/app/build.gradle",
+      "bytes": 2347,
+      "sha256": "56462421e59064e09da5b79b5fcc16e246aab0f3c305acb50723b60d11ed9f3f"
+    },
+    {
+      "path": "android_app/android/app/capacitor.build.gradle",
+      "bytes": 370,
+      "sha256": "7051cadfdbc532197d2cfd4f8a11684d81367f23cf7952e5a208f7b6aa0833e0"
+    },
+    {
+      "path": "android_app/android/app/proguard-rules.pro",
+      "bytes": 751,
+      "sha256": "1cf8c57e8f79c250b0af9c1a5a4edad71a5c348a79ab70243b6bae086c150ad2"
+    },
+    {
+      "path": "android_app/android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java",
+      "bytes": 774,
+      "sha256": "ff50b4c110a7434312f9af54171f9e8523b015836f707c9b387b76d4c38a97f8"
+    },
+    {
+      "path": "android_app/android/app/src/main/AndroidManifest.xml",
+      "bytes": 1773,
+      "sha256": "5923a3935a6f66402c240cd99a488d5ce93f6e192675f30f9c3ffb13e0f35a3f"
+    },
+    {
+      "path": "android_app/android/app/src/main/java/com/lixiang/robot/companion/fixed/MainActivity.java",
+      "bytes": 137,
+      "sha256": "a843c9928e696ec894e1a50d844d4eff492359d17fc89fc10720fa74c3cb919c"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable/ic_launcher_background.xml",
+      "bytes": 5606,
+      "sha256": "718ba51adf166bb55c3e9936bb8199a0148457f7f0191aaa2f37a94f3159d6ec"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable/splash.png",
+      "bytes": 4040,
+      "sha256": "5cf98b4451bd99b20df26f9e608a46946118be6b0ae90762f9ca1786a30c76ff"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-land-hdpi/splash.png",
+      "bytes": 7705,
+      "sha256": "08cc34ad7713fe7ed58bceaa37b2387b670c53cd60264b4bd6442db3098e75dc"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-land-mdpi/splash.png",
+      "bytes": 4040,
+      "sha256": "5cf98b4451bd99b20df26f9e608a46946118be6b0ae90762f9ca1786a30c76ff"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-land-xhdpi/splash.png",
+      "bytes": 9251,
+      "sha256": "22f87e1e3bc89aa01a7dbc39c9a4db058cd0bf4ad3fe9f55712bf69eb997f4bf"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-land-xxhdpi/splash.png",
+      "bytes": 13984,
+      "sha256": "42aa26392546fcdee1b8d3ac6d4b41bfcceb41dc6a4f3a3c30c24a8a8f4db862"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-land-xxxhdpi/splash.png",
+      "bytes": 17683,
+      "sha256": "60393ce8636fd263e4e1fea3fd4ab2de948c6295e898fda9b50ac4e5283be809"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-port-hdpi/splash.png",
+      "bytes": 7934,
+      "sha256": "c5015f4ba3628392b538386c5e210f0b94f352a3160adab934fd0311972137ca"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-port-mdpi/splash.png",
+      "bytes": 4096,
+      "sha256": "07fa579e1c83e04ba7f9cbcbfcf41b68e15fe3638f2c44a04e58b809103e6b69"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-port-xhdpi/splash.png",
+      "bytes": 9875,
+      "sha256": "b73049cb37fe76d6c11b87a796766bf6af0c85483b31eb6a921657b0d764a4b9"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-port-xxhdpi/splash.png",
+      "bytes": 13346,
+      "sha256": "0c7f1212f25b7b90e9a6e1d320013e4ff3d3e03e634cbb07b7b7981cac51627f"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-port-xxxhdpi/splash.png",
+      "bytes": 17489,
+      "sha256": "3db071a03b2f8ffe0dfd4170fc59842d53cd15bba5e88af59401d58efabf7827"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-v24/ic_launcher_foreground.xml",
+      "bytes": 1880,
+      "sha256": "a8514094f754b099d3e55ce1d6e0b2de79db418b2eeacb0fc2a6bb0bfadef221"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/layout/activity_main.xml",
+      "bytes": 535,
+      "sha256": "5d770feb791313b947020cbfc57e5c733c556dac5e9e49261a1190e527073253"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+      "bytes": 334,
+      "sha256": "e942c7fe3ff25dd038c0fbf921238a3189d46e17debf2875c6afa77102ea621e"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+      "bytes": 334,
+      "sha256": "e942c7fe3ff25dd038c0fbf921238a3189d46e17debf2875c6afa77102ea621e"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-hdpi/ic_launcher.png",
+      "bytes": 2786,
+      "sha256": "72b71c3581ca3b5a23b1c168d69b9d855b3f184fa079902a01f088eb4f0607d5"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png",
+      "bytes": 3450,
+      "sha256": "32baa10d2632a4417454a579f992bd640e0a3cec79321423559b2c9940de58a9"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png",
+      "bytes": 4341,
+      "sha256": "bfcc1b0fa931b14bb241372c76ab4f04374b67d02363c98d9cb12edfdacdf5f3"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-mdpi/ic_launcher.png",
+      "bytes": 1869,
+      "sha256": "27ed3603010ebc278f64f8645741ab132ff517abb5308eb9df6c8e42a48956b2"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png",
+      "bytes": 2110,
+      "sha256": "58e78a618778926b1f6d9472a6468de878de8530970934e94aab5ba4ba08cc00"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png",
+      "bytes": 2725,
+      "sha256": "0166fc333074c373fbd0ce6b5defd71552166165ac778121ca9c9dff6b83f0fc"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png",
+      "bytes": 3981,
+      "sha256": "d35dbfff175b83c13ef59cf924abfc810f7b6a158595d7417c5498ea8c7c7ed1"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png",
+      "bytes": 5036,
+      "sha256": "6f88083b8166cc559102f7044688de7525287632ebe09ac45d001ac8bf4b3eae"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png",
+      "bytes": 6593,
+      "sha256": "40911a00922868686854a4804b93fd6e56b503664696de03f450bff690affb6d"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
+      "bytes": 6644,
+      "sha256": "ed346eb1e3f0280f15709393705899b3ff55c20b88f4e0308006b3c33cf5fe14"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png",
+      "bytes": 9793,
+      "sha256": "4a82bc1e9923576275869998925ce0ae021a79aa18b24a0dd87ad6b61ca85053"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png",
+      "bytes": 10455,
+      "sha256": "1ee4cd9ff371dcb2e3938097e434f6fb8731688ed7165e61fc63693ad5b2f455"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+      "bytes": 9441,
+      "sha256": "87cb2f2ffe992652bb4fa768c73719a37b5852ab17fbf8e170e888f7a42b0761"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png",
+      "bytes": 15529,
+      "sha256": "bd24fd383253bf8d43f0a81f11c071d76d1d555114376dd647cd9fb38fa0a9da"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png",
+      "bytes": 15916,
+      "sha256": "ab93096331e7cd8ec379f73f1e9adcaaa9ee1115c9f4ff10411a811fb9700174"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/values/ic_launcher_background.xml",
+      "bytes": 120,
+      "sha256": "cd40bafe618ff506f4088778b135cb4faa15f25e0c9b475e22d730c74b7be115"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/values/strings.xml",
+      "bytes": 330,
+      "sha256": "e6fd0cdcd7cee7748b8bbc7f19be401fa78dc4625e74d11bae06d2d430038ed7"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/values/styles.xml",
+      "bytes": 823,
+      "sha256": "18ebba36575e9461347ee67361b23caf095f158ee85dbefe1b83a4669ba5bd6c"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/xml/data_extraction_rules.xml",
+      "bytes": 299,
+      "sha256": "c1648248f5da1d4a14636eb7e3d5917b07f41686222ab1f22a8e8c7b09b00e4b"
+    },
+    {
+      "path": "android_app/android/app/src/main/res/xml/file_paths.xml",
+      "bytes": 213,
+      "sha256": "a46ed43ef65c90cb6778f4581decf3556e3f0055aad8f36d69dae16f9a0e99aa"
+    },
+    {
+      "path": "android_app/android/app/src/test/java/com/getcapacitor/myapp/ExampleUnitTest.java",
+      "bytes": 402,
+      "sha256": "d4045ae8fac1f0807e6b24eb34e68409a9a235df9d1a3f896fb8c9a49424363d"
+    },
+    {
+      "path": "android_app/android/build.gradle",
+      "bytes": 637,
+      "sha256": "46ade7db7afeb8049ccea59fce83095dca736ceb8c9acd79cc944e988c3357d9"
+    },
+    {
+      "path": "android_app/android/capacitor.settings.gradle",
+      "bytes": 207,
+      "sha256": "b488e162f552d6efb8286793c7871bbc1061c9bf5ca3a6a495fdeb8988a541c7"
+    },
+    {
+      "path": "android_app/android/gradle/wrapper/gradle-wrapper.jar",
+      "bytes": 43764,
+      "sha256": "7d3a4ac4de1c32b59bc6a4eb8ecb8e612ccd0cf1ae1e99f66902da64df296172"
+    },
+    {
+      "path": "android_app/android/gradle/wrapper/gradle-wrapper.properties",
+      "bytes": 254,
+      "sha256": "8cd706eafe4767d642829ad92e29f84795257124c5eb0fbd25380b6728419a8a"
+    },
+    {
+      "path": "android_app/android/gradle.properties",
+      "bytes": 987,
+      "sha256": "3bab15c5b8bc4c2f4b6cf525497d15ad4abca53a460e6dd2eb0f0135817d31e6"
+    },
+    {
+      "path": "android_app/android/gradlew",
+      "bytes": 8733,
+      "sha256": "b187b4c52e749f5760afdd6fadc31b2a98ad35fb249bf0dff03b72650f320409"
+    },
+    {
+      "path": "android_app/android/gradlew.bat",
+      "bytes": 2937,
+      "sha256": "1d297e00bd21de3ace22b4d7f2de1f9dfa858883d66bbf7c1ccbecccec8f4f3b"
+    },
+    {
+      "path": "android_app/android/settings.gradle",
+      "bytes": 208,
+      "sha256": "6ce098d15ebd69b44c4ecd786bca1bdc366340d2459b2af4d7bb0ab317aa9669"
+    },
+    {
+      "path": "android_app/android/variables.gradle",
+      "bytes": 498,
+      "sha256": "83d502c9ed8fcf1dd4791482067abeedbebae49fafe9cd14a8a1f5891deb0d88"
+    },
+    {
+      "path": "android_app/build_android_app.bat",
+      "bytes": 331,
+      "sha256": "778c480cfbdcfb8f7a8ba0eb8f10cab6b8fcc5aa56839f72a65d4fee92deaddb"
+    },
+    {
+      "path": "android_app/capacitor.config.json",
+      "bytes": 183,
+      "sha256": "3adf2deeaf1556b061d49ad1f5b87415102b3fe4403b38599465be74ad0a39a3"
+    },
+    {
+      "path": "android_app/deploy/ideal-robot-app-bridge.service",
+      "bytes": 899,
+      "sha256": "41880b3379f472c948d395b49ca15187cad0d8d5b846dfc8e70af648c6c2605d"
+    },
+    {
+      "path": "android_app/deploy/install_server.sh",
+      "bytes": 517,
+      "sha256": "3207fb5477882988825b2cc64822d3788708f816313aee7bc42dc91610e096b3"
+    },
+    {
+      "path": "android_app/deploy/start_android_system.sh",
+      "bytes": 1112,
+      "sha256": "a4c9cf2c6e9a61f7013c3d9c9c2c20e32bb21545b7892fb484d4bb1431b0ba15"
+    },
+    {
+      "path": "android_app/design-qa.md",
+      "bytes": 3383,
+      "sha256": "ee10d8a3760ee46c9df4868e3fa429ee12f0574fa6749b769fadba62620fce99"
+    },
+    {
+      "path": "android_app/install_android_app.bat",
+      "bytes": 646,
+      "sha256": "bfe980b78be5b07ccedcca82476b300847793eff5dcc1f5e37a0f3932475fd43"
+    },
+    {
+      "path": "android_app/package-lock.json",
+      "bytes": 48530,
+      "sha256": "901d235b6a06d4c7a14376b0e7ef192dd0164926a1c0a80bedda8224cf671e67"
+    },
+    {
+      "path": "android_app/package.json",
+      "bytes": 516,
+      "sha256": "84fda3179254850d85731f992eefe449b73d47b4d15a4aa6abc0ff8b229d33bf"
+    },
+    {
+      "path": "android_app/pytest.ini",
+      "bytes": 42,
+      "sha256": "b160d82f7811555051f8966d8e02750a985227c1d022208c784e606946f2eada"
+    },
+    {
+      "path": "android_app/requirements-dev.txt",
+      "bytes": 80,
+      "sha256": "406988f6ad1317fbd7227dffe8d91b8096661cea928fd878103eea44b26a43e6"
+    },
+    {
+      "path": "android_app/robot_bridge/__init__.py",
+      "bytes": 42,
+      "sha256": "6bd6a0e8f29eac77f1347d3c123371d4f9288c0526a43a011d0f491c9adc6b4a"
+    },
+    {
+      "path": "android_app/robot_bridge/autonomy_exploration.py",
+      "bytes": 37745,
+      "sha256": "14eb40fabf12152a2999231a5978f1b8cb6c9c76b3aaa7737f5b983465ff281f"
+    },
+    {
+      "path": "android_app/robot_bridge/bridge.py",
+      "bytes": 56109,
+      "sha256": "9a5b32179738760d0b60ed07369d81deb69073c3e9d53f51123d73325c52a751"
+    },
+    {
+      "path": "android_app/robot_bridge/map_codec.py",
+      "bytes": 1183,
+      "sha256": "a2244df51b54ce18bde70e3990ef134fea33edd27c1e5e17bf7aca8556a92130"
+    },
+    {
+      "path": "android_app/robot_bridge/procedure_catalog.json",
+      "bytes": 19163,
+      "sha256": "9ee101776d71c76f048b35e2a688b02b2a744a1ba17180ca16be2ddf30f2b56e"
+    },
+    {
+      "path": "android_app/robot_bridge/robot_bridge.sh",
+      "bytes": 3935,
+      "sha256": "5fbe156cb8ea2bf29a82f94284b592b9e16c5d1319d21a54363f0146347f8194"
+    },
+    {
+      "path": "android_app/robot_bridge/skill_catalog.json",
+      "bytes": 26568,
+      "sha256": "d20134e272f30f7ac58ca50a7dfbef54559cad9ce617a40977216682be2ea564"
+    },
+    {
+      "path": "android_app/server/__init__.py",
+      "bytes": 36,
+      "sha256": "11aab471eac27d7a7bc8c205eb0c06c981d113f7a2a69d27c1d0ecd244ebcd4f"
+    },
+    {
+      "path": "android_app/server/app.py",
+      "bytes": 30697,
+      "sha256": "208afb3d654775c88876182e7400735a8e2aeb412cb13806d7ef5e5c3ad815a9"
+    },
+    {
+      "path": "android_app/server/requirements-dev.txt",
+      "bytes": 80,
+      "sha256": "406988f6ad1317fbd7227dffe8d91b8096661cea928fd878103eea44b26a43e6"
+    },
+    {
+      "path": "android_app/server/requirements.txt",
+      "bytes": 50,
+      "sha256": "675eeabdab05adc047cfe83820de315688a870d83c73b82b3b7054e733c170b4"
+    },
+    {
+      "path": "android_app/server/run_server.py",
+      "bytes": 216,
+      "sha256": "6ef36aee106be1733c8a5b21c89dfdf312441291fdbdc9102b4139a1e5f8ea95"
+    },
+    {
+      "path": "android_app/server/server.sh",
+      "bytes": 1721,
+      "sha256": "f33ad5878b9b83150a6bc59e9964cb2480e9fb2b4d701618e4daeb412369ea96"
+    },
+    {
+      "path": "android_app/tests/assert_mock_commands.mjs",
+      "bytes": 1184,
+      "sha256": "2399f4a09e5577c7ef44466dc783e17428ae5396447c7d7129474cb297ba9cc4"
+    },
+    {
+      "path": "android_app/tests/e2e_relay.mjs",
+      "bytes": 1855,
+      "sha256": "0d7783d091fe869605c8c6df1624265ca51f6116eda04a54988dfe4262529834"
+    },
+    {
+      "path": "android_app/tests/mock_app_server.mjs",
+      "bytes": 6772,
+      "sha256": "bb73f20aff7c7087ad5ff8c8b34a0a4f6cb6ea43a4eb0c326b66eea5ddbde333"
+    },
+    {
+      "path": "android_app/tests/mock_config.js",
+      "bytes": 114,
+      "sha256": "e4e0ebe3b7dba21507281edea35970bd2c773084826919ba2eb6ebe7e08382d5"
+    },
+    {
+      "path": "android_app/tests/test_map_codec.py",
+      "bytes": 1431,
+      "sha256": "b044e06f77023affef597689e9db9a24fab3b1ab049bd6c0fc9d3dbba7ccb5f0"
+    },
+    {
+      "path": "android_app/tests/test_project_adapter.py",
+      "bytes": 18655,
+      "sha256": "6c9f7179373fe1a964a7c5162268e83742c222d8767b046c63e2bd5f386163cf"
+    },
+    {
+      "path": "android_app/tests/test_server.py",
+      "bytes": 13125,
+      "sha256": "93c2de63c12ef5100c5681316976ab1fcb0777ceef4931cfcdb79b7cf96b55dc"
+    },
+    {
+      "path": "android_app/tests/test_voice_fitness_contract.mjs",
+      "bytes": 3412,
+      "sha256": "434947ef95f44f38e62e3ce7593debbf47b137f7a483761e771800cb1103b033"
+    },
+    {
+      "path": "android_app/tests/test_web_contract.mjs",
+      "bytes": 6667,
+      "sha256": "2dc98effd551b5c5ae07ce89af6358f6c765685b59994a7389eeb85618b7520d"
+    },
+    {
+      "path": "android_app/tests/voice_replay_smoke.sh",
+      "bytes": 654,
+      "sha256": "f1006801e810189d481d53343f43bbe7411d9f9e597ff988568020ce7d335eff"
+    },
+    {
+      "path": "android_app/web/app-refinement.css",
+      "bytes": 13912,
+      "sha256": "bebd1ee660325a3020ff8c167165b90beb66358f8a12e854c53dd9397af2a87a"
+    },
+    {
+      "path": "android_app/web/app.js",
+      "bytes": 53034,
+      "sha256": "3a434087260de07be58aa08aa5280ba00a22def9d1568e9b3b3db168d5ea672c"
+    },
+    {
+      "path": "android_app/web/assets/doudou-hero.png",
+      "bytes": 2022486,
+      "sha256": "9ba699ebcffd6a92e8d45ae7856838cc32df156cda59938037b5ecf46fb39fe5"
+    },
+    {
+      "path": "android_app/web/assets/robot-mascot.png",
+      "bytes": 339020,
+      "sha256": "83668a5b0e31858cb571b854f87a71fa7d18e880edd7dfa8a7e06ff15939fa78"
+    },
+    {
+      "path": "android_app/web/config.js",
+      "bytes": 434,
+      "sha256": "fe1284d6b7c29964306d90b4c7f4be248aaa61f77101f26c196c96b61d62696d"
+    },
+    {
+      "path": "android_app/web/connection-states.css",
+      "bytes": 1005,
+      "sha256": "f3d2ac9a7a55555b581cd81d88ba1afb398128935f9b8b440cd6620d6d6b934d"
+    },
+    {
+      "path": "android_app/web/index.html",
+      "bytes": 15461,
+      "sha256": "3ca6e2e9be9be5fdfce6e85df68685ccb1430acb2b841d0c6dec429f9e7d77d4"
+    },
+    {
+      "path": "android_app/web/layout-fixes.css",
+      "bytes": 190,
+      "sha256": "b0973ed37b400d3dec0803e77b40bda847e66d3dee5cde1d4c1bcbbae8a9e1b4"
+    },
+    {
+      "path": "android_app/web/robot-showcase.css",
+      "bytes": 2097,
+      "sha256": "d6727588e07d98a09412e9a66de20172314bd20fcebddd58392437d91c1e050b"
+    },
+    {
+      "path": "android_app/web/styles.css",
+      "bytes": 12876,
+      "sha256": "907d70662a577aa0e07ac42f84c428efcee02512920d0106ab91acb94be97e12"
+    },
+    {
+      "path": "android_app/web/vendor/css/all.min.css",
+      "bytes": 90336,
+      "sha256": "e0b69df26e19596d4b81bf7eb0c54b6047e7221ec18d5d4d40c11eefd3ef8a4b"
+    },
+    {
+      "path": "android_app/web/vendor/webfonts/fa-brands-400.woff2",
+      "bytes": 115420,
+      "sha256": "ff66d1cfb67dbe3da432bbe36572cabfa4eef0e591303c2cba111474ba1d15bc"
+    },
+    {
+      "path": "android_app/web/vendor/webfonts/fa-regular-400.woff2",
+      "bytes": 19512,
+      "sha256": "f4722d10b9e1b41eefe3b51a026312ee1970edb7782f94b0080d3d475945734c"
+    },
+    {
+      "path": "android_app/web/vendor/webfonts/fa-solid-900.woff2",
+      "bytes": 119488,
+      "sha256": "24e5fae26b41c08b2df81c91669f5aaae71d81a84a4713fc56b5c621b78dd456"
+    },
+    {
+      "path": "android_app/web/vendor/webfonts/fa-v4compatibility.woff2",
+      "bytes": 4168,
+      "sha256": "c776ee1f1fe21cd72195e91de7afd5c9dbd007e9d06016254d65fbcc091398ca"
+    },
+    {
+      "path": "benchmark_skill_feedback.py",
+      "bytes": 2359,
+      "sha256": "dfc7579322aa3e623a0421a826e83c3daa25c6a338ce2c77b58a09e6fdf65a69"
+    },
+    {
+      "path": "intent_policy.py",
+      "bytes": 10730,
+      "sha256": "a29378684f312394fe7538fd66315cb3f72b434db0f6e860a08de5f097f82aa3"
+    },
+    {
+      "path": "local_skills.py",
+      "bytes": 165503,
+      "sha256": "cfb5d74e025e0ab2bcc9fe71ae99209731001c05e202a9cb29d10648173c741e"
+    },
+    {
+      "path": "memory_store.py",
+      "bytes": 32872,
+      "sha256": "4991d392a2c96441ecf0389feb57cb7fc929863bc7c03d94654d4a859c1ff210"
+    },
+    {
+      "path": "migrate_command_memory.py",
+      "bytes": 3229,
+      "sha256": "a09ee64850dda1af8f6a98104d392ed897099e867691b2bb268db7c203b8dafd"
+    },
+    {
+      "path": "projection_occlusion.json",
+      "bytes": 637,
+      "sha256": "2a005c68f7dd0e7a3ff3f0d220ac30762db031a10c43efff5eb7dd68286ce063"
+    },
+    {
+      "path": "projection_occlusion_observer.py",
+      "bytes": 21268,
+      "sha256": "aa6a8c938925ebf6a08bce18c73a48e1cbfcf760085f22e384ec6187f625af1d"
+    },
+    {
+      "path": "realtime_chat.py",
+      "bytes": 171696,
+      "sha256": "188a90342dfd655126623d4389e450439cbc273426f610b5852ef8b837e107b7"
+    },
+    {
+      "path": "realtime_core.py",
+      "bytes": 6393,
+      "sha256": "072ffa21afa4d658ee64a7ad4ce9e82347b5ef0f10293bbd066ad5446bc164a2"
+    },
+    {
+      "path": "reproduce/SHA256SUMS",
+      "bytes": 203875,
+      "sha256": "4573d13b633821b7710a734d7f636aa45f0c4ab328e1bf7b80403d330d7343de"
+    },
+    {
+      "path": "reproduce/dependencies.lock.json",
+      "bytes": 3586,
+      "sha256": "97a37a7c1f172ecde0a420173730e177f2becf20b4fd4976f0aefcadf3c600ae"
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 68,
+      "sha256": "159aaf3c0a77569152c2c65b2bebbf7d2fa3106215da4324107678413a59daab"
+    },
+    {
+      "path": "resident_service.sh",
+      "bytes": 5982,
+      "sha256": "822b670fe410aee813b80dc9cd6c7e5e360e82034542473d709c7ee03e35b888"
+    },
+    {
+      "path": "robot_skills/.gitignore",
+      "bytes": 645,
+      "sha256": "6f4f0eecf57628e296ef12303275e3d62477dab05e77e011867d88bb4971a0f8"
+    },
+    {
+      "path": "robot_skills/PRELOAD_README.md",
+      "bytes": 1984,
+      "sha256": "fb26a652372c9decf70fd8b69a7b349bf1bf403304ea158876f40d3b5a49815e"
+    },
+    {
+      "path": "robot_skills/README.md",
+      "bytes": 11249,
+      "sha256": "f1504f1eb87a2487b3f4221261245db85225ce61aa8e0b13be1011bea52a2d2c"
+    },
+    {
+      "path": "robot_skills/RESIDENT_RUNTIME_README.md",
+      "bytes": 8668,
+      "sha256": "8286dea42cdc0a8b470aa5ab15cb489886607443c13c22608f4cbe07155800c5"
+    },
+    {
+      "path": "robot_skills/SHARED_RUNTIME_BENCHMARK.md",
+      "bytes": 1687,
+      "sha256": "c5f30df3f4f518d28f8e76516eca4bad927aac6a63d793587c9a5325ed796e8c"
+    },
+    {
+      "path": "robot_skills/SHARED_RUNTIME_README.md",
+      "bytes": 2117,
+      "sha256": "76c3245a7fad92330725d9b682a8032f8a6504b9d3671562ce3f84039cd542c8"
+    },
+    {
+      "path": "robot_skills/SPEECH_PROTOCOL.md",
+      "bytes": 1225,
+      "sha256": "cbf584b80502e9462bf779f3383dea5b37ef006303bdbed96b7fcf1327c259e6"
+    },
+    {
+      "path": "robot_skills/_shared/__init__.py",
+      "bytes": 49,
+      "sha256": "0a098961d96dba30fd8fc8efcd7bfa80c1d8831459da33f29511087388d675b4"
+    },
+    {
+      "path": "robot_skills/_shared/camera_skill.py",
+      "bytes": 5301,
+      "sha256": "9c1f9452dee35de66838b61f2e58e907c1adada3314a230fb963e5f9f904e6ee"
+    },
+    {
+      "path": "robot_skills/_shared/mijia_client.py",
+      "bytes": 7006,
+      "sha256": "bc815cc869e6601f36f7642c04a636b98af06c5e041615ecffd219be64b9e77c"
+    },
+    {
+      "path": "robot_skills/autonomous_projection/run.sh",
+      "bytes": 167,
+      "sha256": "2ce499cc03f849508fd69a14670e7a1ce25c4c4404cc77b1b77210d2b1f92b3f"
+    },
+    {
+      "path": "robot_skills/autonomous_projection/skill.json",
+      "bytes": 927,
+      "sha256": "81465ea5bd423c6740d754ef0b0785f2be7aa0dbca2e9ff4fd6d898e2f5d4471"
+    },
+    {
+      "path": "robot_skills/autonomy_exploration.py",
+      "bytes": 33982,
+      "sha256": "5f7069e6e0dc2d9cc74aac3570c3cd827a6359cb46bec5df4d5f3676e3e89e35"
+    },
+    {
+      "path": "robot_skills/back_camera_capture/README_START.md",
+      "bytes": 408,
+      "sha256": "d49026b77d340b9db124e89d7f5b8cff40150ba2bc5fad56685ebcc67391c867"
+    },
+    {
+      "path": "robot_skills/back_camera_capture/run.py",
+      "bytes": 258,
+      "sha256": "5fa5cef119689612abadc60017cdc7bbcf34811bbd95318b1cf5fb123a5e19e9"
+    },
+    {
+      "path": "robot_skills/back_camera_capture/run.sh",
+      "bytes": 167,
+      "sha256": "8acb7f80affb32bf11c4353e667f4c2d7589bba395cf8f3947ca9142ccc5b4c6"
+    },
+    {
+      "path": "robot_skills/back_camera_capture/run_legacy.sh",
+      "bytes": 107,
+      "sha256": "fb3cc3ec19772e64fcc19ff3583800459009d63d6be3e8699f5a9cbb754cf723"
+    },
+    {
+      "path": "robot_skills/back_camera_capture/skill.json",
+      "bytes": 3255,
+      "sha256": "65e8e9113a81ae79038cc295d353d3e6bf9b735d54761ecf0e9d10a8ea46b797"
+    },
+    {
+      "path": "robot_skills/back_camera_capture/v11_skill_spec.json",
+      "bytes": 2831,
+      "sha256": "162bce0b1916e39991a4d51c379debf3b34b8918a660ca13adb0e673cd4f97ea"
+    },
+    {
+      "path": "robot_skills/back_camera_record/README_START.md",
+      "bytes": 432,
+      "sha256": "5ce8d798e6a2d13b55e95bde7dabd50e7ac281ce1ced078fb79962c38baf71a6"
+    },
+    {
+      "path": "robot_skills/back_camera_record/run.py",
+      "bytes": 256,
+      "sha256": "1b79cca8450cf693eda405c951436fa68842cf785f661d7255ff90241948b85b"
+    },
+    {
+      "path": "robot_skills/back_camera_record/run.sh",
+      "bytes": 166,
+      "sha256": "98739ee48461e823e6f4c59bc8aadcd122e35a833acedbe95c669085acde9fa1"
+    },
+    {
+      "path": "robot_skills/back_camera_record/run_legacy.sh",
+      "bytes": 107,
+      "sha256": "fb3cc3ec19772e64fcc19ff3583800459009d63d6be3e8699f5a9cbb754cf723"
+    },
+    {
+      "path": "robot_skills/back_camera_record/skill.json",
+      "bytes": 3258,
+      "sha256": "8b2ea3d649ce03163d8268194a4f943b1e41e677cf0e3d2e4efa66c610deff02"
+    },
+    {
+      "path": "robot_skills/back_camera_record/v11_skill_spec.json",
+      "bytes": 2835,
+      "sha256": "9d7513c4f2c07e6aea5d99fdc4f224fb0441bde76a76c81a6d151324da57f694"
+    },
+    {
+      "path": "robot_skills/benchmark_model_probe.py",
+      "bytes": 1745,
+      "sha256": "0fa8e7252de73f2b18e2c807f14a1f3fbc3c5d56a8a47c091eccd4590d8da63b"
+    },
+    {
+      "path": "robot_skills/benchmark_preload_effect.py",
+      "bytes": 13076,
+      "sha256": "457bd4ea1836252e30871f46d094af5ceed9e83e6bf52a00bd8152f553a59272"
+    },
+    {
+      "path": "robot_skills/benchmark_preload_effect.sh",
+      "bytes": 337,
+      "sha256": "3a3e85e38ec952372fd741526b2c83908331185ca19827ac705e1e72b7643113"
+    },
+    {
+      "path": "robot_skills/benchmark_shared_runtime_clients.py",
+      "bytes": 2392,
+      "sha256": "42d646eebe3b84e33ec54952ef275f653c4ad46ae11914167d9c3c8396a97c0b"
+    },
+    {
+      "path": "robot_skills/calibrate_projection_footprint.py",
+      "bytes": 4309,
+      "sha256": "d2e0cd4fe7beaf8ed623d253e97b36b4922409b534822441451130271cf0db24"
+    },
+    {
+      "path": "robot_skills/camera_capture/README_START.md",
+      "bytes": 462,
+      "sha256": "979a33ea5e742bff2c8c9faa289f05b94ca1695c6195442ff056ede19bdd3e2a"
+    },
+    {
+      "path": "robot_skills/camera_capture/run.py",
+      "bytes": 251,
+      "sha256": "5ff8df96952ed8929353be4a678557a02696dc69bfbae93aed2596fdd91bf8d5"
+    },
+    {
+      "path": "robot_skills/camera_capture/run.sh",
+      "bytes": 162,
+      "sha256": "e17fb7807eb8f49eefb09d55a3af3e84819492e308265a9d6b2c115b2123d4aa"
+    },
+    {
+      "path": "robot_skills/camera_capture/run_legacy.sh",
+      "bytes": 107,
+      "sha256": "fb3cc3ec19772e64fcc19ff3583800459009d63d6be3e8699f5a9cbb754cf723"
+    },
+    {
+      "path": "robot_skills/camera_capture/skill.json",
+      "bytes": 4923,
+      "sha256": "0fff72dacecc2246bf075a017f3773efef329fcc5b73284d0de447b07476fb2a"
+    },
+    {
+      "path": "robot_skills/camera_capture/v11_skill_spec.json",
+      "bytes": 4504,
+      "sha256": "4a5e15a655571e84eb869a5ae30518cf9a324659d71a9b019885502afccb5393"
+    },
+    {
+      "path": "robot_skills/camera_record/README_START.md",
+      "bytes": 480,
+      "sha256": "35057020823e2e6fafc104de39465b04e89363085179a5e131543ade4053b96f"
+    },
+    {
+      "path": "robot_skills/camera_record/run.py",
+      "bytes": 249,
+      "sha256": "1c961f21a0dc9aed7da57d2789e487640d75fa5c285293304797889475dd4776"
+    },
+    {
+      "path": "robot_skills/camera_record/run.sh",
+      "bytes": 161,
+      "sha256": "f3def9e70d8a4b5f6ad7ef6468b055f5b8955377095d0a75a66d55690ce922c3"
+    },
+    {
+      "path": "robot_skills/camera_record/run_legacy.sh",
+      "bytes": 107,
+      "sha256": "fb3cc3ec19772e64fcc19ff3583800459009d63d6be3e8699f5a9cbb754cf723"
+    },
+    {
+      "path": "robot_skills/camera_record/skill.json",
+      "bytes": 5142,
+      "sha256": "27b5321663fe20587dd007fafd43d007df874427d3af35fe07f096e96b030329"
+    },
+    {
+      "path": "robot_skills/camera_record/v11_skill_spec.json",
+      "bytes": 4724,
+      "sha256": "941af569e3070aa7dff94e3e26b46201a31cb311058f772d2c3c9cafd194f469"
+    },
+    {
+      "path": "robot_skills/car_real_contract.py",
+      "bytes": 4773,
+      "sha256": "e5bdb937f3328bb159a3aeec7082876cb6e7e224d0175b3a396087e7f3a65e33"
+    },
+    {
+      "path": "robot_skills/car_real_startup_guard.py",
+      "bytes": 4991,
+      "sha256": "5632ca25a3c561ce449f8917f09d173b44f257f8fd6fd1acf416cb3cc0f9433b"
+    },
+    {
+      "path": "robot_skills/check_all.sh",
+      "bytes": 868,
+      "sha256": "381cab958e3b6862c5b6e7a0588d0196d2da796eb88df65af63c8221f1eb2403"
+    },
+    {
+      "path": "robot_skills/compute_path_probe.py",
+      "bytes": 2793,
+      "sha256": "8f864f70864b66a64f725819b8b46198bd4e832df456c3cde0dc9a0e8d06dfa9"
+    },
+    {
+      "path": "robot_skills/config/exploration.json",
+      "bytes": 5006,
+      "sha256": "46ba91974cd68a20dbb4d8d96d6fc694dff3cf0e26cc88be78dd033307b3579e"
+    },
+    {
+      "path": "robot_skills/config/hardware.json",
+      "bytes": 16798,
+      "sha256": "74ceac3edec833ddabc8979988f676c7cb17ac8731c35fe41b0ca5f30fa91eb6"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/back_camera_capture.json",
+      "bytes": 2927,
+      "sha256": "32ccced011e6557f2f1e1508e61d1500763966d7f4ed77e58d7a5e70bb0d4c0d"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/back_camera_record.json",
+      "bytes": 2931,
+      "sha256": "bfcda4b81055b31e3a411d991c640512051988e116103947737ffe38d338769d"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/camera_capture.json",
+      "bytes": 4658,
+      "sha256": "1c37ce8983d7ee72f17a7b68c16f0c8104774b844fb3b63a4c238c0c887147d7"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/camera_record.json",
+      "bytes": 4888,
+      "sha256": "d8446857f0aa489655b595f395fe198e04e2c2069c9d94c9b5fabd8095fb7551"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/environment_perception.json",
+      "bytes": 6793,
+      "sha256": "aeede72076117da2a7a66bcf6d6f4221a5b12e06201b9557fa731373feb11926"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/face_recognition.json",
+      "bytes": 4215,
+      "sha256": "2205d012c2223e5902e88153deb451d10632fd2c58daea7e411a3fdd7215cbf8"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/face_registration.json",
+      "bytes": 4517,
+      "sha256": "4a56440ecd41a3da07ea1477aeddde64fed554e02b4c53a101ac1675d23af9f4"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/fan_control.json",
+      "bytes": 3804,
+      "sha256": "7e68e39c4f21937d4bbebb7a39e5d25ea51fee1df70dad51f7d0981bf6269ec5"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/feeder_control.json",
+      "bytes": 4577,
+      "sha256": "df38891b8c46e7324d0846d7474f9afacd280866c825606f8b5758b793c070c3"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/front_camera_capture.json",
+      "bytes": 2938,
+      "sha256": "2d18c07fd3bc77fd1a0f5bb10647b003c2aee03bc16d9916320258761444dc36"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/front_camera_record.json",
+      "bytes": 2924,
+      "sha256": "45465691a90e019e4300ae45cbe3a61e145a8936c6d13f2e9f80349102eb4400"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/head_control.json",
+      "bytes": 6925,
+      "sha256": "24c7a4860022a0e98a445988d392b7cc0fc0809702a304309165fde4129030b4"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/light_control.json",
+      "bytes": 4331,
+      "sha256": "f0fae7820c75e62b5e22c3ad6a07ea8c3f9fb686834754ba327cf459fc5291de"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/media_player.json",
+      "bytes": 1858,
+      "sha256": "8b072e82c97ba0ebae7fb4f69af44ae83decb864bf1993c2e941c4623961d5ea"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/move_backward.json",
+      "bytes": 4362,
+      "sha256": "bbf81dc4742836acb08675f61bd0035427b0549d99db76885239cb8844d44c5f"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/move_forward.json",
+      "bytes": 4356,
+      "sha256": "9b0fe5cdbc4fb5ccd6ae8f61a53d21483755cfe0b8bb42d3d2acc0662af673d6"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/move_left.json",
+      "bytes": 4348,
+      "sha256": "4d914242a036f800ee16223fa0df491d6d1ac7916a9c421ccb99d1a360cbf568"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/move_right.json",
+      "bytes": 4357,
+      "sha256": "ee88a636e26a1df282006c5a7bda9123d5d857d0c61b7989a393c3eace9142c7"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/navigation_goto.json",
+      "bytes": 8283,
+      "sha256": "647b24bd1138ed4343e778959d4a3c77c9e01a66629aef3fcd5aa2d8bc83449a"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/navigation_list.json",
+      "bytes": 4301,
+      "sha256": "8d47c94463facc86403680cbad47fb620b7418831323ed7884f4fb135d51fac9"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/person_tracking.json",
+      "bytes": 7362,
+      "sha256": "b7a2c53e0b2ba5dc7e2ff2089d13d2eb64fa00eb975717a3766017d9d32d63e2"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/pet_tracking.json",
+      "bytes": 4052,
+      "sha256": "e58b45145d1bf5322ca89e9e3028fb9a9ac4d0f4c192b1484cbb33f7c0106609"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/projector_control.json",
+      "bytes": 7575,
+      "sha256": "8a3d78257ed68e3e6f08c0e4a22f842da77034515b74a77d8e1e9602b3d71578"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/pull_up.json",
+      "bytes": 7249,
+      "sha256": "5bfdc710b3734ddf4a23caa7613c6b561a02c1baf92de41c169296afea8d41c8"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/push_up.json",
+      "bytes": 7819,
+      "sha256": "d017a3ba26fc0fccea6817fec350c42fbb7f3a0ac4267744225af2aed9ec2dbe"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/realtime_information.json",
+      "bytes": 6405,
+      "sha256": "5e5c799ab49af73d32abec3489013f991595d6f46eeab677aacef550e0ded384"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/reminder_cancel.json",
+      "bytes": 4315,
+      "sha256": "91bf39ebb8d3c7cdf318b6cc9d02b7318e102ef7cadb9d978ded47e0eadc8457"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/reminder_query.json",
+      "bytes": 3637,
+      "sha256": "4c8f624408cac59c3b6574e3cfa48f0c82dcc17c059cb64109fecdf533903194"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/reminder_schedule.json",
+      "bytes": 5076,
+      "sha256": "42fa055730569cdcbe9d0963b13e37dcb83269ec1f2b31cc1a33faf5a6b40bd3"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/squat.json",
+      "bytes": 7175,
+      "sha256": "0e237ee9ab4eb229c58b29176b2cc7f336ed2ef62f3f1e87a59c414b15936c76"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/welcome_projection.json",
+      "bytes": 655,
+      "sha256": "1bb418f5690930892d4e144d15265e524d806910c63aff0b01c55625546337f6"
+    },
+    {
+      "path": "robot_skills/diagnose_wall_candidates.py",
+      "bytes": 6005,
+      "sha256": "114c2449b091e7aea1800c3be3f3b383401746dc85291ee18322876d9cce640a"
+    },
+    {
+      "path": "robot_skills/direct_candidate_paths.py",
+      "bytes": 1052,
+      "sha256": "d588aa1c6d3042ecbfbef5fb4252d6c37508fc43ddf6b6e9072042da065ab81b"
+    },
+    {
+      "path": "robot_skills/environment_perception/README_START.md",
+      "bytes": 795,
+      "sha256": "1cfe2343a0d244d77a04b7c67a2007f661e47bde84f4139bce3a9afaa744089c"
+    },
+    {
+      "path": "robot_skills/environment_perception/run.py",
+      "bytes": 25568,
+      "sha256": "5ed631f645d528f0d4f8cc7bf944babfa3f9b6edaeea4572ad7cb5ea400ce687"
+    },
+    {
+      "path": "robot_skills/environment_perception/run.sh",
+      "bytes": 170,
+      "sha256": "8d405ef0d29826673d9d3fb84588aebc8a9be95b2de8e515aa0f99a058a76b79"
+    },
+    {
+      "path": "robot_skills/environment_perception/run_legacy.sh",
+      "bytes": 1170,
+      "sha256": "cd72feb7c05df69e2a191cf634f1202785dcfb845116928293367c5b0f19e329"
+    },
+    {
+      "path": "robot_skills/environment_perception/skill.json",
+      "bytes": 2044,
+      "sha256": "a5c003555a09b399127480c44168c803b5aed18d8486e59807455a3b945b605b"
+    },
+    {
+      "path": "robot_skills/environment_perception/test_pucoding.py",
+      "bytes": 2731,
+      "sha256": "57fded27d14e83e1a4ecbfa54d171c234aa0e18a0cc3de6ddad03b8a482ba6bc"
+    },
+    {
+      "path": "robot_skills/environment_perception/v11_skill_spec.json",
+      "bytes": 6639,
+      "sha256": "0421e37808a454e7aea0eefab7c0dfb2f85a1030a835a82368fddc045e277e74"
+    },
+    {
+      "path": "robot_skills/exploration_core.py",
+      "bytes": 58164,
+      "sha256": "7a2e2a26f6e13418c7aac9f0c798c666b7a83c9a731757956c4bae98a495e447"
+    },
+    {
+      "path": "robot_skills/face_recognition/README_START.md",
+      "bytes": 390,
+      "sha256": "08e95502b4b29d84b86989f747797281ccf69b071f6f9b8e436fe566118125ab"
+    },
+    {
+      "path": "robot_skills/face_recognition/face_common.py",
+      "bytes": 33364,
+      "sha256": "e5d5d7d108ce63b4344188f28b6fcaad1da3418ce4fd977e205fff86f98fbcd5"
+    },
+    {
+      "path": "robot_skills/face_recognition/retinaface_rknn.py",
+      "bytes": 7756,
+      "sha256": "44a4be0e1b28a98ad5e587e682facb4d7ebaebd4501d63452678b0ca0b09eefb"
+    },
+    {
+      "path": "robot_skills/face_recognition/run.py",
+      "bytes": 202,
+      "sha256": "0b9826b35a34ff86cc72d3ce662400e1167129073348706b7d837d0d051fd5b2"
+    },
+    {
+      "path": "robot_skills/face_recognition/run.sh",
+      "bytes": 164,
+      "sha256": "c27a499c3b9a4c7e4ff879a50912ead46a7823e318ef727fa928f800f3726920"
+    },
+    {
+      "path": "robot_skills/face_recognition/run_legacy.sh",
+      "bytes": 1014,
+      "sha256": "d7cf77300bcdf794e0ea7804ef53e3bd610baee90589de45fe26fb401d960d08"
+    },
+    {
+      "path": "robot_skills/face_recognition/skill.json",
+      "bytes": 1440,
+      "sha256": "43994354aa4c7ea02c550aee78f88b87282b108039379e5c018c8934f1b46653"
+    },
+    {
+      "path": "robot_skills/face_recognition/v11_skill_spec.json",
+      "bytes": 3890,
+      "sha256": "de1c99d802ac6fdf16fe3b0bc532f1d4b2751e2b0527d1f8c4b6918e1be270b3"
+    },
+    {
+      "path": "robot_skills/face_registration/README_START.md",
+      "bytes": 388,
+      "sha256": "5811c8097b29cf52150654881236d5234bb90091dabbaa71bfb1670096c0dfaa"
+    },
+    {
+      "path": "robot_skills/face_registration/face_common.py",
+      "bytes": 32051,
+      "sha256": "db06e9f80225164656869547255297695da0a4896e06b89424820dcd0beb6740"
+    },
+    {
+      "path": "robot_skills/face_registration/retinaface_rknn.py",
+      "bytes": 7756,
+      "sha256": "44a4be0e1b28a98ad5e587e682facb4d7ebaebd4501d63452678b0ca0b09eefb"
+    },
+    {
+      "path": "robot_skills/face_registration/run.py",
+      "bytes": 204,
+      "sha256": "587332f281dcd56199592f453dc8a029c12f48cb6078c33d201666a818968eca"
+    },
+    {
+      "path": "robot_skills/face_registration/run.sh",
+      "bytes": 165,
+      "sha256": "8d1f8cbbeee298d43074a8c67c8a6c54dbb606798ad1fdc59cad8f035d06f075"
+    },
+    {
+      "path": "robot_skills/face_registration/run_legacy.sh",
+      "bytes": 678,
+      "sha256": "580c71e17dcbba744aa502c0ed57a5b4e77a7aabca2f9245df0d6eb9e939bb12"
+    },
+    {
+      "path": "robot_skills/face_registration/skill.json",
+      "bytes": 1440,
+      "sha256": "996db64485c87f674a5c4e9063273abcee4a763e551c42e31b3f14449c675dd3"
+    },
+    {
+      "path": "robot_skills/face_registration/v11_skill_spec.json",
+      "bytes": 4517,
+      "sha256": "4a56440ecd41a3da07ea1477aeddde64fed554e02b4c53a101ac1675d23af9f4"
+    },
+    {
+      "path": "robot_skills/fan_control/README_START.md",
+      "bytes": 526,
+      "sha256": "14373f782f25e3596fbf3c5dbd02e2e8c1fbd363c35483df7e096c2c2ec60d6b"
+    },
+    {
+      "path": "robot_skills/fan_control/run.py",
+      "bytes": 682,
+      "sha256": "f22dfc1f27880fbddf7a57cb6813c067f7aaa9264f6efc11f984b805dfec0e8d"
+    },
+    {
+      "path": "robot_skills/fan_control/run.sh",
+      "bytes": 159,
+      "sha256": "b062777c4a7dc511e8ae914548722b9fa82afab2e5c022cf635353b04dbf37d4"
+    },
+    {
+      "path": "robot_skills/fan_control/run_legacy.sh",
+      "bytes": 678,
+      "sha256": "580c71e17dcbba744aa502c0ed57a5b4e77a7aabca2f9245df0d6eb9e939bb12"
+    },
+    {
+      "path": "robot_skills/fan_control/skill.json",
+      "bytes": 1528,
+      "sha256": "a2809a19e104f09d667f60f16d110d3f31bb12334bd15b9917776bf65f8ea1a6"
+    },
+    {
+      "path": "robot_skills/fan_control/v11_skill_spec.json",
+      "bytes": 3804,
+      "sha256": "7e68e39c4f21937d4bbebb7a39e5d25ea51fee1df70dad51f7d0981bf6269ec5"
+    },
+    {
+      "path": "robot_skills/feeder_control/README_START.md",
+      "bytes": 500,
+      "sha256": "6e2cde525ea5aef20d4b670c41d955ecdbfff4347f5497df1e2b182c02f372be"
+    },
+    {
+      "path": "robot_skills/feeder_control/config.json",
+      "bytes": 281,
+      "sha256": "6b9e7ba07e0bae1246e4f00de36b8d0845280d5d96285253d0aa8562219b3b38"
+    },
+    {
+      "path": "robot_skills/feeder_control/run.py",
+      "bytes": 9030,
+      "sha256": "18bdfcbb291b4df15b782e34c5585d08ef511429da6835bbda7b9191b00500c7"
+    },
+    {
+      "path": "robot_skills/feeder_control/run.sh",
+      "bytes": 162,
+      "sha256": "ec786009ad10f185e18d2c088681568aff2d323ba44f1d83e37b2a568e23244f"
+    },
+    {
+      "path": "robot_skills/feeder_control/run_legacy.sh",
+      "bytes": 209,
+      "sha256": "9e19a1941a2c86a13803dbeb420a77448c3d5a6fc148b9524ce814fb45920364"
+    },
+    {
+      "path": "robot_skills/feeder_control/skill.json",
+      "bytes": 2516,
+      "sha256": "a428d0ae39c438e23759872d525c60a3478095d0d881dff722dd42da08ed7586"
+    },
+    {
+      "path": "robot_skills/feeder_control/v11_skill_spec.json",
+      "bytes": 4849,
+      "sha256": "1b27f23aec7f2615a652a1b89cfafec15d5eb27c328e3eea96aaaf8b9711ea0d"
+    },
+    {
+      "path": "robot_skills/front_camera_capture/README_START.md",
+      "bytes": 410,
+      "sha256": "4f54371fbd703c8180f677786c76c730c493bb8691f79c2120e950c75d0f33e5"
+    },
+    {
+      "path": "robot_skills/front_camera_capture/run.py",
+      "bytes": 260,
+      "sha256": "e85c94f97320b04c028c8da1d6385225d600a3d0bdeb9e8382aaae37372f4f42"
+    },
+    {
+      "path": "robot_skills/front_camera_capture/run.sh",
+      "bytes": 168,
+      "sha256": "a18fc079390c854efdb0fcde6cbb7966d3290fbaac0250b8063f7765a8977a7d"
+    },
+    {
+      "path": "robot_skills/front_camera_capture/run_legacy.sh",
+      "bytes": 107,
+      "sha256": "fb3cc3ec19772e64fcc19ff3583800459009d63d6be3e8699f5a9cbb754cf723"
+    },
+    {
+      "path": "robot_skills/front_camera_capture/skill.json",
+      "bytes": 3266,
+      "sha256": "2a199587abc0d06ac69ca0bcdffe6969d0a1842ec0a58012ad8eeeb17348a94c"
+    },
+    {
+      "path": "robot_skills/front_camera_capture/v11_skill_spec.json",
+      "bytes": 2841,
+      "sha256": "e0b47af64641d44e2d037f71e1bffa9dab24fd1d47e981bf8e3dc80c555118e1"
+    },
+    {
+      "path": "robot_skills/front_camera_record/README_START.md",
+      "bytes": 434,
+      "sha256": "165c43f11488ada073f45df3546825ee26ced66fc8cc411977e955c97ea82803"
+    },
+    {
+      "path": "robot_skills/front_camera_record/run.py",
+      "bytes": 258,
+      "sha256": "7b0300ac521c3339f8081e55bf055f159e9ff4d8fc86c7e1b075bd3bce0c3365"
+    },
+    {
+      "path": "robot_skills/front_camera_record/run.sh",
+      "bytes": 167,
+      "sha256": "259b6943fccc70dc6bc8b10a1311127a8931f2bbdede1f8f5ca22fddefb4952a"
+    },
+    {
+      "path": "robot_skills/front_camera_record/run_legacy.sh",
+      "bytes": 107,
+      "sha256": "fb3cc3ec19772e64fcc19ff3583800459009d63d6be3e8699f5a9cbb754cf723"
+    },
+    {
+      "path": "robot_skills/front_camera_record/skill.json",
+      "bytes": 3251,
+      "sha256": "fcfafc897357c3013c9c8424608324609b76bc977dcac93985cac8aa476bfea7"
+    },
+    {
+      "path": "robot_skills/front_camera_record/v11_skill_spec.json",
+      "bytes": 2827,
+      "sha256": "a4c2799e254dedceb80c504455ba2658d057ef102bad1a30d19d4059044929ac"
+    },
+    {
+      "path": "robot_skills/head_control/README_START.md",
+      "bytes": 468,
+      "sha256": "e9d52f0f690af99656e624a93af88087e3ece955aad88394003fda0fbf1b7662"
+    },
+    {
+      "path": "robot_skills/head_control/run.py",
+      "bytes": 16445,
+      "sha256": "47944d39283011ecbcbc407e2b099f1d1fdcedb9e88ed7a1fd18195938e7ff33"
+    },
+    {
+      "path": "robot_skills/head_control/run.sh",
+      "bytes": 160,
+      "sha256": "050a9e968a4228a0570ee115ea1c121a668df547dbaed671e1f098aae65c09a6"
+    },
+    {
+      "path": "robot_skills/head_control/run_legacy.sh",
+      "bytes": 843,
+      "sha256": "b08c8afa1d6192aabcebaeb1cc5d195353320269729f8100a1b4f80c53b39ecb"
+    },
+    {
+      "path": "robot_skills/head_control/skill.json",
+      "bytes": 2114,
+      "sha256": "6b1a10eb55f4ff3083fc3afe8418d5cf91cdeedd0513b1db3b11b194f4b46e34"
+    },
+    {
+      "path": "robot_skills/head_control/v11_skill_spec.json",
+      "bytes": 6925,
+      "sha256": "24c7a4860022a0e98a445988d392b7cc0fc0809702a304309165fde4129030b4"
+    },
+    {
+      "path": "robot_skills/head_pose_supervisor.py",
+      "bytes": 12346,
+      "sha256": "82a3a2891d0ef3ac8002c7621f050f8e5cad33e0e17a2d7a4feb8d28a3fdb662"
+    },
+    {
+      "path": "robot_skills/install_resident_wrappers.py",
+      "bytes": 1621,
+      "sha256": "a44cbcefc84cd7844f01957729c989677aa4dbbb6a3dba2841f1acbfedc25544"
+    },
+    {
+      "path": "robot_skills/light_control/README_START.md",
+      "bytes": 575,
+      "sha256": "54812a7bc90a5f12eaeab52762b8aacc3dd87fdb56823b0a0d8410f526ca0497"
+    },
+    {
+      "path": "robot_skills/light_control/config.json",
+      "bytes": 233,
+      "sha256": "a7a9e5f7ea9d481640f7e2dd14fb521cde07a23c0b29be00bd32b85944d21ad2"
+    },
+    {
+      "path": "robot_skills/light_control/run.py",
+      "bytes": 8502,
+      "sha256": "27287a987ae91d5d5377b103f7c7a3b44af10bc5c5c3fc91d89ace10dd4a7d2d"
+    },
+    {
+      "path": "robot_skills/light_control/run.sh",
+      "bytes": 161,
+      "sha256": "3d02dc3e81e84bc910467a6450a697b3586ea37e60b698879b16f8d0e2d863da"
+    },
+    {
+      "path": "robot_skills/light_control/run_legacy.sh",
+      "bytes": 209,
+      "sha256": "9e19a1941a2c86a13803dbeb420a77448c3d5a6fc148b9524ce814fb45920364"
+    },
+    {
+      "path": "robot_skills/light_control/skill.json",
+      "bytes": 2178,
+      "sha256": "df83726f32b357eae52d9a2c3a0c8ecbafc591ba694ff540ef4edf77b84482af"
+    },
+    {
+      "path": "robot_skills/light_control/v11_skill_spec.json",
+      "bytes": 4683,
+      "sha256": "000080492959ea7da0a6be87558f5f94f4368b32bfe7b78a72f6eacd8ae7524f"
+    },
+    {
+      "path": "robot_skills/list_skills.sh",
+      "bytes": 289,
+      "sha256": "0a3918ba3cd42906f5e81e3136f0b7f6095a9460f30184ad581d3eccce90f403"
+    },
+    {
+      "path": "robot_skills/localization_integrity.py",
+      "bytes": 7105,
+      "sha256": "36ab1cd543c0fba024e4b043ac189a22d94ec12d69ed2914513b574e945761bd"
+    },
+    {
+      "path": "robot_skills/manifest.json",
+      "bytes": 11824,
+      "sha256": "a188e6862fa3cd55482c369e3d954974fd885e5cfe34222272bd5e7acbdba209"
+    },
+    {
+      "path": "robot_skills/media_player/catalog.json",
+      "bytes": 996,
+      "sha256": "f835e6af1e3b03759bcb73620a1751afeef36c64b6ebb2490cd7425c12387cea"
+    },
+    {
+      "path": "robot_skills/media_player/run.py",
+      "bytes": 8045,
+      "sha256": "933c8ebe543adcdf7d6b4ee558072b8b5521fdb240474dd67ec7df5e3f9071e8"
+    },
+    {
+      "path": "robot_skills/media_player/run.sh",
+      "bytes": 158,
+      "sha256": "1dd7bec550c7f86e04188ac2b2af8d6035304fb42c117f1a171cd2d0d6b9ca74"
+    },
+    {
+      "path": "robot_skills/media_player/system/robot-media-player",
+      "bytes": 3102,
+      "sha256": "b41f52a0fd2b8a49e35e28bdd777b9598556a783a86bde424cb072fc70317c02"
+    },
+    {
+      "path": "robot_skills/move_backward/README_START.md",
+      "bytes": 399,
+      "sha256": "e4d4deb156a7f0c83440174cec374f164b5f033fd43c8e2a0e1b78534794bc9e"
+    },
+    {
+      "path": "robot_skills/move_backward/run.py",
+      "bytes": 4184,
+      "sha256": "d8a54d449462da90b37277243a0cb76860c3c8836f4d0f56b986279662a322d5"
+    },
+    {
+      "path": "robot_skills/move_backward/run.sh",
+      "bytes": 161,
+      "sha256": "5356e6d21823b1a4b3ba52552b3794cb4dd5ca9606b324d08de6185b2b452e3d"
+    },
+    {
+      "path": "robot_skills/move_backward/run_legacy.sh",
+      "bytes": 1190,
+      "sha256": "9edce43554d1089e857947535704795d67b6f34ab25709cfb65b62f2c5a1d521"
+    },
+    {
+      "path": "robot_skills/move_backward/skill.json",
+      "bytes": 1337,
+      "sha256": "cb2723376330d0777f90075d9bdfc86ce699dd56dd48c43bed0bf0e4afb62327"
+    },
+    {
+      "path": "robot_skills/move_backward/v11_skill_spec.json",
+      "bytes": 4362,
+      "sha256": "bbf81dc4742836acb08675f61bd0035427b0549d99db76885239cb8844d44c5f"
+    },
+    {
+      "path": "robot_skills/move_forward/README_START.md",
+      "bytes": 396,
+      "sha256": "fe362288865efe973314847bb45dad3b54ce5cad4a322fe57227bcd8c84dbf95"
+    },
+    {
+      "path": "robot_skills/move_forward/run.py",
+      "bytes": 4069,
+      "sha256": "a67cf91361dc49cc0c13d49d39291760f5d530b26bd97b246d07bc4b0327f250"
+    },
+    {
+      "path": "robot_skills/move_forward/run.sh",
+      "bytes": 160,
+      "sha256": "033676daea02d5d5fc1f9cadce84df61e14addecd83c860bff61cf13d75a18b9"
+    },
+    {
+      "path": "robot_skills/move_forward/run_legacy.sh",
+      "bytes": 1190,
+      "sha256": "9edce43554d1089e857947535704795d67b6f34ab25709cfb65b62f2c5a1d521"
+    },
+    {
+      "path": "robot_skills/move_forward/skill.json",
+      "bytes": 1331,
+      "sha256": "4796dfe70ef86d6a10a4fe0a48780a02634cecdd92737941307987a249142dba"
+    },
+    {
+      "path": "robot_skills/move_forward/v11_skill_spec.json",
+      "bytes": 4356,
+      "sha256": "9b0fe5cdbc4fb5ccd6ae8f61a53d21483755cfe0b8bb42d3d2acc0662af673d6"
+    },
+    {
+      "path": "robot_skills/move_left/README_START.md",
+      "bytes": 395,
+      "sha256": "f1053e6a5686e74c147af4beb2b20ae97686e9698298e3f098959f28445fee08"
+    },
+    {
+      "path": "robot_skills/move_left/run.py",
+      "bytes": 4180,
+      "sha256": "25ac43d42eb5efbd2d9179930529bc4dfe5477961a4062e71e7e86202196941d"
+    },
+    {
+      "path": "robot_skills/move_left/run.sh",
+      "bytes": 157,
+      "sha256": "00cfb9dde0f8bb066a0868e8dbff0877f4e81ccc824ec6fece52ef6b38409859"
+    },
+    {
+      "path": "robot_skills/move_left/run_legacy.sh",
+      "bytes": 1190,
+      "sha256": "9edce43554d1089e857947535704795d67b6f34ab25709cfb65b62f2c5a1d521"
+    },
+    {
+      "path": "robot_skills/move_left/skill.json",
+      "bytes": 1313,
+      "sha256": "913ac3e724baf1a9f3e9e8c45501d7e0bf4ec641287fdded5bbb2d639cebeb71"
+    },
+    {
+      "path": "robot_skills/move_left/v11_skill_spec.json",
+      "bytes": 4348,
+      "sha256": "4d914242a036f800ee16223fa0df491d6d1ac7916a9c421ccb99d1a360cbf568"
+    },
+    {
+      "path": "robot_skills/move_right/README_START.md",
+      "bytes": 398,
+      "sha256": "a410a12811d566c1e041dc0c1f80ed80196f8cece1433fae0dc4bc7b157d4e40"
+    },
+    {
+      "path": "robot_skills/move_right/run.py",
+      "bytes": 4186,
+      "sha256": "672720fedece96b4e0b40715125002eeacae95ae4215b6a2a4407c15a2416f01"
+    },
+    {
+      "path": "robot_skills/move_right/run.sh",
+      "bytes": 158,
+      "sha256": "50099ad12f48eabe48860152c4e1da4a69633c43cd212fd64d8f429b4187b85b"
+    },
+    {
+      "path": "robot_skills/move_right/run_legacy.sh",
+      "bytes": 1190,
+      "sha256": "9edce43554d1089e857947535704795d67b6f34ab25709cfb65b62f2c5a1d521"
+    },
+    {
+      "path": "robot_skills/move_right/skill.json",
+      "bytes": 1319,
+      "sha256": "6dea1a360e60c7ac7b42d20b02bb9e677686621c059d6bcedb9c576149ea10b3"
+    },
+    {
+      "path": "robot_skills/move_right/v11_skill_spec.json",
+      "bytes": 4357,
+      "sha256": "ee88a636e26a1df282006c5a7bda9123d5d857d0c61b7989a393c3eace9142c7"
+    },
+    {
+      "path": "robot_skills/navigation_goto/README_START.md",
+      "bytes": 565,
+      "sha256": "0dd52634cddad15de467157cbeb08c645edf065dfb9f7993585de0dbf3ade7a5"
+    },
+    {
+      "path": "robot_skills/navigation_goto/run.py",
+      "bytes": 45429,
+      "sha256": "3e6204f0a139ca16bd029760787a82b1a0a2c5a640c89fad0c6d91803ee5a11d"
+    },
+    {
+      "path": "robot_skills/navigation_goto/run.sh",
+      "bytes": 163,
+      "sha256": "eb6e9390edc7362226ce3c133038364191ec381cc1899376a0c685955590cd75"
+    },
+    {
+      "path": "robot_skills/navigation_goto/run_legacy.sh",
+      "bytes": 1238,
+      "sha256": "eed8d94f201368cfad3fe1680da4b2d019d80d219c35ad1720a02780c2ead94c"
+    },
+    {
+      "path": "robot_skills/navigation_goto/skill.json",
+      "bytes": 8721,
+      "sha256": "56e6d41cd3e61f92b76ab5fb19f159356eca51b9eeb01616740e99d037330ddc"
+    },
+    {
+      "path": "robot_skills/navigation_goto/test_navigation_client.py",
+      "bytes": 6140,
+      "sha256": "7974b9295aac706e9b03c9f5ffcc42e637219e19826d2551ee67b3646fe95a89"
+    },
+    {
+      "path": "robot_skills/navigation_goto/v11_skill_spec.json",
+      "bytes": 8283,
+      "sha256": "647b24bd1138ed4343e778959d4a3c77c9e01a66629aef3fcd5aa2d8bc83449a"
+    },
+    {
+      "path": "robot_skills/navigation_list/README_START.md",
+      "bytes": 404,
+      "sha256": "6e16df252820585964ae0895220aa8d98325a8eee8a9d58fc809a400d7bff0a6"
+    },
+    {
+      "path": "robot_skills/navigation_list/run.py",
+      "bytes": 39924,
+      "sha256": "a9ee1fb1d0f08ef39e996bfcf56dd59355a0e334eb1c746a5e3965b05a2e5485"
+    },
+    {
+      "path": "robot_skills/navigation_list/run.sh",
+      "bytes": 163,
+      "sha256": "cc36d4ab973c0f43fa3ca4b76b34c3c756f69fda64f49b0b154b31bb5e028455"
+    },
+    {
+      "path": "robot_skills/navigation_list/run_legacy.sh",
+      "bytes": 1238,
+      "sha256": "eed8d94f201368cfad3fe1680da4b2d019d80d219c35ad1720a02780c2ead94c"
+    },
+    {
+      "path": "robot_skills/navigation_list/skill.json",
+      "bytes": 4739,
+      "sha256": "68756c7f38b7767dc06a86500f1a9c7bf4e06e6694a763a5c728a202ebf3e33d"
+    },
+    {
+      "path": "robot_skills/navigation_list/test_navigation_client.py",
+      "bytes": 4172,
+      "sha256": "5beebc16292cb9ea5b128267c8feec52321a6d423116c376a52f1f7962a14c89"
+    },
+    {
+      "path": "robot_skills/navigation_list/v11_skill_spec.json",
+      "bytes": 4301,
+      "sha256": "8d47c94463facc86403680cbad47fb620b7418831323ed7884f4fb135d51fac9"
+    },
+    {
+      "path": "robot_skills/path_clearance_probe.py",
+      "bytes": 1123,
+      "sha256": "9b095454dcd5f62933f8a81a8d74048902b88831b06f1ff27a1abca7831fa4fc"
+    },
+    {
+      "path": "robot_skills/person_tracking/README_START.md",
+      "bytes": 701,
+      "sha256": "ce52b9e6539400ce27e0e1c61e15e43e0bc7e4e9b67a4e2307cbd288fa1e88e5"
+    },
+    {
+      "path": "robot_skills/person_tracking/config.json",
+      "bytes": 4395,
+      "sha256": "db3c0aec196c61a834f696d321e31be6814ab0dc90c81ca57b95891ff0c30487"
+    },
+    {
+      "path": "robot_skills/person_tracking/face_reid_fitness_test.py",
+      "bytes": 20324,
+      "sha256": "6aac1a810fb49bc8e2be27b0d9920b2f02102934fb17b859a6a212a1aaa89fb5"
+    },
+    {
+      "path": "robot_skills/person_tracking/face_reid_person_tracking.py",
+      "bytes": 28951,
+      "sha256": "20a204eab89307758dcd74ccd26046d57b8c382407ae03fd2e814b9247793064"
+    },
+    {
+      "path": "robot_skills/person_tracking/fitness_reid_test.py",
+      "bytes": 19681,
+      "sha256": "62ec951787af813a324c645524e419bdca42d8031dc77adc1b046c5bec9da3ab"
+    },
+    {
+      "path": "robot_skills/person_tracking/run.py",
+      "bytes": 133047,
+      "sha256": "9f8bc513fbe063572364ef23e43a06b2b07949929bba9566ee8cee47878e933d"
+    },
+    {
+      "path": "robot_skills/person_tracking/run.sh",
+      "bytes": 163,
+      "sha256": "230c243785ab3e8b18257679b106f8e6d362ab94c0fabc1652e9e064e701e178"
+    },
+    {
+      "path": "robot_skills/person_tracking/run_legacy.sh",
+      "bytes": 2551,
+      "sha256": "ba13212715e15cb392c180c07ee5ca644a228b516842b08e9db7d2069b8a41ae"
+    },
+    {
+      "path": "robot_skills/person_tracking/skill.json",
+      "bytes": 1890,
+      "sha256": "163661ea776bee48a09ac6f53eaf43149701282ffd7496ea065352c797d7759a"
+    },
+    {
+      "path": "robot_skills/person_tracking/v11_skill_spec.json",
+      "bytes": 7362,
+      "sha256": "b7a2c53e0b2ba5dc7e2ff2089d13d2eb64fa00eb975717a3766017d9d32d63e2"
+    },
+    {
+      "path": "robot_skills/person_tracking/wrapper.py",
+      "bytes": 5341,
+      "sha256": "6922dc0b0fbb35e19aa67b13f5d945f32f71dea80a072369d15856ba9492d372"
+    },
+    {
+      "path": "robot_skills/pet_map_search/run.sh",
+      "bytes": 160,
+      "sha256": "ddbe9c4afb0e1ec91295b6ed2bfed38b2c63c36f6bee660115931d0de38cda2c"
+    },
+    {
+      "path": "robot_skills/pet_map_search/skill.json",
+      "bytes": 810,
+      "sha256": "9d73f3ef5477aacba0cb80deeefc25a756a240de4d2b3a898fe7a3e042e208b6"
+    },
+    {
+      "path": "robot_skills/pet_tracking/README_START.md",
+      "bytes": 956,
+      "sha256": "c4cdda07317c0993aa67144c04c2fa0278972f1bb50087e2929e783978597893"
+    },
+    {
+      "path": "robot_skills/pet_tracking/centering.py",
+      "bytes": 4716,
+      "sha256": "a06503349218537b604da9956ab14db10169d2b10c5d2047209a2db8d56527e7"
+    },
+    {
+      "path": "robot_skills/pet_tracking/run.py",
+      "bytes": 106598,
+      "sha256": "532d973ef090556f774610cfdf6b5b8c3cb3a93cd28d2c28dd00a6063d42f5ee"
+    },
+    {
+      "path": "robot_skills/pet_tracking/run.sh",
+      "bytes": 160,
+      "sha256": "dcc873976bd8949d6dc15d8c86ed5875e7749250d268d1069fb809609d2d87ee"
+    },
+    {
+      "path": "robot_skills/pet_tracking/run_legacy.sh",
+      "bytes": 2291,
+      "sha256": "7de1b239753d8a6831641ec1b0e866876e803710bc1f79aac796c11dc4444013"
+    },
+    {
+      "path": "robot_skills/pet_tracking/skill.json",
+      "bytes": 2085,
+      "sha256": "8b809ce368afc4e1e65489f91a696e6e4e2283be76840e2ae0234bd37fd2dabb"
+    },
+    {
+      "path": "robot_skills/pet_tracking/v11_skill_spec.json",
+      "bytes": 3953,
+      "sha256": "d3a4bf937ef87662708904db683da37df51fe265e7742f86ade7c7e2348816e7"
+    },
+    {
+      "path": "robot_skills/pet_tracking/video_recording.py",
+      "bytes": 2627,
+      "sha256": "af366a48714c476e2d2234ea96c6c8383b1116018c5f705445d885a1452bf44d"
+    },
+    {
+      "path": "robot_skills/points/location_regions.json",
+      "bytes": 1085,
+      "sha256": "bfa43f940d1d3918db9fda38036f30848ebf2c02e210ea32561aac98e42ec639"
+    },
+    {
+      "path": "robot_skills/points/named_points.json",
+      "bytes": 1050,
+      "sha256": "9b4cc5a7f14c78ea887e15a8eb6874f832a328dfd2b2101ae3860159bb554113"
+    },
+    {
+      "path": "robot_skills/preload_all.sh",
+      "bytes": 2511,
+      "sha256": "4e15919256ad667d72d21e651801c7735db61c1c223ca886e1949d1434087541"
+    },
+    {
+      "path": "robot_skills/preload_runtime.py",
+      "bytes": 12857,
+      "sha256": "9693e2742348216f4b66525a802c165a79da52cfbedefcb9b183efa7a634c7b0"
+    },
+    {
+      "path": "robot_skills/projector_control/README.md",
+      "bytes": 564,
+      "sha256": "bfab7e503ac34c13554539091702b071bc71c417338bf00c80b69ca8ed9da7d8"
+    },
+    {
+      "path": "robot_skills/projector_control/README_START.md",
+      "bytes": 732,
+      "sha256": "47cc8fa5081ea28e42f717f8af2531e4e5905ed2b4b508cfec8481f8b885d4bd"
+    },
+    {
+      "path": "robot_skills/projector_control/android_meeting_viewer/AndroidManifest.xml",
+      "bytes": 890,
+      "sha256": "cabaefc97bd907eaa7ff115d27a8514b00d887ddf03beab3aa39cae05e594d62"
+    },
+    {
+      "path": "robot_skills/projector_control/android_meeting_viewer/build.sh",
+      "bytes": 2360,
+      "sha256": "4c2335af5f45ebe3609efd64c2b7dd8e50bfcbde03ee1b8e5d26050625d4d45e"
+    },
+    {
+      "path": "robot_skills/projector_control/android_meeting_viewer/res/values/styles.xml",
+      "bytes": 653,
+      "sha256": "451f537a3eff5e123eaaee717dc508e38b7d3588cab7a942e8e83a4d17c9506e"
+    },
+    {
+      "path": "robot_skills/projector_control/android_meeting_viewer/src/com/adjacentgarden/meeting/MeetingSlidesActivity.java",
+      "bytes": 5263,
+      "sha256": "92568a8dde74883bd5e2fc637bd5b57f9d552fc3cce91e80b73bba8d0a06f8ee"
+    },
+    {
+      "path": "robot_skills/projector_control/assets/meeting-image-viewer.apk.idsig",
+      "bytes": 13746,
+      "sha256": "1bac7af0f8212dc40dc8d2ebab2ddf9f105a43fba27e1411f0fcc2cb74dfb2b4"
+    },
+    {
+      "path": "robot_skills/projector_control/assets/meeting-image-viewer.apk.sha256",
+      "bytes": 91,
+      "sha256": "f842c1e36811167f092f332eb7109276edba0b429ff5d1db24e6cde824e3b295"
+    },
+    {
+      "path": "robot_skills/projector_control/assets/test-1.jpg",
+      "bytes": 370360,
+      "sha256": "1a15506352fe68dffdf8e61df85703e93e27e370ada8b8db6cf46b5a7880d542"
+    },
+    {
+      "path": "robot_skills/projector_control/assets/test-2.jpg",
+      "bytes": 272131,
+      "sha256": "84ea835ad85b415edf8e228790b9c93fe53c3f2eebba13df7d612745863c8e83"
+    },
+    {
+      "path": "robot_skills/projector_control/config.json",
+      "bytes": 1774,
+      "sha256": "c0c22334d0da164cfe80d5170f201872024bf259ed5ebd0adbabd4872bf6b81d"
+    },
+    {
+      "path": "robot_skills/projector_control/install_projection_helper.sh",
+      "bytes": 1227,
+      "sha256": "63d0fde0e5c3e16205d199e324764ca8d47785c91084c73412e76b1e5557f977"
+    },
+    {
+      "path": "robot_skills/projector_control/run.py",
+      "bytes": 12569,
+      "sha256": "3fa3b6de35ba429b20922ed4b5298f0987f9b296d20bef76ccba8aa801ed5290"
+    },
+    {
+      "path": "robot_skills/projector_control/run.sh",
+      "bytes": 165,
+      "sha256": "dad6775137a426cc5250b831814b948b978ca6f02ced4bcac2897b14d287b251"
+    },
+    {
+      "path": "robot_skills/projector_control/run_legacy.sh",
+      "bytes": 401,
+      "sha256": "deae4c093c81f8c473a127648fcf2e9e29e35d142498432bf9987e3cbf6bf580"
+    },
+    {
+      "path": "robot_skills/projector_control/skill.json",
+      "bytes": 1894,
+      "sha256": "ba7f02142f396055a004e8a488b6109b115798057e53af05c069e531f80802e3"
+    },
+    {
+      "path": "robot_skills/projector_control/system/robot-meeting-projection",
+      "bytes": 2169,
+      "sha256": "cb0ebd1f7ee9d3aaf34b99e963e3a350c4cb1369685463baca4ad7bc0298d701"
+    },
+    {
+      "path": "robot_skills/projector_control/system/robot-meeting-projection-v2",
+      "bytes": 6985,
+      "sha256": "d055b30bade9c5e5eec4fc440e05986aa8486f3dfc0842ff26ae90aedb13ce06"
+    },
+    {
+      "path": "robot_skills/projector_control/system/robot-meeting-projection-v2.sudoers",
+      "bytes": 72,
+      "sha256": "6459484061307812e32b81d2bd8b055566e366684789c1e424e974efc1703665"
+    },
+    {
+      "path": "robot_skills/projector_control/system/robot-start-exercise-projection",
+      "bytes": 2014,
+      "sha256": "86ec4e70e277bd078d7ab58dc60e98f038d915443a6e77fdb72ced56bd0e15c4"
+    },
+    {
+      "path": "robot_skills/projector_control/system/start_projection_ppt.sh",
+      "bytes": 2885,
+      "sha256": "7b0b2098b859cb86941bc0be0023875d56903b3ae5b630e3c6008a5753b170e0"
+    },
+    {
+      "path": "robot_skills/projector_control/v11_skill_spec.json",
+      "bytes": 7575,
+      "sha256": "8a3d78257ed68e3e6f08c0e4a22f842da77034515b74a77d8e1e9602b3d71578"
+    },
+    {
+      "path": "robot_skills/pull_up/README_START.md",
+      "bytes": 582,
+      "sha256": "3dbd337ecb2108a18aae107a4a17ee5e7cb433a6e341821c9c45276162e165b2"
+    },
+    {
+      "path": "robot_skills/pull_up/assets/fitness_poses_csvs_out/pull_down.csv",
+      "bytes": 25224,
+      "sha256": "bc9699432980855fd6306ff7705a0553f99fd71e3f33e232c403d3315e03c320"
+    },
+    {
+      "path": "robot_skills/pull_up/assets/fitness_poses_csvs_out/pull_up.csv",
+      "bytes": 25116,
+      "sha256": "4510cc53fe33aaa83a85a23a5b67a7850f8a5d33428804aa23de3802aa496fd2"
+    },
+    {
+      "path": "robot_skills/pull_up/assets/fitness_poses_csvs_out/push_down.csv",
+      "bytes": 194804,
+      "sha256": "7aa8fd99cbda11cd04527ee662db43018fa0348ce40ff55a9087a45258ae1bdd"
+    },
+    {
+      "path": "robot_skills/pull_up/assets/fitness_poses_csvs_out/push_up.csv",
+      "bytes": 202695,
+      "sha256": "e1aff81810987683d29b3e005172f689ab19f0b276da0a841575a5f2ce66f065"
+    },
+    {
+      "path": "robot_skills/pull_up/assets/fitness_poses_csvs_out/squat_down.csv",
+      "bytes": 227502,
+      "sha256": "0e7fae851448d3ae3bae3d93deeca223d0f9bfab3b2c24e1f2588044527641f6"
+    },
+    {
+      "path": "robot_skills/pull_up/assets/fitness_poses_csvs_out/squat_up.csv",
+      "bytes": 193263,
+      "sha256": "96558af301ab2cb456a8e14ebbe9642b95a2a7d192b71e64277a9f1c6d778e5b"
+    },
+    {
+      "path": "robot_skills/pull_up/assets/movement_count_2/Roboto-Regular.ttf",
+      "bytes": 515100,
+      "sha256": "56a45233d29f11b4dfb86d248e921939d115778f87325e7ae8cc108383d6664d"
+    },
+    {
+      "path": "robot_skills/pull_up/run.py",
+      "bytes": 77294,
+      "sha256": "0ba371d0e680e9ae7a2a019529b6b2fc9219d6ea750d02643151eb3451291154"
+    },
+    {
+      "path": "robot_skills/pull_up/run.sh",
+      "bytes": 155,
+      "sha256": "13fc63922934f152138e9af958439bfd4983ec4a206698d21d4e416cd26b9358"
+    },
+    {
+      "path": "robot_skills/pull_up/run_legacy.sh",
+      "bytes": 1352,
+      "sha256": "c70dc4b2f57131b3ed4f9a8bcae64789f4712cc127f21a1cd0d9a781135d74b3"
+    },
+    {
+      "path": "robot_skills/pull_up/skill.json",
+      "bytes": 1791,
+      "sha256": "f9cc4a0936495ec8f52a4c38205faf69f52a54611fc9a6112ee88d5b8d4c55e7"
+    },
+    {
+      "path": "robot_skills/pull_up/v11_skill_spec.json",
+      "bytes": 7030,
+      "sha256": "f0b5db8ba7158c8b8ff8b36c8182025815e5ec0cbbac783b27a0e2cc140d0096"
+    },
+    {
+      "path": "robot_skills/push_up/README_START.md",
+      "bytes": 749,
+      "sha256": "6bcd2a5e21833c90dd05a4205da41f8129e189f020afae4221716fd8b9bdb3ce"
+    },
+    {
+      "path": "robot_skills/push_up/assets/fitness_poses_csvs_out/pull_down.csv",
+      "bytes": 25224,
+      "sha256": "bc9699432980855fd6306ff7705a0553f99fd71e3f33e232c403d3315e03c320"
+    },
+    {
+      "path": "robot_skills/push_up/assets/fitness_poses_csvs_out/pull_up.csv",
+      "bytes": 25116,
+      "sha256": "4510cc53fe33aaa83a85a23a5b67a7850f8a5d33428804aa23de3802aa496fd2"
+    },
+    {
+      "path": "robot_skills/push_up/assets/fitness_poses_csvs_out/push_down.csv",
+      "bytes": 194804,
+      "sha256": "7aa8fd99cbda11cd04527ee662db43018fa0348ce40ff55a9087a45258ae1bdd"
+    },
+    {
+      "path": "robot_skills/push_up/assets/fitness_poses_csvs_out/push_up.csv",
+      "bytes": 202695,
+      "sha256": "e1aff81810987683d29b3e005172f689ab19f0b276da0a841575a5f2ce66f065"
+    },
+    {
+      "path": "robot_skills/push_up/assets/fitness_poses_csvs_out/squat_down.csv",
+      "bytes": 227502,
+      "sha256": "0e7fae851448d3ae3bae3d93deeca223d0f9bfab3b2c24e1f2588044527641f6"
+    },
+    {
+      "path": "robot_skills/push_up/assets/fitness_poses_csvs_out/squat_up.csv",
+      "bytes": 193263,
+      "sha256": "96558af301ab2cb456a8e14ebbe9642b95a2a7d192b71e64277a9f1c6d778e5b"
+    },
+    {
+      "path": "robot_skills/push_up/assets/movement_count_2/Roboto-Regular.ttf",
+      "bytes": 515100,
+      "sha256": "56a45233d29f11b4dfb86d248e921939d115778f87325e7ae8cc108383d6664d"
+    },
+    {
+      "path": "robot_skills/push_up/config.json",
+      "bytes": 9630,
+      "sha256": "32b65ffb6e4c86f4d67b96d73fe74ff04d8320ce30c7725fd79d6c1fdc322d1a"
+    },
+    {
+      "path": "robot_skills/push_up/engine.py",
+      "bytes": 168905,
+      "sha256": "5129dd0875f6a08c42058332fe8ec2c5659fea90d39e79387b9cc17dc714d40e"
+    },
+    {
+      "path": "robot_skills/push_up/pipeline.py",
+      "bytes": 20069,
+      "sha256": "1fe181cc8f65aa4357789d9c141eaba29f56c9c09dfdf024048c30cc56d5924e"
+    },
+    {
+      "path": "robot_skills/push_up/run.py",
+      "bytes": 7995,
+      "sha256": "bee997c81193e41d2539d6cc666bccee88f4d2bb6cd08ad5dfd99485aeb5dabf"
+    },
+    {
+      "path": "robot_skills/push_up/run.sh",
+      "bytes": 155,
+      "sha256": "fa3937e8f8303bcbd737e9f8bab8535e64c7af72db44d528bb6fe339cd8366ee"
+    },
+    {
+      "path": "robot_skills/push_up/run_legacy.sh",
+      "bytes": 470,
+      "sha256": "6e0b50af4b6fafd945236780ac59b8bbc046787f4f8dcdebbdec04f4ae04ca2d"
+    },
+    {
+      "path": "robot_skills/push_up/skill.json",
+      "bytes": 2369,
+      "sha256": "7bfebece97bc087b0a0b9d0467174719dd244bf23a158b2ec4ff62d1c97cdda7"
+    },
+    {
+      "path": "robot_skills/push_up/test_anonymous_target_tracker.py",
+      "bytes": 1918,
+      "sha256": "6f4f3b03127c9f1988c46558681f57c5601dc7c17db014d6266bc189b50d3db5"
+    },
+    {
+      "path": "robot_skills/push_up/test_fitness_latency_and_app_video.py",
+      "bytes": 9842,
+      "sha256": "b308f9715f9dec4e7d756ef0ec425621e34b5c9bac0655714a8d7912abfb2acc"
+    },
+    {
+      "path": "robot_skills/push_up/test_lower_half_horizontal_target_tracker.py",
+      "bytes": 3694,
+      "sha256": "476b0ab26db540cc172e461473b8aead3e68109e7862aebcbe62a0a1a82d7fd7"
+    },
+    {
+      "path": "robot_skills/push_up/test_reid_identity_tracker.py",
+      "bytes": 24894,
+      "sha256": "22768a2a31524ec67c995dc986dd026c5f3dfbe04f26ecc540a761a97af66abb"
+    },
+    {
+      "path": "robot_skills/push_up/v11_skill_spec.json",
+      "bytes": 7617,
+      "sha256": "bba3dd54aea005e1895834d30a0fdaa54493564205d6584eb49b2c39a162574b"
+    },
+    {
+      "path": "robot_skills/realtime_information/README.md",
+      "bytes": 2057,
+      "sha256": "247ff12c667bd4d43e70b1d85f62c93e609f447487cbd5c01e79149c09c072c5"
+    },
+    {
+      "path": "robot_skills/realtime_information/README_START.md",
+      "bytes": 904,
+      "sha256": "a2547f72f1994433140a65c315a748e333d94835e6645c4a161e86789535976e"
+    },
+    {
+      "path": "robot_skills/realtime_information/config.json",
+      "bytes": 3575,
+      "sha256": "f671dae06cdf6d0bac01058355036fac5d62cbc1a7a4ba2ca3334a115116ef07"
+    },
+    {
+      "path": "robot_skills/realtime_information/run.py",
+      "bytes": 68296,
+      "sha256": "b7a1799c551eafd506f12716dd6248526e769938a02ff834d843f1c8c74fa48b"
+    },
+    {
+      "path": "robot_skills/realtime_information/run.sh",
+      "bytes": 168,
+      "sha256": "3b253c0fc9377dc3824f369d1fa7e417b07f52ac8301eef0c868af14e38e8fe1"
+    },
+    {
+      "path": "robot_skills/realtime_information/run_legacy.sh",
+      "bytes": 139,
+      "sha256": "b0115a69f9ee2658d98e65c2aa927e1b041c4a6cebd2f3d4170fbe4aaab19a19"
+    },
+    {
+      "path": "robot_skills/realtime_information/self_check.py",
+      "bytes": 12062,
+      "sha256": "60d815c9193fde58e58465fe41749e95c886f913438aaccad580b1fca5ccab02"
+    },
+    {
+      "path": "robot_skills/realtime_information/skill.json",
+      "bytes": 1544,
+      "sha256": "4df62b28a6af85745b5509bccc8263030d5f92251f1b6100bbcba3d4e8664aa0"
+    },
+    {
+      "path": "robot_skills/realtime_information/v11_skill_spec.json",
+      "bytes": 6405,
+      "sha256": "5e5c799ab49af73d32abec3489013f991595d6f46eeab677aacef550e0ded384"
+    },
+    {
+      "path": "robot_skills/reminder_cancel/README_START.md",
+      "bytes": 407,
+      "sha256": "8d593011e604766ee7265f9005a576a86064aaa21416e0af8e696e0a9d6590ae"
+    },
+    {
+      "path": "robot_skills/reminder_cancel/run.py",
+      "bytes": 255,
+      "sha256": "de1a49cfedd0183401bb3e3d23e50a4119c5a4a585341307707baa83249ed94d"
+    },
+    {
+      "path": "robot_skills/reminder_cancel/run.sh",
+      "bytes": 163,
+      "sha256": "89822069001d786ab6c95438759f1106fbd917d6670ca8e186de1df18073ce11"
+    },
+    {
+      "path": "robot_skills/reminder_cancel/run_legacy.sh",
+      "bytes": 472,
+      "sha256": "a1c02ece339be838130ad6697f014c49529fdbea588c4bafcef01c0074bf7c56"
+    },
+    {
+      "path": "robot_skills/reminder_cancel/skill.json",
+      "bytes": 1909,
+      "sha256": "6f18ed7261129a982043967f82204b73d5e6b8613e5d167ae1e5d9e17e6531bf"
+    },
+    {
+      "path": "robot_skills/reminder_cancel/v11_skill_spec.json",
+      "bytes": 4323,
+      "sha256": "8eb203007f652aba7ab0a6338a0e80ae3dc903cd450beaea55719f1fbc765ed9"
+    },
+    {
+      "path": "robot_skills/reminder_query/README_START.md",
+      "bytes": 372,
+      "sha256": "c128a7777d20153b68f398f0c60564d1537e26c26d2d1aa4f838420e024c6bdf"
+    },
+    {
+      "path": "robot_skills/reminder_query/run.py",
+      "bytes": 255,
+      "sha256": "de1a49cfedd0183401bb3e3d23e50a4119c5a4a585341307707baa83249ed94d"
+    },
+    {
+      "path": "robot_skills/reminder_query/run.sh",
+      "bytes": 162,
+      "sha256": "e426bddc1daba7d9e2c4e28f77f3347ced69c79c804a6d6e9447e9ba007925ac"
+    },
+    {
+      "path": "robot_skills/reminder_query/run_legacy.sh",
+      "bytes": 472,
+      "sha256": "a1c02ece339be838130ad6697f014c49529fdbea588c4bafcef01c0074bf7c56"
+    },
+    {
+      "path": "robot_skills/reminder_query/skill.json",
+      "bytes": 1622,
+      "sha256": "3aa2002b14c6ba8bff6bd61432515215d9fc21fffea3116457ab1e3447fa8902"
+    },
+    {
+      "path": "robot_skills/reminder_query/v11_skill_spec.json",
+      "bytes": 3637,
+      "sha256": "4c8f624408cac59c3b6574e3cfa48f0c82dcc17c059cb64109fecdf533903194"
+    },
+    {
+      "path": "robot_skills/reminder_schedule/README_START.md",
+      "bytes": 558,
+      "sha256": "65858bf082a0438dd058fb0f7cccb80287391982f570ab2a50f43e8635c87a44"
+    },
+    {
+      "path": "robot_skills/reminder_schedule/run.py",
+      "bytes": 255,
+      "sha256": "de1a49cfedd0183401bb3e3d23e50a4119c5a4a585341307707baa83249ed94d"
+    },
+    {
+      "path": "robot_skills/reminder_schedule/run.sh",
+      "bytes": 165,
+      "sha256": "bb8788dec39184786f5f9d8dadd0fbe2f13360ad8a9a199a3de424fa20cf3160"
+    },
+    {
+      "path": "robot_skills/reminder_schedule/run_legacy.sh",
+      "bytes": 472,
+      "sha256": "a1c02ece339be838130ad6697f014c49529fdbea588c4bafcef01c0074bf7c56"
+    },
+    {
+      "path": "robot_skills/reminder_schedule/skill.json",
+      "bytes": 2482,
+      "sha256": "aa85a64587040c6528d696637bb1340e1cf79518a5d9e1ba5da31e92e5ee390b"
+    },
+    {
+      "path": "robot_skills/reminder_schedule/v11_skill_spec.json",
+      "bytes": 5088,
+      "sha256": "f85470545a99db37ae7e42fb8fd76ec9b949e08afa5c3113541cd1621fadf791"
+    },
+    {
+      "path": "robot_skills/render_complex_map_simulation.py",
+      "bytes": 14639,
+      "sha256": "88827efc4281cad9c9780cb8bd046308bde4b0e1b656e2cdd49403ad996f2818"
+    },
+    {
+      "path": "robot_skills/render_realistic_study_living_simulation.py",
+      "bytes": 14586,
+      "sha256": "4ec948af031e31c2ecb23d7c8382137b6ec9eb16e3d7d09212351d93d3de434c"
+    },
+    {
+      "path": "robot_skills/render_simulation_video.py",
+      "bytes": 15040,
+      "sha256": "e999ae2d6090d3b169d926696c761696c0ce60a551c30aea71fa2bd01254420b"
+    },
+    {
+      "path": "robot_skills/resident_camera_broker.py",
+      "bytes": 8762,
+      "sha256": "a2d629a44c72690a36efbc62f1b725914618f579a9bcc2938adac5a0688ddbb4"
+    },
+    {
+      "path": "robot_skills/resident_camera_ipc.py",
+      "bytes": 8368,
+      "sha256": "960a546c09bca3bf4b44a6127f4467ce6cb28309750b7deca32e813e22e13edd"
+    },
+    {
+      "path": "robot_skills/resident_camera_startup.py",
+      "bytes": 3300,
+      "sha256": "dfc341ea3932ef13655bb11cf1a62273d3e2cd5a3547cb395590e732086186ad"
+    },
+    {
+      "path": "robot_skills/resident_camera_startup.sh",
+      "bytes": 1212,
+      "sha256": "4f177923240e56d529888cfb54444fcf2129357cc678489b2e050ff4d47c745f"
+    },
+    {
+      "path": "robot_skills/resident_pet_worker.py",
+      "bytes": 19246,
+      "sha256": "795eaaf3ca5fbfdb71921e12a6f396988109faff09e8190b46121f711fe1c388"
+    },
+    {
+      "path": "robot_skills/resident_runtime.sh",
+      "bytes": 5091,
+      "sha256": "dc747eaba88a0ac778a69049aa61431f12651b5c79a0b163d03db39643f7f20c"
+    },
+    {
+      "path": "robot_skills/resident_runtime_server.py",
+      "bytes": 101786,
+      "sha256": "be7b5e3854a27186f8cfcd308ed768b01c98449a737b01d869556c8008944158"
+    },
+    {
+      "path": "robot_skills/resident_skill_client.py",
+      "bytes": 4219,
+      "sha256": "d9e7582e666c3af01bed41aeff616ac4a2402999193eb1da81d531c78c0edbda"
+    },
+    {
+      "path": "robot_skills/rewrite_resident_paths.py",
+      "bytes": 2124,
+      "sha256": "e8f7273cb492b77dbc08412caf8b29e957df89250e961a37a45c9869f0f3c9b7"
+    },
+    {
+      "path": "robot_skills/run_skill.sh",
+      "bytes": 420,
+      "sha256": "99ce6cee985c285ee807d20061c3fc60d1675ea9847174b9b0d20caf7a5f87a3"
+    },
+    {
+      "path": "robot_skills/safety_sweep_810test.py",
+      "bytes": 1352,
+      "sha256": "c85bf22db74f89a9f12f96061ecb36def9676c674ebbe7a08414eb5d5dc82a5b"
+    },
+    {
+      "path": "robot_skills/search_wall03_feasible.py",
+      "bytes": 2960,
+      "sha256": "249db271ef5dd439280e60efdf0b94509b9771d82cf2782512c809103717a434"
+    },
+    {
+      "path": "robot_skills/shared_runtime.sh",
+      "bytes": 2786,
+      "sha256": "c6e8e8c7b02e8920b122b3790a07514f890388675bfb2158832edd82f63617f9"
+    },
+    {
+      "path": "robot_skills/shared_runtime_client.py",
+      "bytes": 8357,
+      "sha256": "4b6f48266462385bcfbd8c75335055e471493b24e4b36e43372e076bb688ff29"
+    },
+    {
+      "path": "robot_skills/shared_runtime_server.py",
+      "bytes": 112200,
+      "sha256": "6992ab5d88b865c74fcdc8133555984e0fc4e7facedcf4baf7272090cb0daa7c"
+    },
+    {
+      "path": "robot_skills/simulate_810test_algorithms.py",
+      "bytes": 3649,
+      "sha256": "379ec7271793c14df70b86bcceb4215a5f1634f5f8a349a321b37cd6fa7886ee"
+    },
+    {
+      "path": "robot_skills/simulation_results_810test/simulation_report.json",
+      "bytes": 14045,
+      "sha256": "bfa7462cf0531f568de8bcc7bf32c3c681584c4f9fe7e5f74dad2b6848fd0f9d"
+    },
+    {
+      "path": "robot_skills/speech_policy.json",
+      "bytes": 1256,
+      "sha256": "0b71f9fa09f8eb0be7518382c4285aa5881b73f3bb82ee1b35a6045155e5d712"
+    },
+    {
+      "path": "robot_skills/squat/README_START.md",
+      "bytes": 564,
+      "sha256": "840f7ecb707daf66df35c92e9b08edd45b27e7a5646d5343cbf8ed7bc01eb7bd"
+    },
+    {
+      "path": "robot_skills/squat/assets/fitness_poses_csvs_out/pull_down.csv",
+      "bytes": 25224,
+      "sha256": "bc9699432980855fd6306ff7705a0553f99fd71e3f33e232c403d3315e03c320"
+    },
+    {
+      "path": "robot_skills/squat/assets/fitness_poses_csvs_out/pull_up.csv",
+      "bytes": 25116,
+      "sha256": "4510cc53fe33aaa83a85a23a5b67a7850f8a5d33428804aa23de3802aa496fd2"
+    },
+    {
+      "path": "robot_skills/squat/assets/fitness_poses_csvs_out/push_down.csv",
+      "bytes": 194804,
+      "sha256": "7aa8fd99cbda11cd04527ee662db43018fa0348ce40ff55a9087a45258ae1bdd"
+    },
+    {
+      "path": "robot_skills/squat/assets/fitness_poses_csvs_out/push_up.csv",
+      "bytes": 202695,
+      "sha256": "e1aff81810987683d29b3e005172f689ab19f0b276da0a841575a5f2ce66f065"
+    },
+    {
+      "path": "robot_skills/squat/assets/fitness_poses_csvs_out/squat_down.csv",
+      "bytes": 227502,
+      "sha256": "0e7fae851448d3ae3bae3d93deeca223d0f9bfab3b2c24e1f2588044527641f6"
+    },
+    {
+      "path": "robot_skills/squat/assets/fitness_poses_csvs_out/squat_up.csv",
+      "bytes": 193263,
+      "sha256": "96558af301ab2cb456a8e14ebbe9642b95a2a7d192b71e64277a9f1c6d778e5b"
+    },
+    {
+      "path": "robot_skills/squat/assets/movement_count_2/Roboto-Regular.ttf",
+      "bytes": 515100,
+      "sha256": "56a45233d29f11b4dfb86d248e921939d115778f87325e7ae8cc108383d6664d"
+    },
+    {
+      "path": "robot_skills/squat/run.py",
+      "bytes": 75410,
+      "sha256": "b3263ae8d3eac61a79afe6e6eda763d84570417be9a92849de636e74ea4d90d2"
+    },
+    {
+      "path": "robot_skills/squat/run.sh",
+      "bytes": 153,
+      "sha256": "2dae6de9390790fbe44033cbcb19c8aa6d0df23db9e72cd4693275c861de3e53"
+    },
+    {
+      "path": "robot_skills/squat/run_legacy.sh",
+      "bytes": 1352,
+      "sha256": "c70dc4b2f57131b3ed4f9a8bcae64789f4712cc127f21a1cd0d9a781135d74b3"
+    },
+    {
+      "path": "robot_skills/squat/skill.json",
+      "bytes": 1779,
+      "sha256": "c129dbab4d5040edf1d81e8ef2069dd93109abb2b05a696b42cec3d0f14adda8"
+    },
+    {
+      "path": "robot_skills/squat/v11_skill_spec.json",
+      "bytes": 6956,
+      "sha256": "495be56da87fe992ccc204a16fb2852c64f71a157261022ee85597ab641b3ff4"
+    },
+    {
+      "path": "robot_skills/stress_test_810test.py",
+      "bytes": 2500,
+      "sha256": "15e10da79ba79c4ef422c8f8e64e40d8198a66a1678d9ba7a75c02dff1be5178"
+    },
+    {
+      "path": "robot_skills/system_dispatch/robot-meeting-projection-v2",
+      "bytes": 345,
+      "sha256": "e2e4ca779c6827ede930c0f609fdc9048185121df15cce7c2c75778837a75f00"
+    },
+    {
+      "path": "robot_skills/system_dispatch/robot-start-exercise-projection",
+      "bytes": 345,
+      "sha256": "e2e4ca779c6827ede930c0f609fdc9048185121df15cce7c2c75778837a75f00"
+    },
+    {
+      "path": "robot_skills/system_dispatch/robot-welcome-projection",
+      "bytes": 345,
+      "sha256": "e2e4ca779c6827ede930c0f609fdc9048185121df15cce7c2c75778837a75f00"
+    },
+    {
+      "path": "robot_skills/test_autonomy_exploration_simulation.py",
+      "bytes": 10751,
+      "sha256": "a0d0777fa5aaf42026a4fa9c3b03589a4b3d172cbeda59692a02f5fac6b51641"
+    },
+    {
+      "path": "robot_skills/test_completion_gate_idempotence.py",
+      "bytes": 3070,
+      "sha256": "bf39aae9835eb60cf5bd293e43e50c9638333ba02264c12100e6eb8230ec5ea1"
+    },
+    {
+      "path": "robot_skills/test_exploration_core.py",
+      "bytes": 11075,
+      "sha256": "cde4e80deab69b3f84fd2b3543c3928eb9a760f467ab71900986d5a5b6935d25"
+    },
+    {
+      "path": "robot_skills/test_head_closed_loop.py",
+      "bytes": 3517,
+      "sha256": "c2cde8b98216f1a029033f68adbde0d4ef2ecfc8b63b4ea3af0af33a7a2689b7"
+    },
+    {
+      "path": "robot_skills/test_head_pose_supervisor.py",
+      "bytes": 7000,
+      "sha256": "84c7c9e1d88d48ce9908992436c5741c57072f9ade457d127ca0762ad6373159"
+    },
+    {
+      "path": "robot_skills/test_navigation_recovery_gate.py",
+      "bytes": 4253,
+      "sha256": "c4945717695927a98dbbb5154041704bda2abcfa0f142418ecba4ec780107767"
+    },
+    {
+      "path": "robot_skills/test_projection_fullscreen_contract.py",
+      "bytes": 2605,
+      "sha256": "a3d3de919057b423320cc9018872fb3b273848945528dc7f800da5b1664d3fb8"
+    },
+    {
+      "path": "robot_skills/test_strict_level_gate.py",
+      "bytes": 5433,
+      "sha256": "22dd4a8c822f2b3f4e2c11c8729c580f5cb2876bf3d5297a49e1b7ad72b5f5bb"
+    },
+    {
+      "path": "robot_skills/validate_resident_runtime.py",
+      "bytes": 3607,
+      "sha256": "a4a83ee354baf7c40c73f4f53d5acb8b4ffc1f1b1de12df33ee1c396bf7abca6"
+    },
+    {
+      "path": "robot_skills/welcome_projection/android_viewer/AndroidManifest.xml",
+      "bytes": 889,
+      "sha256": "05e60801aff75b1c477d6cde166a2a20bdfdc638b740ea9b66ae4c3f67b787d4"
+    },
+    {
+      "path": "robot_skills/welcome_projection/android_viewer/build.sh",
+      "bytes": 2236,
+      "sha256": "b0dc3abb12a16c7d34cee45b740bc77f1c72a58b2d311ef59075c4dab1e9b42d"
+    },
+    {
+      "path": "robot_skills/welcome_projection/android_viewer/res/values/styles.xml",
+      "bytes": 761,
+      "sha256": "4f2290490241acecc3071ee5c831c49f9e8291b8844bfe989cc7c73f8391152a"
+    },
+    {
+      "path": "robot_skills/welcome_projection/android_viewer/src/com/adjacentgarden/welcome/WelcomeImageActivity.java",
+      "bytes": 2504,
+      "sha256": "b5787cb28cae271d722b93566410a150b22ea31124772dd4e39c342cbb314e68"
+    },
+    {
+      "path": "robot_skills/welcome_projection/assets/welcome-image-viewer.apk.idsig",
+      "bytes": 5555,
+      "sha256": "0f09de853895a4002f52729e98bb885c2a5bbff7a29dfa57a3b4c0d65f1004e2"
+    },
+    {
+      "path": "robot_skills/welcome_projection/assets/welcome-image-viewer.apk.sha256",
+      "bytes": 91,
+      "sha256": "a8704d15b98a766145933e5500d1eaa224ed2fbd7b310cae8e949c5991699a21"
+    },
+    {
+      "path": "robot_skills/welcome_projection/assets/welcome_home.png",
+      "bytes": 508656,
+      "sha256": "00a8385cfc4ea8b7ce810ccc24dfea2e30c694be153f641a170a07cb1509c529"
+    },
+    {
+      "path": "robot_skills/welcome_projection/assets/welcome_home.png.sha256",
+      "bytes": 83,
+      "sha256": "4e6881e16611f65b5d130594f5b53a008e96633f7a34183f87cf5cd53e9b9b98"
+    },
+    {
+      "path": "robot_skills/welcome_projection/assets/welcome_home.sha256",
+      "bytes": 83,
+      "sha256": "c2adbf4808db68583309f56a0c4647bd7c640d3cecde48454d6e82c134a46d89"
+    },
+    {
+      "path": "robot_skills/welcome_projection/config.json",
+      "bytes": 722,
+      "sha256": "b3c8409af7d20e9aff3226c19dd199b19b172107608ccebc8406f93a94528e53"
+    },
+    {
+      "path": "robot_skills/welcome_projection/run.py",
+      "bytes": 5816,
+      "sha256": "4d6b84de2781b47e69b843cb80f6d5155d13db79234b1cdd85f57961827607a9"
+    },
+    {
+      "path": "robot_skills/welcome_projection/run.sh",
+      "bytes": 164,
+      "sha256": "9de84fc48c4914fd1bb59c0ca189c9e32b452a068f229c2dacf85bc79f1083a7"
+    },
+    {
+      "path": "robot_skills/welcome_projection/skill.json",
+      "bytes": 222,
+      "sha256": "7db032ddd9480442bac433625ba5b867724cd9906e52831d575c6f84eb8b2a50"
+    },
+    {
+      "path": "robot_skills/welcome_projection/system/robot-welcome-projection",
+      "bytes": 5224,
+      "sha256": "8b4fe5922925cd6fc9331740f31b1f6f3183a7fb6be1b519b07eee331c09fb96"
+    },
+    {
+      "path": "robot_stack.sh",
+      "bytes": 10830,
+      "sha256": "7c65f57ce8a94a6d257de295b842ffb974b7d82c071709d8c8d876beb8ac9dba"
+    },
+    {
+      "path": "ros_health_monitor.py",
+      "bytes": 15642,
+      "sha256": "028ce0ee6aead0ee6a13c91ebb35ab9134bd40aceed920f3dca7a673570fe1b1"
+    },
+    {
+      "path": "run.sh",
+      "bytes": 3656,
+      "sha256": "dfba04945be17d6ff2722c59f3f5b00239ec3d1b8e80209ad99380ce1e1fa5a9"
+    },
+    {
+      "path": "runtime_supervisor.py",
+      "bytes": 25819,
+      "sha256": "fdf5df090690bfbc1c2838941b65731b4ed112607e855d1b02570d83d023fb29"
+    },
+    {
+      "path": "scenario_engine.py",
+      "bytes": 106165,
+      "sha256": "49ca955e556b24cbbb2ff93758e5373fe581b603b61480235cfc8b5da79f2b70"
+    },
+    {
+      "path": "scenarios/home_scene_catalog.json",
+      "bytes": 24893,
+      "sha256": "e1f8e381b6e522064168fbf91b8654821ff45e6342524fd6785ceb9d5d6ceb06"
+    },
+    {
+      "path": "scenarios/procedure_catalog.json",
+      "bytes": 43189,
+      "sha256": "e854c5645174f976185a8bbd229dd95a8c51c98567ab3850db9202d25a00fd88"
+    },
+    {
+      "path": "skill_event_audio.py",
+      "bytes": 18555,
+      "sha256": "f4f81ed21156f61e67d5dade2bb881894d70feed8647e0abbd2b2b420c5333af"
+    },
+    {
+      "path": "skill_host.py",
+      "bytes": 8330,
+      "sha256": "b468865f925bd173bbd3ce18bf1b777b244ba158f3e007f03ec489d2ddf11da0"
+    },
+    {
+      "path": "skill_host.sh",
+      "bytes": 2305,
+      "sha256": "4c0a0518a270f772531f0bf95f0a60bc47b8e063ea19c4fbde652f0385c422fc"
+    },
+    {
+      "path": "skill_runner.py",
+      "bytes": 32025,
+      "sha256": "1d3cf39ab6680acb1ee31fdf4194a20e2174d208992b9eac9d6caf82d3a8d941"
+    },
+    {
+      "path": "startup_reliability_test.py",
+      "bytes": 21424,
+      "sha256": "6f98ecb48beb0d6cc3249201ad31e7c893afd93e3521fad0c9a74eae588a8fe9"
+    },
+    {
+      "path": "test_client_handshake.py",
+      "bytes": 24096,
+      "sha256": "66b493994f6dc553c873f119983774fd2c22a5f0ef60622667a11cda3354e056"
+    },
+    {
+      "path": "test_memory_store.py",
+      "bytes": 4221,
+      "sha256": "1457a53d239d78607a3646b91829e98f68ea29b113ae4c8f5949f32307fcdb43"
+    },
+    {
+      "path": "test_skill_event_audio.py",
+      "bytes": 6450,
+      "sha256": "8a5591b7a281593b3cb95c02a3d9b5dec9d2e86639d5edf9ac1c2966a1ab88f1"
+    },
+    {
+      "path": "tests/beijing_location_agent_probe.py",
+      "bytes": 3386,
+      "sha256": "d4ac6fcc667a99a3c4ca4819f8c012d03319607ba0615f6d02e59a6bb7b027f3"
+    },
+    {
+      "path": "tests/cloud_capability_matrix.py",
+      "bytes": 7328,
+      "sha256": "212db2d1d888fb80deac6ab63c674690afbe2dcb4fa84e5fb41a0caa485751b6"
+    },
+    {
+      "path": "tests/cloud_dialogue_probe.py",
+      "bytes": 2213,
+      "sha256": "0cc108ebf60fbec7afba484587d5bc0d991f77ba25a69c93689dec40a1f79bb0"
+    },
+    {
+      "path": "tests/cloud_intent_matrix.py",
+      "bytes": 5549,
+      "sha256": "d2602ea8ab9df429125001ed127166402bfc321f002ac4bde2a3aa7ca8b78caa"
+    },
+    {
+      "path": "tests/cloud_memory_matrix.py",
+      "bytes": 6932,
+      "sha256": "630a93463970e3796fb57f8d895467355f7fda5bb6d552b70ce1b183d30ce6d3"
+    },
+    {
+      "path": "tests/cloud_parameterized_intent_matrix.py",
+      "bytes": 6981,
+      "sha256": "c07c9bf5363719aadc479f56550c67169ebc89fa1166181debab2cfb97f093fc"
+    },
+    {
+      "path": "tests/cloud_semantic_flex_matrix.py",
+      "bytes": 5216,
+      "sha256": "cfad2f3d37c730a44893b47bdca9d41e0279f8e7b95a7fa0c14468f5b59c9583"
+    },
+    {
+      "path": "tests/fake_ros_health_graph.py",
+      "bytes": 3815,
+      "sha256": "a58309dc6c9b4d96f8586eb51668998b0bfc7166907f4a16998d68716608c607"
+    },
+    {
+      "path": "tests/manual_welcome_A_fullscreen_test.sh",
+      "bytes": 2136,
+      "sha256": "a1f2b9f2d3f3c8df356f20f4c80ef099b8ca86df154f2547e39202668db8e931"
+    },
+    {
+      "path": "tests/nonwheel_agent_accuracy_matrix.py",
+      "bytes": 13650,
+      "sha256": "34b97a000cecb30b07ab7cf310c9d17cc734f75805e6b88cc968e793424e0226"
+    },
+    {
+      "path": "tests/projection_head_scene_matrix.py",
+      "bytes": 3459,
+      "sha256": "ca6123f4dd3b5ed686200a041f6d4f57d69c7cce0963a5da2a8ca42c902ca8cf"
+    },
+    {
+      "path": "tests/test_all_scenario_memory_boundaries.py",
+      "bytes": 6000,
+      "sha256": "7fe11ce1976b782dada27d543227c37173857a927ad78171ef2a4cf6208d40b4"
+    },
+    {
+      "path": "tests/test_app_control.py",
+      "bytes": 3132,
+      "sha256": "7d5127852ce2810caa86e47213f6c8d79b2d224c9a75e02a9dfa284b24079443"
+    },
+    {
+      "path": "tests/test_car_manager_adapter.py",
+      "bytes": 8408,
+      "sha256": "ce447a11f4b1bb7ac37d0eb610e66c2a4d188b33f86836d95c0b90332ebaca6f"
+    },
+    {
+      "path": "tests/test_car_real_contract.py",
+      "bytes": 2597,
+      "sha256": "6651de53fb42176550d7a3e211456218d438863fa887949e5c38916095f4a543"
+    },
+    {
+      "path": "tests/test_client_handshake.py",
+      "bytes": 39090,
+      "sha256": "43c6dab6c54de9d7b55e9ffafac6385dc3d08a468cfd3cac7b0241a2d193316a"
+    },
+    {
+      "path": "tests/test_fitness_completion_speech.py",
+      "bytes": 2520,
+      "sha256": "aca187195541972286e9c2871a03cf6ebe9fe6237ff90164da447db34febba2d"
+    },
+    {
+      "path": "tests/test_head_lidar_rate_gate.py",
+      "bytes": 4113,
+      "sha256": "86bea49c05a24472f7b938b92c5d0045d530c73e605e6f03cca5e7301f0c3840"
+    },
+    {
+      "path": "tests/test_head_tolerance_adapter.py",
+      "bytes": 8550,
+      "sha256": "218f065fd2c5ceb783e87f4d5fc1677e7259c2b17b8d939c21dec0560adb0b86"
+    },
+    {
+      "path": "tests/test_idle_speaker.py",
+      "bytes": 3757,
+      "sha256": "f7c11374af114554db34b15bd7eddd8dc2095dfb7b40b6f8c6348afd8bd51da1"
+    },
+    {
+      "path": "tests/test_imu_monotonic_timestamp.py",
+      "bytes": 2372,
+      "sha256": "9b99cdea2b08f6a7564e3d43bbe98e16b16d53d3651e9b946161940dc29f61e3"
+    },
+    {
+      "path": "tests/test_indoor_baidu_location.py",
+      "bytes": 3804,
+      "sha256": "66b47b791e5ed4e06aab3304f6e272bc2d0d74e2d2887eee87dc2b760c8455f5"
+    },
+    {
+      "path": "tests/test_local_skills.py",
+      "bytes": 50725,
+      "sha256": "29dd2ba17d3b227e1ee789c2830df0f966aa273d1f5aa05b1ea6921cdfe90408"
+    },
+    {
+      "path": "tests/test_meeting_viewer_contract.py",
+      "bytes": 4217,
+      "sha256": "4ff16599cde8d6d16eb710789764301119940fe5205d5452ab934a3b660fd33e"
+    },
+    {
+      "path": "tests/test_memory_intent_policy.py",
+      "bytes": 11530,
+      "sha256": "b38af2d5a1ac4f90ff203648ba4cbccbe8ce5fbc9a3a67cefa77e0a697822a34"
+    },
+    {
+      "path": "tests/test_memory_store.py",
+      "bytes": 8048,
+      "sha256": "0ece44e2de049b582c8754d66db204b72f97a6197505115f561b01b2ef0a49bf"
+    },
+    {
+      "path": "tests/test_navigation_failure_speech.py",
+      "bytes": 1423,
+      "sha256": "96bf69675e13b49263885fa02306029683aa43b8d290ec9dce04f7f301767fcc"
+    },
+    {
+      "path": "tests/test_navigation_handoff.py",
+      "bytes": 4684,
+      "sha256": "ebb73c2cdc622e2cf24785219157319366a0c976ecac8b823429a9bc413af084"
+    },
+    {
+      "path": "tests/test_parameterized_intents.py",
+      "bytes": 11323,
+      "sha256": "5b611f902c076957e6b651adcd2ad684d637b1cf740ed8595f10119d06a2910d"
+    },
+    {
+      "path": "tests/test_pet_centering.py",
+      "bytes": 5150,
+      "sha256": "98d7dd6c797cd0718a4de3d68c8f0c856cb1161cffff98d7bd7df3007b36680c"
+    },
+    {
+      "path": "tests/test_pet_video_resume_fix.py",
+      "bytes": 10761,
+      "sha256": "4eeadfa82c792f9bf50931b26772b88e8b2004bff1fd432775313b8a56c8259b"
+    },
+    {
+      "path": "tests/test_post_navigation_head_settle.py",
+      "bytes": 1925,
+      "sha256": "1ffe5d72f87786e5a33bf951c3e7aa3d74b67d71d37186e6a0193db792460e31"
+    },
+    {
+      "path": "tests/test_project_localization_guard_disabled.py",
+      "bytes": 1798,
+      "sha256": "d2681d4024c610c1b1263f0e33a2b4c0ec2ec3404d81b1af3b1a54bf6676d9c3"
+    },
+    {
+      "path": "tests/test_projection_media.py",
+      "bytes": 7048,
+      "sha256": "416122b21078437f75eb9bb87e51dcf9a386e91323a3d43258a038982b78adcf"
+    },
+    {
+      "path": "tests/test_projection_occlusion_observer.py",
+      "bytes": 6663,
+      "sha256": "230f4b48e1a2697c973b3ba5181f2141eea5b2f5aa6432689c4160f66ffc610c"
+    },
+    {
+      "path": "tests/test_realtime_core.py",
+      "bytes": 15907,
+      "sha256": "1549aa7c4061165cfb53f2c668620a3a236a648b49a7cc29ef63e13e8e8c37e6"
+    },
+    {
+      "path": "tests/test_realtime_information_location.py",
+      "bytes": 3356,
+      "sha256": "c46e1bfdb77cc32610dc121243567b409e96696ddbc481ac5fdb04cccb1426b0"
+    },
+    {
+      "path": "tests/test_resource_guard.py",
+      "bytes": 743,
+      "sha256": "78a4aeb6d6d875d78ef37c1881f078d104e7ae7cb9e7d1f0b97212bafe264e4b"
+    },
+    {
+      "path": "tests/test_robot_stack_contract.sh",
+      "bytes": 2651,
+      "sha256": "efe31acefde30847b3a0a7b2479eb54eab6fb7b7ccf974c88c0131b543b06710"
+    },
+    {
+      "path": "tests/test_ros_health_monitor.py",
+      "bytes": 4381,
+      "sha256": "8d8623d34aced7e7a7c63671dae9b409f356f9f13956fa20091caf58e9bed8ef"
+    },
+    {
+      "path": "tests/test_runtime_safety.py",
+      "bytes": 688,
+      "sha256": "e38d8b56acb031b59789e0072cd3db8301b6e3b1812e9e0a73fa0d038d886da0"
+    },
+    {
+      "path": "tests/test_scenarios.py",
+      "bytes": 75572,
+      "sha256": "7fe0c83b460ca82990943a5d6adfad5d932738efe831add71c9e7229b0acfdc5"
+    },
+    {
+      "path": "tests/test_sensor_gate_feedback_timing.py",
+      "bytes": 4324,
+      "sha256": "051ef6547e6c1792ac1bc81cb9fd1a0f645e3754f8a4c78288490398f8544cd3"
+    },
+    {
+      "path": "tests/test_skill_event_audio.py",
+      "bytes": 10481,
+      "sha256": "9164fb7530080d02790e4d480434f65a6e3469980c41c7ba5e42f288ebca3188"
+    },
+    {
+      "path": "tests/test_startup_control.py",
+      "bytes": 2551,
+      "sha256": "3c27925eb1db11fc24036d2d1520f6de7de4083402c868e04eb33163c4c3b7e5"
+    },
+    {
+      "path": "tests/test_task_interruption.py",
+      "bytes": 26299,
+      "sha256": "17650bff29a67a5b60f0402eb29579751a04bc335fccc1725aae5c0769d8907e"
+    },
+    {
+      "path": "tests/test_tilt_integrity_guard.py",
+      "bytes": 5395,
+      "sha256": "99b6b80bbbe3a9caaba57fb9a96dbf20750cc470d38cfb5847e1fc5ca40984ec"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/.gitattributes",
+      "bytes": 333,
+      "sha256": "9f0108e876dccd11c8199493f31f37c28f8d9043c6922b8788fc14f5f6edc6bd"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/.gitignore",
+      "bytes": 486,
+      "sha256": "aef67071a10953b7c1017b39e1cb280e8759c774753379cb17a3bf01c92750b7"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/README.md",
+      "bytes": 25239,
+      "sha256": "77a59466529715a33e6237a7ad4cd696c092079a6c963bdc7a57a3dd4556bf7c"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/RPLIDAR_ANDROID_BLUETOOTH_INCIDENT_2026-08-23.md",
+      "bytes": 10219,
+      "sha256": "7b92fafb1fb6dc1633ab79646403e22152f602b8fc4df77f93f24f4dee2c5972"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/ai_control_sim.py",
+      "bytes": 37233,
+      "sha256": "4f82e720d83583d92fc84f6d6c0d9f71e233e5078b8763ef8fc8d4bb2fe49470"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/README.md",
+      "bytes": 13034,
+      "sha256": "507254ab2bed206fbd8313b1e8a1e462610f28f2275b1f09feb190232f13e07f"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/CMakeLists.txt",
+      "bytes": 1421,
+      "sha256": "62eb8b7312b86442894da5a29c937368f520dac1f9c5796123fabacd30e643af"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/WALL_ALIGNMENT.md",
+      "bytes": 7963,
+      "sha256": "b14463511ba7d5c640ce8c425d6136225a5500adbc11a62cf54ae19bd9f0b66d"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/behavior_trees/navigate_to_pose_mapping_recovery.xml",
+      "bytes": 1747,
+      "sha256": "243c9ce14303c0e94d9024a31430163fe864d98fd03c3694f7a557daa7fa947c"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/launch/car_nav2.launch.py",
+      "bytes": 4522,
+      "sha256": "ed1aabc8accacb5e72f50c18e071d855651eec73e2c85397923f704ab07f1a4e"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/launch/real_car_nav2.launch.py",
+      "bytes": 1240,
+      "sha256": "f9679535d842c285eb772d063066f685041f481d6cb53f67bb4278d6aafd40d0"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/launch/wall_alignment.launch.py",
+      "bytes": 788,
+      "sha256": "89e0d707242c65218dad51ec43042ba881f9569057de39bb07f1303bc195f30c"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/maps/exploration_map.pgm",
+      "bytes": 18789,
+      "sha256": "2c451bd6bcc7d468c831174e902143d0fa0f918b3f4bfde0e2b80e3d1c1b6447"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/maps/exploration_map.yaml",
+      "bytes": 133,
+      "sha256": "1301e6f26e2b68b8b7c37495a9ceba9ab6becfeca8f07dc3212de638f10828fd"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/package.xml",
+      "bytes": 1814,
+      "sha256": "31a96930cb2d193d2c740dd066f24e03b896581074d00c107d80583c2d30885b"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/param/collision_monitor.yaml",
+      "bytes": 1209,
+      "sha256": "c05c92fe9f4c72d4827056d1ff755b4180ba2fa9e9e348a82ea166afba854ca5"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/param/nav2_behaviors.yaml",
+      "bytes": 733,
+      "sha256": "5e6024238f60acf849f33c8973a09cd4fa5d3d898988ef209f69ff014a42734e"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/param/nav2_bt_navigator.yaml",
+      "bytes": 2141,
+      "sha256": "1ee9c8f2070e4c427e20264db972ac1441ffe595ed2dc3b624cd4e5e50576e87"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/param/nav2_controller_mppi.yaml",
+      "bytes": 2919,
+      "sha256": "4370088fd330e0e9ae79812ed7c158e27cd568038bd87625d6e5fa5202816f94"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/param/nav2_controller_rpp.yaml",
+      "bytes": 2007,
+      "sha256": "8dfbcb3d76c423f3a21c2bc84360d09a996425cc8476f7ca20ed0ffd6301f116"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/param/nav2_costmaps.yaml",
+      "bytes": 6472,
+      "sha256": "c2a79f5bdef17727134c774d3d9b6195560bc3d17e532800ce0b5e456b9a202f"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/param/nav2_planner_smoother.yaml",
+      "bytes": 434,
+      "sha256": "2d2ebdc18ab26d0bba70f2de2dd218c66df50f5fde6ade0b06b7d028c052a038"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/param/nav2_waypoint_velocity.yaml",
+      "bytes": 708,
+      "sha256": "1a741c2ea7158d4669d93574d3ff0de3292584ba660ac0d1db1721042c111abc"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/param/wall_alignment.yaml",
+      "bytes": 8251,
+      "sha256": "fc8657036e8605535eaa6d8f4c23a439ea9c8e323af743f94880b4915f6c7920"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/param_map/collision_monitor.yaml",
+      "bytes": 1209,
+      "sha256": "c05c92fe9f4c72d4827056d1ff755b4180ba2fa9e9e348a82ea166afba854ca5"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/param_map/nav2_behaviors.yaml",
+      "bytes": 733,
+      "sha256": "5e6024238f60acf849f33c8973a09cd4fa5d3d898988ef209f69ff014a42734e"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/param_map/nav2_bt_navigator.yaml",
+      "bytes": 2141,
+      "sha256": "1ee9c8f2070e4c427e20264db972ac1441ffe595ed2dc3b624cd4e5e50576e87"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/param_map/nav2_controller_mppi.yaml",
+      "bytes": 2405,
+      "sha256": "0bab6b4829d6b46090bb423c9c748efc7a326b7e24abb3b6fc9285053a73e1be"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/param_map/nav2_controller_rpp.yaml",
+      "bytes": 2015,
+      "sha256": "4b5c1f44f8cb16a6401b1251ac49f61f6dca3e47a1a3d7562fad089243b93b39"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/param_map/nav2_costmaps.yaml",
+      "bytes": 6474,
+      "sha256": "b010b4935796b91e6f91301a430600427a3fffdb12b832898178d05084d47cfa"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/param_map/nav2_planner_smoother.yaml",
+      "bytes": 434,
+      "sha256": "2d2ebdc18ab26d0bba70f2de2dd218c66df50f5fde6ade0b06b7d028c052a038"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/param_map/nav2_waypoint_velocity.yaml",
+      "bytes": 708,
+      "sha256": "f4c6372094f2c77e5c1a081834d6d707cac12448548dea8adddca870d6bae282"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/car_nav2/src/wall_alignment_node.cpp",
+      "bytes": 19466,
+      "sha256": "d738b2a5f4c6ba93158de69913004fe86eaba67c73e33378079c9439709ed66a"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/demo/controller_cli.py",
+      "bytes": 13280,
+      "sha256": "997964af61bf28bbec1074bc7d611a05a77ae5e0f7565bf3b3d85ef3280efebf"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/demo/named_points.json",
+      "bytes": 1176,
+      "sha256": "4ba8f57dfd0720a3dd50f832790907aa61655ce2f44cb139263a617698d21b60"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/demo/named_points_v0.json",
+      "bytes": 652,
+      "sha256": "dead1946c34cebb8057827c08d80f439c5d02fc69f351c8cc2415c95ce999329"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/demo/robot_memory.json",
+      "bytes": 349,
+      "sha256": "864d1c27ea07f3d6c31b201e08888e40cb01aac6f99cd7b1ee9642138d3c0c13"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/demo/ros2_launch_controllers.py",
+      "bytes": 48247,
+      "sha256": "e0b06cf05032f8128ab6db43e455ab6027f633bdc0e6817d110a2a540b4ce4da"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/demo/small_room_test0.json",
+      "bytes": 1199,
+      "sha256": "110b9c5744aa60beb4756fa5f98e355bf5159b864ee630c96dcca74277dc2b9c"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/demo/visual_map_annotator.py",
+      "bytes": 18043,
+      "sha256": "32d1cd1aef8586cf7665a4cac6ca98af423acf21dde9f7964957c567b2f81c4a"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/differential_drive.urdf.xacro",
+      "bytes": 7351,
+      "sha256": "b620cac2578569a2a34ba0bca3f1946a967e9d53368e28f7bce723e46bd8e0c1"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/config/calibrate_params.yaml",
+      "bytes": 93,
+      "sha256": "a97b3f2d3f8a36b2763d630088f5ca9cc4006a76e398e93f7192f284c4a10b40"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/config/ekf.yaml",
+      "bytes": 20333,
+      "sha256": "9c12a58ae47d50061bc126b228c9a10c6dabc5f0678ff9a04c49db46ceb1355c"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/config/init_pose.yaml",
+      "bytes": 198,
+      "sha256": "b44c60675e48e143c519a70e815f0c69b9698946e96d2762da03b46eeb8b2aa7"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/controller/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/controller/ackermann.py",
+      "bytes": 2336,
+      "sha256": "e274fd986335747e7fbcaf58f03fd89ba38067abaf39c2709d32931282b187d2"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/controller/differential_drive.py",
+      "bytes": 2238,
+      "sha256": "1e6e204b457ed68aa8e2eebc7d953c05ce09e61424ded35cf02fc6329b8f809c"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/controller/odom_publisher_node.py",
+      "bytes": 13533,
+      "sha256": "dcd4e4317d683798cf6136a8e21f4dd02398719a385998c66d14bb24dafef75b"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/controller/readme.md",
+      "bytes": 91,
+      "sha256": "57d976e20dd904a34f4b8eb34d310b4acbcf4722a82e1ced596c412261a2ed6f"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/controller/wheel_joint_state_publisher.py",
+      "bytes": 5617,
+      "sha256": "0ae96e8b37073798c302e6d12466b3ab46e579624889ebff8f7b317672752388"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/launch/controller.launch.py",
+      "bytes": 4005,
+      "sha256": "7395d90550c009a529004387d968a718aa894dbd92cd4e9cfcceb3c17f65d1ab"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/launch/odom_publisher.launch.py",
+      "bytes": 3454,
+      "sha256": "3386331278529ae55f84cd4160a13b6a27514556d9562c676bd0c4014387380a"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/launch/rf2o_laser_odometry.launch.py",
+      "bytes": 972,
+      "sha256": "f57b546ecf599edc9078bba3b2ddbb0c5337e95e8527ca762967f6bec8205eb6"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/package.xml",
+      "bytes": 1121,
+      "sha256": "3feb0de2943c384d5b8fbaf03186a3d2c002ce43290c02a41882f435c37f2404"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/resource/controller",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/setup.cfg",
+      "bytes": 89,
+      "sha256": "b597b1bf63b00077421e6d232041aaf6fcc74d52c333a80533688ed2bf4283e0"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/setup.py",
+      "bytes": 989,
+      "sha256": "60539cb8e62d6d163bf90d5010cd7c5aad946674744c2128f6d877ac6d6d7766"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/test/test_copyright.py",
+      "bytes": 790,
+      "sha256": "977a2313a0ae218ef9e2b944347d2b8f7aba43447283d2a832391f9904fd37e9"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/test/test_flake8.py",
+      "bytes": 884,
+      "sha256": "37a813a0507f0ce51a2d0b57312d2cc078a0307a3ca85580ea801b0d2f9755d2"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/controller/test/test_pep257.py",
+      "bytes": 803,
+      "sha256": "e8b88d49ee296987b1b40069f81019b5fa09b1aa1bfee9a1faae45bb5cf53eda"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/imu_cartographer_publisher/EXCLUSIVE_IMU.md",
+      "bytes": 1761,
+      "sha256": "064039183f4aaab9abb42367139b3dcc93fbe16daee09eb48facfe4c21062882"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/imu_cartographer_publisher/imu_cartographer_publisher/__init__.py",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/imu_cartographer_publisher/imu_cartographer_publisher/imu_cartographer_publisher.py",
+      "bytes": 32967,
+      "sha256": "e0bbf1e9eb8f0592cc5c2acc66450cc06a435dd894213450dc1838dcc16aef0a"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/imu_cartographer_publisher/imu_cartographer_publisher/imu_orientation_tf.py",
+      "bytes": 3446,
+      "sha256": "c5bdd353640ce312f6c4cb0689170a4dd8dbef4b734b0f26182e96a07248ebdd"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/imu_cartographer_publisher/launch/imu_cartographer_publisher.launch.py",
+      "bytes": 5729,
+      "sha256": "f13a795882cc9a2ef5f81294e518a7f5374a6b5c776979fbb5f745941d9e6b01"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/imu_cartographer_publisher/launch/imu_rviz_orientation.launch.py",
+      "bytes": 4673,
+      "sha256": "456c10a9783ca11d216458889d47322f0b222944c23797d6904a81d9005fb74e"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/imu_cartographer_publisher/package.xml",
+      "bytes": 1099,
+      "sha256": "b82da23b3a061988ed8c76564656270d073c372064999bd42eec44069ed415c9"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/imu_cartographer_publisher/resource/imu_cartographer_publisher",
+      "bytes": 27,
+      "sha256": "8e12fab3d25d9ecbbe2920c459eb7f1ba2735b3577ebf2d8304b49e3d57b1cf3"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/imu_cartographer_publisher/rviz/imu_orientation.rviz",
+      "bytes": 2603,
+      "sha256": "3d9f0656c7265ded0d05e8fcfd7ebdf9bd4e16cd57ea88f903dafa545397c0a2"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/imu_cartographer_publisher/scripts/imu_exclusive_control.sh",
+      "bytes": 1932,
+      "sha256": "9a06b7e2284eb7e9b4b35534f06b07f8046bcd4c61f5e77d687577198134c5b3"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/imu_cartographer_publisher/scripts/install_imu_exclusive_service.sh",
+      "bytes": 614,
+      "sha256": "deed43767ba31e71fdeaba9ea88e0c22e5f7025c12d8abf19b3e826de3e29f21"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/imu_cartographer_publisher/setup.cfg",
+      "bytes": 121,
+      "sha256": "5a804572dca496788004b98576ef474d304af36c88708977252f0be77d58dab9"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/imu_cartographer_publisher/setup.py",
+      "bytes": 1267,
+      "sha256": "0f1cb970ec8e36a1b8dd41a061c18df4f336cc03c09cfed57ad4cdbdb3e158a4"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/imu_cartographer_publisher/systemd/robot-imu-exclusive.service",
+      "bytes": 302,
+      "sha256": "254809c8dfadd77df9f9247c309738c967122008cd5ff7e2925e7a2d82528c5a"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/peripherals/launch/teleop_key_control.launch.py",
+      "bytes": 975,
+      "sha256": "79b3ab92a0357a3ad8496584031a471a07abd589d6ebfe3cb84ecf101eda5309"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/peripherals/package.xml",
+      "bytes": 762,
+      "sha256": "975aa612b9347fd0a52a616feb55d185826e41d36ca91083c8dc819e70d6ea89"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/peripherals/peripherals/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/peripherals/peripherals/teleop_key_control.py",
+      "bytes": 3557,
+      "sha256": "92fdf1e6a32ffbf54b3ee8d7d069dd7a5cd348685805fae7985b23f201131ee8"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/peripherals/resource/peripherals",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/peripherals/setup.cfg",
+      "bytes": 91,
+      "sha256": "85c32c3f06da93f6f12c2c74c4ab0d6a25e03abcd693cb99cdc46ba81ed46de1"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/peripherals/setup.py",
+      "bytes": 820,
+      "sha256": "505f74c2c9184a9e320dcbe76ce50840bfefd2de89edea59a75df5eb2d87c07e"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/peripherals/test/test_copyright.py",
+      "bytes": 790,
+      "sha256": "977a2313a0ae218ef9e2b944347d2b8f7aba43447283d2a832391f9904fd37e9"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/peripherals/test/test_flake8.py",
+      "bytes": 884,
+      "sha256": "37a813a0507f0ce51a2d0b57312d2cc078a0307a3ca85580ea801b0d2f9755d2"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/peripherals/test/test_pep257.py",
+      "bytes": 803,
+      "sha256": "e8b88d49ee296987b1b40069f81019b5fa09b1aa1bfee9a1faae45bb5cf53eda"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/launch/ros_robot_controller.launch.py",
+      "bytes": 6258,
+      "sha256": "2e0045ffd57f42b9731459a2c9e7dd397df81db7477973c88495a9cf1f958745"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/package.xml",
+      "bytes": 987,
+      "sha256": "196bc3624a60370a9ee5b669ee5aabdd0c78658fe6d7486e814517a0ca7fbe80"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/resource/ros_robot_controller",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/ros_robot_controller/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/ros_robot_controller/debug_node.py",
+      "bytes": 1404,
+      "sha256": "c1fa23c986f0b9195f66689570f76a381b0c923f1c1b369754304267edb1ee3e"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/ros_robot_controller/diff_drive_test_node.py",
+      "bytes": 4465,
+      "sha256": "fefe77463f45076212be25ebf7fe663ad688b915b07477d9fe212c1be0fa32dd"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/ros_robot_controller/head_attitude_filter.py",
+      "bytes": 6033,
+      "sha256": "842bde80bcbdebb2bc6963f8027310bc7fb86785220a2b283cfeefe32aec7bb4"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/ros_robot_controller/head_settle_policy.py",
+      "bytes": 14260,
+      "sha256": "1e8ecd64252d6c212812b559e3761c12cc617f91926dbb8baa627c8932a9f0a7"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/ros_robot_controller/readme.md",
+      "bytes": 230,
+      "sha256": "808c67cc42eba878431a04b2da9141dabd6b8e2ac37ff676dc38cc522c4e9f5e"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/ros_robot_controller/ros_robot_controller_node.py",
+      "bytes": 47684,
+      "sha256": "d01ac8f86e15e9585827ee481575f563691a2ed21be63b64289d7823ce5a0e2a"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/ros_robot_controller/ros_robot_controller_sdk.py",
+      "bytes": 21658,
+      "sha256": "303198726a23a2cd6d13d93c846669a079a83fcadbd4ae156a5b1df701d91762"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/scripts/99-ttyACM0.rules",
+      "bytes": 184,
+      "sha256": "ea5b82b9dd155209523acdef10e099287298216c35bd7eaabc792ccd217779d0"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/scripts/create_udev_rules.sh",
+      "bytes": 154,
+      "sha256": "a1a6ab47775f904feaf0b1a5f6b0e84ef68a4e4108a33867d5578ecfdfa6b837"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/setup.cfg",
+      "bytes": 109,
+      "sha256": "bda18552ca9306b6864c558449298c258a6e5cde039381000bae80da8228d2bf"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/setup.py",
+      "bytes": 920,
+      "sha256": "406fa38ffe684f5db41282c48c6f0df61e55405db304a979303431a453465df6"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/test/test_copyright.py",
+      "bytes": 790,
+      "sha256": "977a2313a0ae218ef9e2b944347d2b8f7aba43447283d2a832391f9904fd37e9"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/test/test_flake8.py",
+      "bytes": 884,
+      "sha256": "37a813a0507f0ce51a2d0b57312d2cc078a0307a3ca85580ea801b0d2f9755d2"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/test/test_head_attitude_filter.py",
+      "bytes": 3577,
+      "sha256": "5128e6c47410369214cfebb7bdb8066a27bb29410a17ac4b4cb36b0dde187fc4"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/test/test_head_settle_policy.py",
+      "bytes": 10860,
+      "sha256": "03a5919127f8b7c26b81e13b2344120aae050cfb7e2ea8a01f9794749cd070d5"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/test/test_pep257.py",
+      "bytes": 803,
+      "sha256": "e8b88d49ee296987b1b40069f81019b5fa09b1aa1bfee9a1faae45bb5cf53eda"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/test.py",
+      "bytes": 29838,
+      "sha256": "462e7a1ce94b2e260453d37d683c9bee73948246fdc61d26c910dce10908e1e6"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/test_motor.py",
+      "bytes": 2197,
+      "sha256": "bc245f82ee66754340d7dfafe87a4c09b428b3df91f46b280f8e89275403a17c"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller/test_motor_debug.py",
+      "bytes": 2929,
+      "sha256": "7cdfcbd6fda531fa8fd92e79b6e6373745cd82fefaff278be79540f0c8a91d2d"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/CMakeLists.txt",
+      "bytes": 1546,
+      "sha256": "86a598689f81ebe70c7e9e949158ca5330d74936e4a065670fb42fea24ad639c"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/msg/BusServoState.msg",
+      "bytes": 246,
+      "sha256": "04bc3baa9b86e730da6e017453dbaae9cdd8c6675d16b5884c8fe56d2f7448b4"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/msg/ButtonState.msg",
+      "bytes": 21,
+      "sha256": "7bcb5bb802452582223b6f78941bc8cea3881cc782a4f73ff83c4791e21eef12"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/msg/BuzzerState.msg",
+      "bytes": 59,
+      "sha256": "1f5c59b5d8b5060fde5100709fe651efe6078200811222062fd187f8ad6a0506"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/msg/GetBusServoCmd.msg",
+      "bytes": 202,
+      "sha256": "15bf265159c353e949acafe0aeb6248f7f3793480d6bb6191488155ef76b8e3b"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/msg/GetPWMServoCmd.msg",
+      "bytes": 45,
+      "sha256": "dd81c43ea0dd141c37b8c72f98351b1d42c0c0876978973498da97a6261fa79a"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/msg/LedState.msg",
+      "bytes": 56,
+      "sha256": "f8fdc30a8e03c0756c6a8b34072fe23533f83e13f2493c85877dabca5020f356"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/msg/MotorState.msg",
+      "bytes": 22,
+      "sha256": "b95332215ea0e035990e106de68f510f0bdc9223a5de16b023c6996ddc9e3a26"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/msg/MotorsState.msg",
+      "bytes": 44,
+      "sha256": "bec61b7c51a458836ff08b5c9b7876792588198ebf177815a089cb0f196348d3"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/msg/OLEDState.msg",
+      "bytes": 24,
+      "sha256": "72b8d9f6c8c725f7481624f6019b4f4133c8b5fcfc24fc6125c3ff7c092c5e39"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/msg/PWMServoState.msg",
+      "bytes": 45,
+      "sha256": "f58cc16399a6ba73649b17e6595fe95cb3bcbec7d5bbf0e98c3835cffb5cc418"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/msg/Sbus.msg",
+      "bytes": 41,
+      "sha256": "ee0683ae623189776d2a5d46d0d7d7bfa9617cea7616f461a05468c80da17318"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/msg/ServoPosition.msg",
+      "bytes": 26,
+      "sha256": "7bea5297466782ef075d6e804ab5c839c0cd00a13cc71c2119f83f97239e0fac"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/msg/ServosPosition.msg",
+      "bytes": 68,
+      "sha256": "4bba4db31431e2b0515a66a8a9eaf0d952c715988f7b12e1361b49b5351b4ea6"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/msg/SetBusServoState.msg",
+      "bytes": 66,
+      "sha256": "bf3cc4b33dfebbf48f5cbfaae8d6c1acb6c6adda04c474e44b59ba361f765a30"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/msg/SetPWMServoState.msg",
+      "bytes": 66,
+      "sha256": "c6542581229a22abe5472ad9d2a71efbb2ac7f406e0a5f325afb6fa6294ea916"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/package.xml",
+      "bytes": 816,
+      "sha256": "b43ed726e69ce7f4be47693e0327ebcb26facf430477f13766e953c11ecab993"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/srv/GetBusServoState.srv",
+      "bytes": 112,
+      "sha256": "7652d211f72830154d5cb8a06eeddbdb56433e548163cd73f4a8dc6e4e7d5569"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/ros_robot_controller_msgs/srv/GetPWMServoState.srv",
+      "bytes": 112,
+      "sha256": "66af61d64375fdc7b16780b72ff3edb8fac29e5703e4e11e21dcbbea4d8b50f4"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/CMakeLists.txt",
+      "bytes": 2685,
+      "sha256": "6bf0446d4d6ba624524a71cd9672aec23af3edb4bee6fe69712a9ade12793723"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/LICENSE",
+      "bytes": 1355,
+      "sha256": "3475642aaf47837729092f181f151866abb6e63b624cf504a9229d7641d2eaf7"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/launch/rplidar_c1_launch.py",
+      "bytes": 4346,
+      "sha256": "934cb35a86f0349d1a2d1a65a8a95fd1ae39d238d9d796821843c99a55ac3e86"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/launch/view_rplidar_c1_launch.py",
+      "bytes": 2520,
+      "sha256": "668e8f4161ad1ba36a32b761b63aab08c89b1784eb7737e0845f4f675b41c090"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/package.xml",
+      "bytes": 906,
+      "sha256": "f987fb87eda4104a5afb3e2d34f6ddc64b84a9a466031b15f330d40c6595064d"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/rviz/rplidar_ros.rviz",
+      "bytes": 5536,
+      "sha256": "0b55f459a0d7ab2d34476d9c45578c85ef5a229957e3590640f6f1e6517b34b9"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/include/rplidar.h",
+      "bytes": 1747,
+      "sha256": "ff60e6ee3f8aa8d061506c15600852d7ecd35530b97ba8b93f2d3cd4251a2aa0"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/include/rplidar_cmd.h",
+      "bytes": 12025,
+      "sha256": "4ef9ef03d6ee182acc74eba043880fa43ff098b81e66bf612b989f079c2b4836"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/include/rplidar_driver.h",
+      "bytes": 11526,
+      "sha256": "ba924a2549c565455639db9ac8fac34514eaa0d078f60ad3d985095d18704815"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/include/rplidar_protocol.h",
+      "bytes": 2246,
+      "sha256": "822ae2a80c3007b813213c5db797865308096a0c3d83a5732ad81ee18443f725"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/include/rptypes.h",
+      "bytes": 3455,
+      "sha256": "b34bbc79208c333601129b0c52387a872293a6338045a64f22a8e895733ef042"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/include/sl_crc.h",
+      "bytes": 1679,
+      "sha256": "9b0b9fd5e89f1ed8a47cd9492ecd5dde3f6a32be92b67a7ef903dea279a1c1d5"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/include/sl_lidar.h",
+      "bytes": 2053,
+      "sha256": "955fa29756c5ceb79b541818bc5a2bad838702140652cd6346e6ddcf00376811"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/include/sl_lidar_cmd.h",
+      "bytes": 13848,
+      "sha256": "985657d0bc532bd6f0948dd5c586b170616bba3841d73f2a89d0aaa0bc9c2eb2"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/include/sl_lidar_driver.h",
+      "bytes": 23507,
+      "sha256": "8610bf438629f756b124a1f42a2e153537de41db60a4971288b061df030a9973"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/include/sl_lidar_driver_impl.h",
+      "bytes": 8983,
+      "sha256": "899f74cb09aa90019e69f90b401d4ff3d372842af4813ff13476ceb9bd1a3c1b"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/include/sl_lidar_protocol.h",
+      "bytes": 2512,
+      "sha256": "ccde66d13b7ba271667cd10b7f040d9fea353d8720a5da525083d4dda627c526"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/include/sl_types.h",
+      "bytes": 3106,
+      "sha256": "40a3a48573b13f6f88e2f3cc3b2e3b0b1835406b006be7735be97244be81fb5b"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/arch/linux/arch_linux.h",
+      "bytes": 1986,
+      "sha256": "c3f81a6edeffc0af440206e06c80a637b68d6df29f1265c4eab4f5027d6fbba1"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/arch/linux/net_serial.cpp",
+      "bytes": 10942,
+      "sha256": "9959e5ebfbbce005a86a35975812c685b87f989b8b07e0975843de72082aa7d5"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/arch/linux/net_serial.h",
+      "bytes": 2836,
+      "sha256": "bf7fec8efd970e0d342670fa08a634a9a14b426e44f3765d12661a8317ad1694"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/arch/linux/net_socket.cpp",
+      "bytes": 24994,
+      "sha256": "8849fe635241800f35d913e12ef464b3489bd8877cbc9d7736859222609e2e45"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/arch/linux/thread.hpp",
+      "bytes": 5188,
+      "sha256": "077b08674c6098545e71b16687d9f055109749fe6e3afa8d0005d4d2e5e5bc0a"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/arch/linux/timer.cpp",
+      "bytes": 1892,
+      "sha256": "8d0d140cab6b260dd7abbd238e48e629f346f0052a052b50cfc19fdb31f14195"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/arch/linux/timer.h",
+      "bytes": 1925,
+      "sha256": "87f9552131eb004cf7d0bbc32f12f3371b4b10501cc5b39f1e2b03dfdef93e83"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/dataunpacker/dataunnpacker_commondef.h",
+      "bytes": 1940,
+      "sha256": "6031133ccc762a9bd96cdf1f311041997f6f3ef72c95c8f4fd8a25dacfff933b"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/dataunpacker/dataunnpacker_internal.h",
+      "bytes": 2532,
+      "sha256": "edb58ceb98567b34b3a845a5a570ccc130ac2cbc30f984749846f657bdd7bd29"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/dataunpacker/dataunpacker.cpp",
+      "bytes": 6050,
+      "sha256": "c18e6075146dc026de48f28f81c8a1f7ef995d7ea636325feef7ae92436e0249"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/dataunpacker/dataunpacker.h",
+      "bytes": 2867,
+      "sha256": "9b7112ef532c326d2140f42f944f88cd10ae3d08115317706609c87e60052023"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/dataunpacker/dataupacker_namespace.h",
+      "bytes": 115,
+      "sha256": "641f5bf540099ae14a918bf1d86c9127dd7e5dc8c88af2d4bc54572a8c94ae79"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/dataunpacker/unpacker/handler_capsules.cpp",
+      "bytes": 39602,
+      "sha256": "56bdc6d40aa864f74b166ff143e34914b14a183588a60c3702804b46c4eb36f0"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/dataunpacker/unpacker/handler_capsules.h",
+      "bytes": 5266,
+      "sha256": "328c02288a872b6607075707b03723c6aab91ff075b586185b8d1fcd6f3a5677"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/dataunpacker/unpacker/handler_hqnode.cpp",
+      "bytes": 6550,
+      "sha256": "36c27998285faeba843eede396b32d290d883276a4830f0ecabaf028990bf7e4"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/dataunpacker/unpacker/handler_hqnode.h",
+      "bytes": 2162,
+      "sha256": "00185841f84cf9e78558b1501b8b3d2c1b69dabd7f5bd41ff01fae05d64a16cb"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/dataunpacker/unpacker/handler_normalnode.cpp",
+      "bytes": 5620,
+      "sha256": "e6f5f0d8200ef10ca50cb8c002c145f1228f64877c6e1f68824ff1e788943e48"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/dataunpacker/unpacker/handler_normalnode.h",
+      "bytes": 2161,
+      "sha256": "8edc84bd807bd76a1a98423ed7f66ffb59df5aace77fcc8e58fac13054998dce"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/hal/abs_rxtx.h",
+      "bytes": 2741,
+      "sha256": "9cc4c1314d3a33125b5c633a90feb519a53a573805554153ff488c2f06fb5bd7"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/hal/assert.h",
+      "bytes": 313,
+      "sha256": "7de5afc2e59d5383299641a30fe461036a8a9cd6ca5c0c69cb9933e9dc1743ba"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/hal/byteops.h",
+      "bytes": 2130,
+      "sha256": "98ba6ae1a271767450764d1fbe77963c685345a5a933056e8b2fa6fb73af3a68"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/hal/byteorder.h",
+      "bytes": 3599,
+      "sha256": "729be7ac71bcced6f671537d89a2c7e86d8abaf8e1efa473b01dd46a194f558d"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/hal/event.h",
+      "bytes": 5911,
+      "sha256": "564371eeca0e4fe384d96e5027db559931a00657816fe9dc585dd98624f2e061"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/hal/locker.h",
+      "bytes": 4785,
+      "sha256": "14a1ac6713c84eaaa63eebea0380f638a43a17c9a4b2dfd5e290413a69bfceaa"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/hal/socket.h",
+      "bytes": 4023,
+      "sha256": "e47d694ec450a9bcae422c85abcddf497f93ef683b3fa205d1172e5307abefc3"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/hal/thread.cpp",
+      "bytes": 1804,
+      "sha256": "7ddfaeed179addfa65e5d6e441918a4fd9def26183859d8e6186c326c957d4d4"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/hal/thread.h",
+      "bytes": 3046,
+      "sha256": "3799b9bfb4665ac92cd7a7d929e9051b67edf224279f8bd01593cff65a74e892"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/hal/types.h",
+      "bytes": 2746,
+      "sha256": "1408f1a6b832392b9df21dcf65c1ac9db2ce17bbd31b0b99147fe3723b360ae1"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/hal/util.h",
+      "bytes": 2268,
+      "sha256": "dd9148e3c3e49987c97aff8b31be9469db3c8d06a420d35b3cb0ceab6a681b84"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/hal/waiter.h",
+      "bytes": 541,
+      "sha256": "2bd5db0e9d71a625d4f5e4ad9ffc0da2ddeac97e88dbd5ef062bdc065ca65c98"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/rplidar_driver.cpp",
+      "bytes": 6404,
+      "sha256": "122a8cf7ce43d9f7811be2c24f75ca0751bfad8a33d7fbac039acf6ac26ce8c5"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/sdkcommon.h",
+      "bytes": 1820,
+      "sha256": "d47792c6c1ff53ee5e746d8505fac0c7c7eef1995136503107348b0b8beb6d68"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/sl_async_transceiver.cpp",
+      "bytes": 8871,
+      "sha256": "468748d1a20f914e9edbf213eaa2cd8043b70325551a124d7ace80f70bc02099"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/sl_async_transceiver.h",
+      "bytes": 3856,
+      "sha256": "ebc610200ca7e1b5700acc9e8b91abeeb837a605d2906406a3e74ad7dc558ea0"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/sl_crc.cpp",
+      "bytes": 3011,
+      "sha256": "3e3d6556159c52df027ca6591ecfeacac89e7135e08b3401ec3c446045874502"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/sl_lidar_driver.cpp",
+      "bytes": 59737,
+      "sha256": "668806b85a365e823db4247992ac559f20ea66dbba30fdd3ec4f8071ee672b2a"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/sl_lidarprotocol_codec.cpp",
+      "bytes": 7218,
+      "sha256": "8117a03daf7b966617ed199e4d9a968242693114c7c7a7fc5d73df4e8ddb798f"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/sl_lidarprotocol_codec.h",
+      "bytes": 2604,
+      "sha256": "aa9aa3e5e7e3c389b1ca81328bdfe94c9356debf8c409f1ac2ff323859485fc2"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/sl_serial_channel.cpp",
+      "bytes": 4423,
+      "sha256": "7233e2da4e70213413939132f0603b42cdad11302dcf36c44a930751feffb2da"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/sl_tcp_channel.cpp",
+      "bytes": 3644,
+      "sha256": "8b86fd44aff8edc029bc7de3ad18e98683eff376b76914c3fcceb76a91415c43"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/sdk/src/sl_udp_channel.cpp",
+      "bytes": 3769,
+      "sha256": "fd99924954936eaca4bcff247c111b83cf50cc8349fb903e5851b030dc4ca34c"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/rplidar_ros/src/rplidar_node.cpp",
+      "bytes": 35539,
+      "sha256": "e9b8bcddfb1b4d1f914cbc118a8880ca7094c7b5d555400bbf9fbea709319a30"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/tof_publisher/package.xml",
+      "bytes": 681,
+      "sha256": "6c9d9eae07341e4f32f962b07fd4f939a5708b74415ee05985d5b05bc5a167a9"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/tof_publisher/resource/tof_publisher",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/tof_publisher/setup.cfg",
+      "bytes": 95,
+      "sha256": "3563f985bd2be5d8787ac0f5569d75344f7ae0c6df379da99d2c441631d192ea"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/tof_publisher/setup.py",
+      "bytes": 772,
+      "sha256": "7affb3e319756b15fcf0630658c0bcbbd78b318af73e6965d8e116487ae7f1b3"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/tof_publisher/test/test_copyright.py",
+      "bytes": 962,
+      "sha256": "ea71bbbc6247b5c14d176ed09f39ee274d563cc9b2ec355828ea451ceff31757"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/tof_publisher/test/test_flake8.py",
+      "bytes": 884,
+      "sha256": "37a813a0507f0ce51a2d0b57312d2cc078a0307a3ca85580ea801b0d2f9755d2"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/tof_publisher/test/test_pep257.py",
+      "bytes": 803,
+      "sha256": "e8b88d49ee296987b1b40069f81019b5fa09b1aa1bfee9a1faae45bb5cf53eda"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/tof_publisher/tof_publisher/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/driver/tof_publisher/tof_publisher/tof_publisher_node.py",
+      "bytes": 6074,
+      "sha256": "db65dace78412dea9c979e3b277390b9377162762af3421a88ac49be5bb5ab6b"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/exploration/config/explore_params.yaml",
+      "bytes": 3075,
+      "sha256": "3e42376759f5773ce176929a586b994db8053ca509ccd3c6c821930335fb666f"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/exploration/exploration/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/exploration/exploration/frontier_explorer.py",
+      "bytes": 48520,
+      "sha256": "9b2a702d47655a9ea4f3a326208f3ffd3141d3a096be0c0cc9e58d411ac01cbc"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/exploration/launch/cartographer_nav2_frontier.launch.py",
+      "bytes": 3384,
+      "sha256": "25bb83613e4e1043f14673237cf1907e3539bf0a813304aca6d88c8dedd42fe4"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/exploration/map/exploration_map.pgm",
+      "bytes": 36692,
+      "sha256": "4c7c8b0e92aac77d79d14ee92e325ed64903e23643b2c9e255ecf51bf7cfa22b"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/exploration/map/exploration_map.yaml",
+      "bytes": 153,
+      "sha256": "e81328008f50994ee27fcb88f4b93b42a9468331429582796f7b78baadbfb322"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/exploration/package.xml",
+      "bytes": 1023,
+      "sha256": "d783e4c8aa0d303acbbb1c66502e922f43d4d6c92c5bedfaf995cd74717aa59b"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/exploration/resource/exploration",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/exploration/setup.cfg",
+      "bytes": 91,
+      "sha256": "500ff99e50d721d393d0f1f8c925ca92dba3a75889571cabf3b3acb7ca3106a4"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/exploration/setup.py",
+      "bytes": 1090,
+      "sha256": "9e5679038ef0543f119d2539a4087ac577c664cb879037dfb1d7f2e5f2f1b881"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/.github/FUNDING.yml",
+      "bytes": 22,
+      "sha256": "9d485b1f6d1668db39394f376da0626c16c76ee09a41d23de12d179faa8b448f"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/.github/ISSUE_TEMPLATE/bug_report.md",
+      "bytes": 2404,
+      "sha256": "59ed7997c151818c3533e687e3c718ab1c79f533f8ee359ea447687761b9ade3"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/.github/ISSUE_TEMPLATE/feature_request.md",
+      "bytes": 595,
+      "sha256": "1f48c52f209a971b8e7eae4120144d28fcf8ee38a7778a7b4d8cf1ab356617d2"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/.github/workflows/jazzy-build.yml",
+      "bytes": 1615,
+      "sha256": "58da2fc76a80e6b47ca78533072a5a76754e5e09ccaeeedc7677657153615502"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/.github/workflows/jazzy-test.yml",
+      "bytes": 3051,
+      "sha256": "e4e82325748f99248b1384b9bbf14bf86d4afc76356fcfc5fa53b713abdea7cb"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/.gitignore",
+      "bytes": 258,
+      "sha256": "45e0e2e477e2619af2fac568644672c34d4107b2b00acb79db2bf4da408109be"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/CMakeLists.txt",
+      "bytes": 7591,
+      "sha256": "3f5532fc7e4dab9b365c9523fdf3e147690b3f42db92488e40a8cec03573abbd"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/LICENSE",
+      "bytes": 10947,
+      "sha256": "4458503dd48e88c4e0b945fb252a08b93c40ec757309b8ffa7c594dfa1e35104"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/README.md",
+      "bytes": 119336,
+      "sha256": "6063c65f010e9ea348d7ff5cede108dcf7ba0b3bc144d633362ea53567cc21b8"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/config/params.yaml",
+      "bytes": 12935,
+      "sha256": "b8f12bb73155b15816fcea0f478b3a13f654cb5216914e16e3df9e9fac1b9126"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/config/params_o.yaml",
+      "bytes": 11494,
+      "sha256": "bfb63c53e4b22519404de7fc7885601d2dbbed4a9f3f54327cd75432866006ee"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/docs/nearest-legacy-readme-parts.md",
+      "bytes": 492,
+      "sha256": "2782a07b916eca3842ab0d64f3d7bff013f11824664336fe6c0961a8e551e216"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/include/frontier_exploration_ros2/debug/debug_analyzer.hpp",
+      "bytes": 5066,
+      "sha256": "f553b7a0917e495fcbe511daad520d8d911a750f5d7126fec80345cffc631c5b"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/include/frontier_exploration_ros2/debug/debug_markers.hpp",
+      "bytes": 3049,
+      "sha256": "1c2d84fdcc43862f5594913b9a1f78e62d85da2d62fcabe32c23d7f27d426507"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/include/frontier_exploration_ros2/decision_map.hpp",
+      "bytes": 6580,
+      "sha256": "a05ec4da2155776a180fd3ed5a716542fb1bcfaeb87c2b1c054dde7bbd1f3a9f"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/include/frontier_exploration_ros2/frontier_explorer_core.hpp",
+      "bytes": 20243,
+      "sha256": "89010bcc35d09e2be8cd6f73fcb4d9c2eb6fc9d2b6ad5678dc2479a709a58420"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/include/frontier_exploration_ros2/frontier_explorer_node.hpp",
+      "bytes": 7270,
+      "sha256": "61d7e065e17918e16849bfa80c33c33290e1b9b613da59192c20a3a29c8bf8bc"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/include/frontier_exploration_ros2/frontier_policy.hpp",
+      "bytes": 2029,
+      "sha256": "fc2ad994311ed6686fa64ac745c784747b519f02d6662f1575b34661e2bf11cb"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/include/frontier_exploration_ros2/frontier_search.hpp",
+      "bytes": 8580,
+      "sha256": "30ea6a80626f6cf1e694ddafa7b477c530bce27b0f88340f46da2d930a2814cd"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/include/frontier_exploration_ros2/frontier_suppression.hpp",
+      "bytes": 8029,
+      "sha256": "a1983febda0eddec0c85e8016f14f4783a7da598bf49495d68b3abf5ec6808dd"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/include/frontier_exploration_ros2/frontier_types.hpp",
+      "bytes": 10607,
+      "sha256": "1af4032c491b0616003bb2a8128eed1c8690f6e0a9b34273aa8c9371a96d4cc6"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/include/frontier_exploration_ros2/mrtsp_ordering.hpp",
+      "bytes": 3372,
+      "sha256": "317254e9ffe8d07642361681f7967e709e7e2cd656d3b765e13e393f28ef8a34"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/include/frontier_exploration_ros2/mrtsp_solver.hpp",
+      "bytes": 2302,
+      "sha256": "388a44def692833c3d1f013cb10a7001cc4a86664b41600efd2a6c27d02a0ff6"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/include/frontier_exploration_ros2/nav2_compat.hpp",
+      "bytes": 1534,
+      "sha256": "8c58f432ca37a8872976c273e113c0512ec1672b30b72634951bbe07709b162b"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/include/frontier_exploration_ros2/qos_utils.hpp",
+      "bytes": 9706,
+      "sha256": "99c321771af3baea510f4fdebcb64cc808886e0c0b3200336986d423455b7245"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/launch/frontier_debug.launch.py",
+      "bytes": 4651,
+      "sha256": "826802eb136e57de7294ba6ffe6bdd645874384be654732be70987a42757cec9"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/launch/frontier_explorer.launch.py",
+      "bytes": 5188,
+      "sha256": "b60480c612a9106fd2398b5764440ed5b9997200b5c040f6e77ad42f88baae36"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/package.xml",
+      "bytes": 1351,
+      "sha256": "ca766c7ca6967003c972b1274524498f93e41de29781cd83389b37658ba8eda1"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/plugin/frontier_exploration_ros2_rviz/CMakeLists.txt",
+      "bytes": 3098,
+      "sha256": "df6e732f1af2455797af83ea5c2b0481ec54bef10f95c92bf80cc6fe24c8f7c0"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/plugin/frontier_exploration_ros2_rviz/README.md",
+      "bytes": 2075,
+      "sha256": "1fce89b2b9aef81d8f7ce91898317dc6a9ca1e0b5a1023903584b5cbc0434800"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/plugin/frontier_exploration_ros2_rviz/include/frontier_exploration_ros2_rviz/exploration_control_panel.hpp",
+      "bytes": 2200,
+      "sha256": "301c172d6fe1fbf1b13e423e2f1e7e78012d9925cd3230738ea51b48d2687b78"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/plugin/frontier_exploration_ros2_rviz/include/frontier_exploration_ros2_rviz/exploration_panel_backend.hpp",
+      "bytes": 3957,
+      "sha256": "42d497d1802e61209a2f6c657ad295d58257d4d0ad64b707b5ae718a95664e96"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/plugin/frontier_exploration_ros2_rviz/include/frontier_exploration_ros2_rviz/exploration_panel_logic.hpp",
+      "bytes": 2558,
+      "sha256": "268531a52c2a40334475b244054d072d490050fdb1146344aa822758cf12d9b5"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/plugin/frontier_exploration_ros2_rviz/launch/rviz_with_frontier_panel.launch.py",
+      "bytes": 1020,
+      "sha256": "568785d865147952f44363287d874f6564affc40d13ac08193c58ca6aa224fc7"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/plugin/frontier_exploration_ros2_rviz/package.xml",
+      "bytes": 983,
+      "sha256": "526ca6598faf59c14e6bf76012cf8767987c5d713a0e35ec868ef501f06076cf"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/plugin/frontier_exploration_ros2_rviz/rviz/frontier_exploration_panel.rviz",
+      "bytes": 2229,
+      "sha256": "30b382f00011fb66c08f04e14db79d9d242e6c888204c0efd0d955b9f3f296cb"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/plugin/frontier_exploration_ros2_rviz/rviz_plugin_description.xml",
+      "bytes": 390,
+      "sha256": "01f5011cc998a1eea15758431244ad03fca42a094f4425593d9a3ccfc35a16ef"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/plugin/frontier_exploration_ros2_rviz/src/exploration_control_panel.cpp",
+      "bytes": 9186,
+      "sha256": "874ec5a575f707367a608d67b9c4885bc781aa089c382acbd0ffdb398ea50e38"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/plugin/frontier_exploration_ros2_rviz/src/exploration_panel_backend.cpp",
+      "bytes": 12951,
+      "sha256": "8ea515522388577616a646f62645c2588b80fa149ca61a5d3aa20c4d7405365b"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/plugin/frontier_exploration_ros2_rviz/src/exploration_panel_logic.cpp",
+      "bytes": 7197,
+      "sha256": "c47bb900da18d6c211115da6208ca46eef3de851a199d80e47514241894170f7"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/plugin/frontier_exploration_ros2_rviz/test/test_panel_backend.cpp",
+      "bytes": 6104,
+      "sha256": "6ac5f2ef4b9eb7329dedf469d1783a0fe066c4d961f074b51f7c633c379ee258"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/plugin/frontier_exploration_ros2_rviz/test/test_panel_logic.cpp",
+      "bytes": 3870,
+      "sha256": "da79a8bdff3c16428f76061f61cd7bf67547a0ffdf999d506e435de9f5cc7441"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/debug/debug_analyzer.cpp",
+      "bytes": 12151,
+      "sha256": "b2f1301345d27e9363da045b3eaa89619be2e69914c48e26bdaa1494726a6e73"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/debug/debug_markers.cpp",
+      "bytes": 23335,
+      "sha256": "bc1be36fdb0a6df3d32eb6a738df849ffed186da524be1300c9aa685562192fb"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/debug/debug_observer_node.cpp",
+      "bytes": 20413,
+      "sha256": "16f7aa3c8d0ece4a68d8edcdfcaa7efc31916d5ef03c0a0b92d6a1445595174d"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/decision_map.cpp",
+      "bytes": 58204,
+      "sha256": "a650aee0a917ee17c3e21f7a1275d409faefaa3085c59b33797cb80997161f44"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/frontier_exploration_ctl.cpp",
+      "bytes": 3632,
+      "sha256": "a569970220eef0e22b4dc79f84c131fea9b8b41b70951584e4410c252fb2d3d5"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/frontier_exploration_ctl_detail.hpp",
+      "bytes": 4149,
+      "sha256": "543a7b80b6eba38b1250c7dbe58cd9a0fb588ece71ba8ff477d64d2abefbb8c8"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/frontier_explorer_core_detail.hpp",
+      "bytes": 3576,
+      "sha256": "96648035ae95c5bb8be93df1a9ec71a7e9e0533188e24e50cdf90f2662f2feed"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/frontier_explorer_core_dispatch.cpp",
+      "bytes": 48652,
+      "sha256": "2261b64a86d3d964868fe38f8e0d0eca7f4e04226f232163986c32b692ca88bc"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/frontier_explorer_core_frontiers.cpp",
+      "bytes": 24196,
+      "sha256": "4e75c1ae9b798c21609d5a178bdf032aa32fddc598bade7755c779c52a92d31b"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/frontier_explorer_core_init.cpp",
+      "bytes": 9065,
+      "sha256": "e0a03cc6bd808a35ba8f7158ce4bff060a8eef41ed7552ebfd715b7d88b54244"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/frontier_explorer_core_maps.cpp",
+      "bytes": 7912,
+      "sha256": "b1549d76357211de84296aeef1801b5ab3a9dcf660b8bbb77e1cac5cdf99d20e"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/frontier_explorer_core_suppression.cpp",
+      "bytes": 7540,
+      "sha256": "b1be7a5aa6e05599fe73dd72e2aa06bc52282e30e7ac00a9394454ff4c563943"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/frontier_explorer_node.cpp",
+      "bytes": 55408,
+      "sha256": "f77e1b14925928a4657ff036fbe7ed26053c6c5a8da2112e788e6e0421add4fb"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/frontier_policy.cpp",
+      "bytes": 4557,
+      "sha256": "8c3bf6cbb5c3cb3dbb15c160aa0ee6bf8ad4139b5d06981294384c47d5fd005c"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/frontier_search.cpp",
+      "bytes": 33413,
+      "sha256": "447d2cbb1ff54c17700dd65e6ca9486c3d38efc9c8b5496444edb9a55bd55831"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/frontier_suppression.cpp",
+      "bytes": 18421,
+      "sha256": "cc5367684f53af97432377b4f558fd99f7ed2352fc23341cb9fa835b1a28347e"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/main.cpp",
+      "bytes": 1113,
+      "sha256": "034ba89703da7151cde905f9268f861ad74c237fa1ce2717cc4fc3d98893b9e9"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/mrtsp_ordering.cpp",
+      "bytes": 8266,
+      "sha256": "82033936e8d40061abf705a142e92fcdb04908301e0aadabb750c26a814d6827"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/src/mrtsp_solver.cpp",
+      "bytes": 10093,
+      "sha256": "628bd8108cfdde76e1cd186230c9d396ecb0d44d755233ba61cb74694da54a08"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/srv/ControlExploration.srv",
+      "bytes": 313,
+      "sha256": "b8a8920c25a5dcdc0447161b6fedba238adf401d09455e98f8cae5ca3357bcbe"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/test/test_control_service_and_idle.cpp",
+      "bytes": 14577,
+      "sha256": "4fd2c388a0ecda7b4d1baa5f5b63dd2d8b23fe99f35dc2c47807afbc5440b8c8"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/test/test_decision_map_and_mrtsp.cpp",
+      "bytes": 43667,
+      "sha256": "e290f8f0f2a98f99e51bcc0f85e9855446594a5367789a4b9590f784f9a3b1b2"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/test/test_frontier_snapshot_and_search.cpp",
+      "bytes": 25459,
+      "sha256": "07aafadf9fda093f926c754c6143bd49ab11235b348ce70b024296852e809e72"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/test/test_frontier_suppression.cpp",
+      "bytes": 24336,
+      "sha256": "2e3a5a719d2548cd47ccd68d438ca7622c9b2d19ba047a9cabaf0abc6e38782b"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/test/test_mrtsp_solver.cpp",
+      "bytes": 9573,
+      "sha256": "607a1f410604d15695327d96da2714e6c7182536ab360f584478e4738fdfc863"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/test/test_preemption_flow.cpp",
+      "bytes": 50654,
+      "sha256": "5cecf990c011e32bd1f1de2404df5050d0aae5b3a30cbfb93374c12bb237facb"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/frontier_exploration_ros2-main/test/test_qos_utils.cpp",
+      "bytes": 4318,
+      "sha256": "200dc02f5dfcb08da5d305da4abde815289eaab89adee4f5dc3bc32561aabcfa"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/motion_controller/CMakeLists.txt",
+      "bytes": 1418,
+      "sha256": "dd5f88354d1d80d10ef00f0ca569623848cdaf2a4159dbb42b9ac594ce55204f"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/motion_controller/README.md",
+      "bytes": 9524,
+      "sha256": "5d671c4ac64f1b7e2b1fee93a99a0569051d8d5e279f38b6ccd19fe4f8f4d985"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/motion_controller/config/motion_controller.yaml",
+      "bytes": 3605,
+      "sha256": "4655a6eb1a20c0bc7728382e859a554521f6716a5a12c88bbe89927cf947cb19"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/motion_controller/launch/motion_controller.launch.py",
+      "bytes": 1368,
+      "sha256": "a259f1a547014366d4a1e1aed7396637737067c471e00b44f8dc8be9c9950d4d"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/motion_controller/msg/NavGoal.msg",
+      "bytes": 227,
+      "sha256": "12b71f9a74ca01ff242cb34148de56324018b608098d09909e81cc0c62eedcb1"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/motion_controller/package.xml",
+      "bytes": 986,
+      "sha256": "e820bd740570ea3f2f2e9d697f16baae342922110d5b6bbb69bb5bd87ea8bcc3"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/motion_controller/src/motion_controller_node.cpp",
+      "bytes": 65477,
+      "sha256": "730be15a16ed0b3a6e3a51dab67b78313b33b030e1947787bbf38f5a9236ecad"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/rf2o_laser_odometry/CMakeLists.txt",
+      "bytes": 1746,
+      "sha256": "8f54ad484d655d25afcf6cd9ae8575146eff05f45320cf80efd53e3955b3c362"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/rf2o_laser_odometry/README.md",
+      "bytes": 1059,
+      "sha256": "374e7e5e0dd9196bc29d26f98497a534edc94345d1c09f664f04a36b4af48fdc"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/rf2o_laser_odometry/include/rf2o_laser_odometry/CLaserOdometry2D.hpp",
+      "bytes": 5324,
+      "sha256": "5255c16d395ecc7873b810a00c0a7166c57e95ab57d4b5680b85ef0f26ebd549"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/rf2o_laser_odometry/include/rf2o_laser_odometry/CLaserOdometry2DNode.hpp",
+      "bytes": 2012,
+      "sha256": "b4f6acd44ab23bfe5e110b95435ca0c25db23dfba3c809522a222d0623a0f121"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/rf2o_laser_odometry/launch/rf2o_laser_odometry.launch.py",
+      "bytes": 1414,
+      "sha256": "3aad13087d45f69cf8314b33167e9ca5806c52be71afc9ec62127bd68d8657b1"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/rf2o_laser_odometry/package.xml",
+      "bytes": 1597,
+      "sha256": "cf1cd38d584d35ea07523fc4f33eee2260df82f9596ba6a2b275f0c459b61f25"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/rf2o_laser_odometry/src/CLaserOdometry2D.cpp",
+      "bytes": 32245,
+      "sha256": "7e318e43f4e800f3f0945a22952269bb051e69db809ddc9ab72335ccbbbc4d62"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/rf2o_laser_odometry/src/CLaserOdometry2DNode.cpp",
+      "bytes": 12824,
+      "sha256": "e6d10cfccb984f4994813c8f793aaf1f5f1de4f059b61129c9e30a106f4ce2fa"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/CMakeLists.txt",
+      "bytes": 546,
+      "sha256": "c97170e57136caaec8dd19e5ba7715fc960b8c76a43cae3b18f99df678d4ba06"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/bridge_config.yaml",
+      "bytes": 1322,
+      "sha256": "aa34a81d2b7565b15720a4b80f56ab219de580d3cdcdae1ab6f032afe73a8b98"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/cartographer_2d.lua",
+      "bytes": 1163,
+      "sha256": "a4b3e6023a2c0e99c8aac37b7ed9d0efe3e9ffd0df5c4a2229ae81a3a480e3b8"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/cartographer_2d_real.lua",
+      "bytes": 2290,
+      "sha256": "5cb8698b29fa36f74568073dcada1f9e54d56eaeda007d34adbcf29e394d0dd2"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/cartographer_2d_real_localization.lua",
+      "bytes": 267,
+      "sha256": "6d87004ca893cf74badca711295ee6302cc83037a4a185bf9f062657d3b1a36b"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/cartographer_2d_real_test11.lua",
+      "bytes": 1708,
+      "sha256": "37180885319bd790a1ac743c276d6a4cd063906502fc7a694417ce1cdfcc3649"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/cartographer_2d_real_test2_tf.lua",
+      "bytes": 1711,
+      "sha256": "0286c96d4416c527ed3e927d15f5cbf2e562b8577041423996e968b4c4ae7bd6"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/cartographer_2d_real_test3_tf_noimu.lua",
+      "bytes": 1712,
+      "sha256": "178c234455aa7a0c86b493a0916967ce4d549b44363a37498bb7ee73a87594c5"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/cartographer_2d_real_test4.lua",
+      "bytes": 1702,
+      "sha256": "11303d9240afd18f51cfb975e389fd66fc563500c9d9442c8ddbe5d0db224a70"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/cartographer_2d_sim.lua",
+      "bytes": 1163,
+      "sha256": "a4b3e6023a2c0e99c8aac37b7ed9d0efe3e9ffd0df5c4a2229ae81a3a480e3b8"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/default.config",
+      "bytes": 8792,
+      "sha256": "39896c0e8a1d0eeab9cdc5621e5e2563f1e9188385af7abe2587dc46cd31c4f9"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/default.rviz",
+      "bytes": 10879,
+      "sha256": "4bc836fecf09fd09e88ee65e27dadc87279a9dae8d892825145e5807baeb781c"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/ekf.yaml",
+      "bytes": 1300,
+      "sha256": "ecad4dece173635a00754e7b81157236b5917777105277a47c545a4b2dc29674"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/ekf_external_all.yaml",
+      "bytes": 1517,
+      "sha256": "9243aa842d0792b306b390e749f4d3a4249bf6575ac1db9f7f11867c8ea7201b"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/ekf_external_imu.yaml",
+      "bytes": 1068,
+      "sha256": "2d0ed05ed7cd8c8be870270120281761bd3eaada647ebbe8a862f93721c40ff0"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/ekf_external_imu_rf2o.yaml",
+      "bytes": 4146,
+      "sha256": "a5d3f5f5b93f4514c56a1b96d933c57f06a79dc224050acc959f92b2bf3438da"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/ekf_external_only_odom.yaml",
+      "bytes": 777,
+      "sha256": "0ff46d0334f856407ef9a8ba48e262711d4c477f9c2f687ae7ac415464ef7b4d"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/ekf_external_only_rf2o.yaml",
+      "bytes": 708,
+      "sha256": "c08698e8889008ab0b7d1e81b9cd4d879459b8f0d83677bf55b914e4fd330a91"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/imu_cartographer_publisher.yaml",
+      "bytes": 468,
+      "sha256": "c1ffbd802ea0c852a64d713c1a403706680f99bcb9c7f7e0f1553974b7a92ac2"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/mapping.lua",
+      "bytes": 2336,
+      "sha256": "f524d95578e610ecb4bb2505778686f59e39013ecbd5aafbf4da64a3710bad80"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/config/odom_covariance_params.yaml",
+      "bytes": 2711,
+      "sha256": "f0086e0497677eea29048e1684fdfc2e0cce77884bccb01ac6400c128781176c"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/README.md",
+      "bytes": 3204,
+      "sha256": "6d9b451da337bfbf0de1d5c7fcf99bb127b0de210b2186a42aa8b7e364f00376"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/cartographer_node.launch.py",
+      "bytes": 4758,
+      "sha256": "acc3d65f8943a5f01df635eb3f6dee22a3c8f8307ef478cc4ba8b495996d192b"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/cartographer_node_map.launch.py",
+      "bytes": 6011,
+      "sha256": "1b3e3da715620213a53ec332588fadae78377ceb5eabf7dbe4a1def18267c4ef"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/cartographer_node_test1.launch.py",
+      "bytes": 4802,
+      "sha256": "2e4709300be7b4063bd7f899ae941b2cc7e6905af5976b676b92a3365852d554"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/mapping.launch.py",
+      "bytes": 2577,
+      "sha256": "61fde6dd0a4bc598d37d239db6d8292b1edb7dd7dd3223d159f7c82269246254"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/navigation.launch.py",
+      "bytes": 12519,
+      "sha256": "752949591d0839d9e20daa8299b7b259336c98312c6f1e10870b7e0f88cfc9d5"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/real_robot.launch.py",
+      "bytes": 11110,
+      "sha256": "e77cdc4134e66402236da78c91a3c2161590b9205fcb395dabe3cbc50d951948"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/real_robot_automap.launch.py",
+      "bytes": 3855,
+      "sha256": "fa7085a2ba7ae711e4c45dea3d4e277e1d778fc6e7917b5ac84d39e639774bb4"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/real_robot_base.launch.py",
+      "bytes": 15909,
+      "sha256": "96503a4952f3ac34cf68ad681a53eda9646f75f8cd0c8555bd4d9a85239230cf"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/real_robot_base_wo_imu.launch.py",
+      "bytes": 11548,
+      "sha256": "1475e41d9f7c76faf3db5f55753f045dff30f3bfdfad48bccdfa145089e7e229"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/real_robot_control.launch.py",
+      "bytes": 4869,
+      "sha256": "deb77cf085d830b9b37443a85f695acd447abee39c5c6a1e5e6585e4facebdc4"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/real_robot_mapping_nav.launch.py",
+      "bytes": 4713,
+      "sha256": "47345a741e810aa9c5820083941a6676fe32265532abfd0f2a921ce04c38446d"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/real_robot_nav.launch.py",
+      "bytes": 5173,
+      "sha256": "584320941e97d623135f0b7d4f31d63b337d5b6c42444498e493e901befeb727"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/real_robot_odometry.launch.py",
+      "bytes": 5324,
+      "sha256": "6245ba21d05c402ae934db20170fa034ca36a71176565adeac7a90ab5d455b57"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/real_robot_odometry_wo_tf.launch.py",
+      "bytes": 5325,
+      "sha256": "55a8bdc3ebdafcd3281bd1b0f2906d6a60a785cfd29a6cf656a3c0ba8cf38c54"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/rf2o_ekf.launch.py",
+      "bytes": 2812,
+      "sha256": "1c4969bd2f0f0c8337735886e95c1557e2617e4565a12dfb47de3d5986ac626a"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/save_map_on_exploration_complete.launch.py",
+      "bytes": 9129,
+      "sha256": "29cc4afe425750d0a8b9db168ba85b9bca51c52d6fd6f7b499e4b631fadfb39d"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/sim_robot.launch.py",
+      "bytes": 8592,
+      "sha256": "520df17a777a7909bc50a65db0247137e20d670be5f6d59049f6aa69eb11cc03"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/launch/sim_robot_no_autonav.launch.py",
+      "bytes": 3723,
+      "sha256": "77a85dc6008d52d9020ceb2d5f9de87fa286530783dcbd117d4aa2fadeae896f"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/map/.gitkeep",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/map/630_test.pbstream",
+      "bytes": 194196,
+      "sha256": "b95067725a7c56ff597603e3d2a5450cd097c7cf05b8f9c0ea8dea9e5998718e"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/map/809test.pbstream",
+      "bytes": 640575,
+      "sha256": "d087e4f1a680b9c4e74be6f90d6f0d94d031ac8d56438c110c275f532ea8dfe3"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/map/810test.pbstream",
+      "bytes": 1787637,
+      "sha256": "52d476f5bc1976e2d8721ed45f5b9ba74afc06fe7bb227080f5194766bfa8f49"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/map/813.pbstream",
+      "bytes": 1268205,
+      "sha256": "c51352678b926400abb93a7376fb49f862fca780d1b729fcb034c2ab2a9127bb"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/map/default.pbstream",
+      "bytes": 1319162,
+      "sha256": "83809e48157f7d18ae3454ff07c948060d87ca6ca60c1ff7f508da50c2b897aa"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/map/map.pbstream",
+      "bytes": 4108884,
+      "sha256": "2fb9231d2d42694c6fe7bba0fc5888c9329742d490f865127e3a1dcf1ac366e9"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/map/map_backup.pbstream",
+      "bytes": 2099148,
+      "sha256": "de2042a46c16c5832c8eddff0df039c933d6e9825f1f87a56fa307292953e4e5"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/map/meeting_room_map_best74.pbstream",
+      "bytes": 3960152,
+      "sha256": "76494918f81aacc3d5ce17e517d392730fe59695c7199613d388be53e7614eeb"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/map/meeting_room_map_test1.pbstream",
+      "bytes": 5743073,
+      "sha256": "caac8493c117b898c3eb04c780414d740f935184d3dace9f4feccdd0930b47fa"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/map/meeting_room_map_test3.pbstream",
+      "bytes": 1989915,
+      "sha256": "63abb6d5cd7dbcb6e616b0b08f53615c548d34c83f6a716affe9896dab6637b9"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/map/small_room_test0.pbstream",
+      "bytes": 2402853,
+      "sha256": "6e772348feccbc8dc9a47ff0d37171e446cb1593c2d297079b74b180622611a2"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/map/t2309_001.pbstream",
+      "bytes": 6364871,
+      "sha256": "9fbb570b406db624368886908a554a9375c0a4e0ded22da8cbdf105a12971bb5"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/package.xml",
+      "bytes": 1843,
+      "sha256": "19c4640a676a85f3bc311744590ce5b2c5d57a12ec0e923417d39fa47be65c45"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/tools/cartographer_shutdown_saver.py",
+      "bytes": 2909,
+      "sha256": "9b68f2fb08cca35717fdaaef6e91a3d5859dd5b3706dd44dc17710ad323ec973"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/tools/cleanup_robot_mission.py",
+      "bytes": 3752,
+      "sha256": "bf4ded083df1d606a5850d74b704a0f380c6feac5ffaae533cdfc27c022507a1"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/tools/demo/controller_cli.py",
+      "bytes": 6693,
+      "sha256": "2be2ff3b13460c630416271bfa964ec4896bd0a328f285c38bccf7171ead827c"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/tools/demo/named_points.json",
+      "bytes": 796,
+      "sha256": "0dacab5b429d8ac3c72693d1efeb0d9ebb9ec16fb069e79754bd43729611fc02"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/tools/demo/ros2_launch_controllers.py",
+      "bytes": 13940,
+      "sha256": "cc8dfd8bc8c3c1699bd69ca6ae1738c82f05f217b7ad06a1b0010acb6b5c0d02"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/tools/demo/visual_map_annotator.py",
+      "bytes": 7114,
+      "sha256": "45855091f3aff1686bcdddadadbb09049ca73f79695ceffd4446e0f2df357769"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/tools/mapping_navigation_manager.py",
+      "bytes": 75488,
+      "sha256": "731b92bb567d4072515df8587448b004ce08005a5ab2a1da274882a5780cbaf6"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/tools/save_cartographer_state.py",
+      "bytes": 3787,
+      "sha256": "f405ab1e5fb77980be718c3ccb83501b01e451898deca14fd6e4c88ffefc2bdf"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/tools/save_map_on_exploration_complete.py",
+      "bytes": 49328,
+      "sha256": "1e170200185f7a7056cf7f7092bbe57e421c28b4528df592d9db49e19f028ef2"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_bringup/tools/wait_for_mapping_ready.py",
+      "bytes": 2636,
+      "sha256": "7cd96dc48600e2cf82f8eca356680d59275ac077f8cc691b39d242dcd2d3da88"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/launch/cartographer.launch.py",
+      "bytes": 1627,
+      "sha256": "bc3858ad5d15ac8f071cb816480823902bb0f5938457c37109b982f2bcb388f4"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/launch/gazebo.launch.py",
+      "bytes": 4987,
+      "sha256": "39236613c6cb44b69be8979458d099770a311f4001033c34f4b247f01a409c6f"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/launch/robot_description.launch.py",
+      "bytes": 1099,
+      "sha256": "e96cd7015fe09c3222d1c91d8f590071f0371867dfe812d074bd519061af1ff3"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/launch/robot_description_test.launch.py",
+      "bytes": 1654,
+      "sha256": "82bdb1d965b14ca13102cc8960f5306bfdeb2983cabf1a0aaf90a177345c384f"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/launch/robot_model.launch.py",
+      "bytes": 3362,
+      "sha256": "77d244c93bd6afee46a36e4e4dcfb075e8173c143b8df7b4d48ad50f089905fa"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/meshes/num.STL",
+      "bytes": 156284,
+      "sha256": "f76c541ae55fe8dba9861c26faa9dd5b648586433526d402b9af4f53e605067e"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/package.xml",
+      "bytes": 1234,
+      "sha256": "6f09d00029ef35d0060bd3ced2d856e6c1fdbc56b845112beeaf0ba5d4e824fb"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/resource/robot_description",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/robot_description/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/robot_description/imu_covariance_relay.py",
+      "bytes": 1711,
+      "sha256": "34e85ccda2e26e52f2f0fb29123ad42d80db35d2b9b16f62167a175cc74bd57f"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/robot_description/world/sim.world",
+      "bytes": 23017,
+      "sha256": "8a7713ded4ee314d464cc4946f8831bc95b5141104f0e64a59e00b5d5566116e"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/rviz/default.rviz",
+      "bytes": 7995,
+      "sha256": "bb3905fe089f1b166e24269b00a2b0a71b6c19cf3ceda4a18bd277d5ee8f1cac"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/sdf/robot_gazebo.sdf",
+      "bytes": 9169,
+      "sha256": "ea22f315de4099fe12ba1d94d11705da94b3e42e3a056f8fa2b717aab54436a2"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/setup.cfg",
+      "bytes": 104,
+      "sha256": "b0ce34702fbd74032347060bb5b62c579959d4b66948e028252e4d81673eeda9"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/setup.py",
+      "bytes": 1449,
+      "sha256": "af87292588ec1fc0765eae1b05a1ff041cb1178ec4800afcc39027731b552ba7"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/test/test_copyright.py",
+      "bytes": 962,
+      "sha256": "ea71bbbc6247b5c14d176ed09f39ee274d563cc9b2ec355828ea451ceff31757"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/test/test_flake8.py",
+      "bytes": 884,
+      "sha256": "37a813a0507f0ce51a2d0b57312d2cc078a0307a3ca85580ea801b0d2f9755d2"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/test/test_pep257.py",
+      "bytes": 803,
+      "sha256": "e8b88d49ee296987b1b40069f81019b5fa09b1aa1bfee9a1faae45bb5cf53eda"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/urdf/robot/actuator/caster.urdf.xacro",
+      "bytes": 1493,
+      "sha256": "8d5ab49be6cf93797212b8f9a0aab439d74bd49d10cff5b139415b776c21d093"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/urdf/robot/actuator/wheel.urdf.xacro",
+      "bytes": 1565,
+      "sha256": "9f3c00ba7fb25349f7606d94e0a4c95bf50a140304db43df3a474fdca175fb8c"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/urdf/robot/base.urdf.xacro",
+      "bytes": 1383,
+      "sha256": "9e301d1afed692a05b2a49eb35a706f17769bff8bad3e64302e8f470b4934f4e"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/urdf/robot/common_inertia.xacro",
+      "bytes": 936,
+      "sha256": "4fab152e07936697e6efafaa4bc7fec728aa046d8942a69cb74ed1f3eb5ae2aa"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/urdf/robot/plugins/gazebo_sensor_plugin.xacro",
+      "bytes": 5495,
+      "sha256": "e96819d2577cd9c6c591b5613b8937a4b7632230a8b9e752fae71154470c9654"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/urdf/robot/robot.ros2_control.xacro",
+      "bytes": 2140,
+      "sha256": "5bbf7d44590d2c940962a21345904a18afef84f8662c1b013a62ad89b875a6ff"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/urdf/robot/rockchip.urdf.xacro",
+      "bytes": 3876,
+      "sha256": "0ab8cf4934d65346c60c4f3d06d120302c9b07ef3802cd48ebb7f49d8a202ffc"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/urdf/robot/sensor/camera.urdf.xacro",
+      "bytes": 1529,
+      "sha256": "129f7e3b66d47d8d5fa908df9e069efd115fa3fe403b9058d0c41a0c482d8d0d"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/urdf/robot/sensor/imu.urdf.xacro",
+      "bytes": 1401,
+      "sha256": "9f5b9b32b65094f633865a87d65a4f1d97ca9ad158f2608d72ebd5248f81f767"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/urdf/robot/sensor/laser.urdf.xacro",
+      "bytes": 2703,
+      "sha256": "04c229a65c37b5cfee5c32414eddeadaf7e875ddb0db03255ccaae50b3fe402a"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/urdf/robot/sensor/tof.urdf.xacro",
+      "bytes": 4348,
+      "sha256": "f93c2410b979f34c5f8a1cc6c0516f8994ee74eb193cf04c3dff4e274828b0bf"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_description/urdf/robot_gazebo.urdf",
+      "bytes": 10016,
+      "sha256": "fce7287f399f65b2c087990e4fdcd75af94babba1696ac29c1927d2fc8270e9e"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_system_test/CMakeLists.txt",
+      "bytes": 715,
+      "sha256": "78450465c1161b07b7951cfd0fdd2d369b0812c5d9dda7248c9aa70f9532ffd3"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_system_test/README.md",
+      "bytes": 4772,
+      "sha256": "2feb92bbd3b2e08dde5a61451dd20684ea6e1e05e6356708cdd3ba1f164e6308"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_system_test/config/hardware_stability.yaml",
+      "bytes": 1153,
+      "sha256": "0a5e82bf3f6bdbd90ab5e096756c651ce888985398200d17c9559a96a270a940"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_system_test/config/robot_test.yaml",
+      "bytes": 2873,
+      "sha256": "d3c761384e3e0808e18f9b647a13a476d7c58e56a8f636d7c5e268a01fb07cdb"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_system_test/package.xml",
+      "bytes": 1162,
+      "sha256": "ac16df8338bc1dd1b3a6446a1d4c55e21d449b71697c228074095e7d16923eb2"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_system_test/robot_system_test/__init__.py",
+      "bytes": 61,
+      "sha256": "47b9947413a83f2cb182a097fb41464b008259175e6c518be611e0674241d1fc"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_system_test/robot_system_test/hardware_stability_test.py",
+      "bytes": 12696,
+      "sha256": "1483f158ae0f0083a2175c83d2bec1bb4772db315105826400c0afd889cae95a"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_system_test/robot_system_test/stats.py",
+      "bytes": 1800,
+      "sha256": "a6dda9e85167e68951ceb2b768f699b01ca18320325e5e2e348d1f9a062279fa"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_system_test/test/test_stats.py",
+      "bytes": 802,
+      "sha256": "383a3657a1a321e08d0028d8faa7c9cf21d8c1633895e743ef415b30d2cbe3eb"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_system_test/tools/lidar_diagnostic_test.py",
+      "bytes": 12508,
+      "sha256": "95689fbc339dfeb1842c1c0490137c1ee116b4a4046c847eba8fa7dc8a52d599"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_system_test/tools/motion_controller_auto_test.py",
+      "bytes": 14413,
+      "sha256": "e0bd8c4e67e6b5bf500c4cef9981edd0c6b086e651c25ad216a9c2a7f42dcb06"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_system_test/tools/motion_controller_live_auto_test.py",
+      "bytes": 18753,
+      "sha256": "0ccd452dcaa6eb7537c002999e6e355a75e18f2ac238b0ea1005835abe2e8891"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_system_test/tools/overnight_hardware_monitor.py",
+      "bytes": 21816,
+      "sha256": "e3ad8e48bc4f43408a20f7ab96de6b3b5ca8710fa1ff141b3e9a1c466f6b523a"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_system_test/tools/robot_graph_test.py",
+      "bytes": 10770,
+      "sha256": "0e16a845fc9825978b94d88c1df42d3fd96e56ec125a0fc9f64d81162cc9cb1c"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_system_test/tools/rplidar_c1_serial_diagnostic.py",
+      "bytes": 27455,
+      "sha256": "4cd1b1c4cc2dd0317d46f037598482ee6f390eb09b356c341f7652506dc8d781"
+    },
+    {
+      "path": "reproduce/vendor/Car_real_copy/src/robot_system_test/tools/rplidar_runtime_monitor.py",
+      "bytes": 20236,
+      "sha256": "00143b88b55891a21623f2f932bd3bd2262cce4bfb9e5e6529c5cf531b13a893"
+    }
+  ],
+  "ignored_export_files": [
+    "android_app/android/app/src/main/assets/capacitor.config.json",
+    "android_app/android/app/src/main/assets/capacitor.plugins.json",
+    "android_app/android/app/src/main/assets/public/app-refinement.css",
+    "android_app/android/app/src/main/assets/public/app.js",
+    "android_app/android/app/src/main/assets/public/assets/doudou-hero.png",
+    "android_app/android/app/src/main/assets/public/assets/robot-mascot.png",
+    "android_app/android/app/src/main/assets/public/config.js",
+    "android_app/android/app/src/main/assets/public/connection-states.css",
+    "android_app/android/app/src/main/assets/public/cordova.js",
+    "android_app/android/app/src/main/assets/public/cordova_plugins.js",
+    "android_app/android/app/src/main/assets/public/index.html",
+    "android_app/android/app/src/main/assets/public/layout-fixes.css",
+    "android_app/android/app/src/main/assets/public/robot-showcase.css",
+    "android_app/android/app/src/main/assets/public/styles.css",
+    "android_app/android/app/src/main/assets/public/vendor/css/all.min.css",
+    "android_app/android/app/src/main/assets/public/vendor/webfonts/fa-brands-400.woff2",
+    "android_app/android/app/src/main/assets/public/vendor/webfonts/fa-regular-400.woff2",
+    "android_app/android/app/src/main/assets/public/vendor/webfonts/fa-solid-900.woff2",
+    "android_app/android/app/src/main/assets/public/vendor/webfonts/fa-v4compatibility.woff2",
+    "android_app/android/app/src/main/res/xml/config.xml",
+    "android_app/android/capacitor-cordova-android-plugins/build.gradle",
+    "android_app/android/capacitor-cordova-android-plugins/cordova.variables.gradle",
+    "android_app/android/capacitor-cordova-android-plugins/src/main/AndroidManifest.xml",
+    "android_app/android/capacitor-cordova-android-plugins/src/main/java/.gitkeep",
+    "android_app/android/capacitor-cordova-android-plugins/src/main/res/.gitkeep",
+    "android_app/android/local.properties",
+    "android_app/tests/mock_server.err.log",
+    "android_app/tests/mock_server.log",
+    "local_skills.py.new",
+    "robot_skills/simulation_results_810test/map_810test.png",
+    "reproduce/vendor/Car_real_copy/src/car_nav2/.DS_Store",
+    "reproduce/vendor/Car_real_copy/src/demo/chat_history.log",
+    "reproduce/vendor/Car_real_copy/src/rf2o_laser_odometry/.DS_Store"
+  ]
+}

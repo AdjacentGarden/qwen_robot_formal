@@ -70,6 +70,30 @@ class ScenarioCatalogTests(unittest.TestCase):
             with self.subTest(text=text):
                 self.assertEqual(self.catalog.match(text), expected)
 
+    def test_only_constraint_is_scoped_to_its_positive_clause(self):
+        cases = {
+            "五分钟后提醒我给豆豆添水，只设置提醒，不要投食。": ["reminder_schedule"],
+            "只打开灯，别投食。": ["light_control"],
+            "只给豆豆喂十克，不要开灯。": ["feeder_control"],
+            "只打开投影仪，不要播放电影。": ["projector_control"],
+        }
+        for text, expected in cases.items():
+            with self.subTest(text=text):
+                self.assertEqual(self.catalog.explicit_constraints(text)["allowed_skills"], expected)
+
+    def test_meeting_projection_honors_generic_keep_head_wording(self):
+        intent = self.catalog.normalize_intent(
+            "meeting_projection",
+            {},
+            "原地播放会议内容，头也不要动。",
+        )
+        self.assertFalse(intent["parameters"]["navigate"])
+        self.assertEqual(intent["parameters"]["head"], "keep")
+        plan = self.catalog.compile_intent(intent)
+        steps = {step["id"]: step for step in plan["steps"]}
+        self.assertEqual(steps["navigate"]["enabled_if"], {"argument": "navigate", "equals": True})
+        self.assertEqual(steps["head_up"]["enabled_if"], {"argument": "head", "equals": "up"})
+
         default_plan = self.catalog.compile("movie_projection", {})
         self.assertEqual(default_plan["steps"][0]["arguments"]["point"], "study_projection")
         self.assertEqual(default_plan["steps"][3]["arguments"]["title"], "大雄兔")
@@ -225,6 +249,7 @@ class ScenarioCatalogTests(unittest.TestCase):
             "Hello，理想同学。",
             "Hello，理想。",
             "hello 理想",
+            "Hello，理想同。",
             "哈喽理想",
             "哈啰理想",
             "你好，理想同学",
@@ -233,6 +258,13 @@ class ScenarioCatalogTests(unittest.TestCase):
         for text in accepted:
             with self.subTest(text=text):
                 self.assertEqual(self.catalog.match(text), "homecoming_welcome")
+
+    def test_homecoming_prompt_requires_every_explicit_greeting(self):
+        rules = self.catalog.prompt_rules()
+        self.assertIn("每次听到", rules)
+        self.assertIn("都执行homecoming_welcome", rules)
+        self.assertNotIn("首次问候只触发一次", rules)
+        self.assertNotIn("普通后续问候不重复播放", rules)
 
     def test_generic_replay_language_never_becomes_homecoming(self):
         self.assertIsNone(self.catalog.match("不要打开投食器，先查天气，再播放音乐"))
@@ -255,6 +287,7 @@ class ScenarioCatalogTests(unittest.TestCase):
             "我有一个理想",
             "理想汽车",
             "Hello李想",
+            "Hello李晓东",
             "你好，我的理想是环游世界",
             "理想同学你有什么功能",
             "你能翻译Hello理想吗",
@@ -268,12 +301,16 @@ class ScenarioCatalogTests(unittest.TestCase):
             "俯卧撑怎么做",
             "会议几点开始",
             "什么是会议投影",
+            "会议投影怎么用",
+            "会议投影如何使用",
             "你会找豆豆吗",
             "介绍一下书房会议投影",
             "不要做俯卧撑",
             "别找豆豆",
             "不要打开客厅灯",
             "不要开始会议投影",
+            "不要播放电影",
+            "别开始电影",
             "别关闭会议投影",
             "不导航去书房",
         )
@@ -355,6 +392,41 @@ class ScenarioCatalogTests(unittest.TestCase):
             "meeting_projection_stop",
         )
 
+    def test_every_projection_cleanup_has_one_explicit_head_owner(self):
+        cleanup_scenarios = {
+            "push_up_companion",
+            "pull_up_companion",
+            "squat_companion",
+            "meeting_projection_stop",
+            "movie_projection",
+            "movie_projection_stop",
+        }
+        for name in cleanup_scenarios:
+            with self.subTest(name=name):
+                plan = self.catalog.compile(name, {"stay_put": True} if name == "movie_projection" else {})
+                steps = plan["steps"]
+                off_steps = [step for step in steps if step["skill"] == "projector_control" and step["action"] == "off"]
+                level_steps = [step for step in steps if step["skill"] == "head_control" and step["action"] == "level"]
+                self.assertEqual(len(off_steps), 1)
+                self.assertEqual(len(level_steps), 1)
+                self.assertIn(off_steps[0]["id"], level_steps[0]["depends_on"])
+
+    def test_every_head_scene_uses_shared_head_control_skill(self):
+        expected_up = {
+            "push_up_companion",
+            "pull_up_companion",
+            "squat_companion",
+            "meeting_projection",
+            "movie_projection",
+        }
+        actual_up = set()
+        for name, procedure in self.catalog.procedures.items():
+            for step in procedure.get("steps", []):
+                if step.get("skill") == "head_control" and step.get("action") == "up":
+                    actual_up.add(name)
+                self.assertNotIn(step.get("skill"), {"meeting_head_control", "movie_head_control", "fitness_head_control"})
+        self.assertEqual(actual_up, expected_up)
+
     def test_compiled_plan_always_contains_outcome_group(self):
         for name in self.catalog.procedures:
             with self.subTest(name=name):
@@ -391,6 +463,43 @@ class ScenarioExecutorTests(unittest.TestCase):
     def setUp(self):
         self.catalog = ScenarioCatalog(CATALOG)
 
+    def test_projection_cleanup_executes_exactly_one_level_operation(self):
+        cases = (
+            ("push_up_companion", {}),
+            ("pull_up_companion", {}),
+            ("squat_companion", {}),
+            ("meeting_projection_stop", {}),
+            ("movie_projection_stop", {}),
+            ("movie_projection", {"stay_put": True}),
+        )
+        for scenario, arguments in cases:
+            calls: list[tuple[str, str]] = []
+
+            def invoke(skill, call_arguments):
+                action = str(call_arguments.get("action") or "")
+                calls.append((skill, action))
+                if scenario == "movie_projection" and skill == "media_player" and action == "play_movie":
+                    return {"ok": False, "validation_ok": False, "executed": True, "error": "simulated_player_failure"}
+                return {"ok": True, "validation_ok": True, "executed": True, "error": None}
+
+            ScenarioExecutor(self.catalog, invoke).execute(scenario, arguments)
+            with self.subTest(scenario=scenario):
+                self.assertEqual(calls.count(("projector_control", "off")), 1)
+                self.assertEqual(calls.count(("head_control", "level")), 1)
+
+    def test_projector_failure_still_runs_one_non_overlapping_level_fallback(self):
+        calls: list[tuple[str, str]] = []
+
+        def invoke(skill, arguments):
+            action = str(arguments.get("action") or "")
+            calls.append((skill, action))
+            if skill == "projector_control" and action == "off":
+                return {"ok": False, "validation_ok": False, "executed": True, "error": "simulated_projector_failure"}
+            return {"ok": True, "validation_ok": True, "executed": True, "error": None}
+
+        ScenarioExecutor(self.catalog, invoke).execute("meeting_projection_stop", {})
+        self.assertEqual(calls, [("projector_control", "off"), ("head_control", "level")])
+
     def test_scene_keeps_one_short_start_speech_without_narrating_internal_steps(self):
         calls: list[tuple[str, dict]] = []
         events: list[dict] = []
@@ -413,6 +522,30 @@ class ScenarioExecutorTests(unittest.TestCase):
         self.assertEqual(events[0]["kind"], "acknowledgement")
         self.assertIn("会议", events[0]["text"])
         self.assertEqual(len(events), 1)
+
+    def test_rest_acknowledgement_varies_but_always_says_it_will_go_close_the_light(self):
+        events: list[dict] = []
+        executor = ScenarioExecutor(
+            self.catalog,
+            lambda _skill, _arguments: {
+                "ok": True,
+                "validation_ok": True,
+                "executed": True,
+            },
+            progress_callback=events.append,
+        )
+
+        for _ in range(4):
+            executor.execute("rest_lighting", {})
+
+        acknowledgements = [
+            event["text"] for event in events if event["kind"] == "acknowledgement"
+        ]
+        self.assertEqual(len(acknowledgements), 4)
+        self.assertEqual(len(set(acknowledgements)), 4)
+        for text in acknowledgements:
+            self.assertIn("客厅", text)
+            self.assertIn("灯", text)
 
     def test_scene_announcement_can_be_suppressed_inside_a_larger_sequence(self):
         events: list[dict] = []
@@ -568,7 +701,7 @@ class ScenarioExecutorTests(unittest.TestCase):
     def test_meeting_projection_infers_stay_put_from_explicit_location_language(self):
         phrases = (
             "你就在原地头，然后开始播放会议内容吧",
-            "就在当前位置抬头投影",
+            "就在当前位置抬头投影会议内容",
             "不要导航，直接播放会议PPT",
             "不用去书房，在这里开会",
         )
@@ -676,6 +809,31 @@ class ScenarioExecutorTests(unittest.TestCase):
             ],
         )
         self.assertEqual(failed["outcome_groups"][0]["matched_outcome"], "play_failed_cleaned")
+
+        calls.clear()
+
+        def fail_player_and_projector_cleanup(skill, arguments):
+            calls.append((skill, dict(arguments)))
+            if skill == "media_player":
+                return {"ok": False, "validation_ok": False, "executed": True, "error": "media_file_missing"}
+            if skill == "projector_control" and arguments.get("action") == "off":
+                return {"ok": False, "validation_ok": False, "executed": True, "error": "projector_cleanup_failed"}
+            return {"ok": True, "validation_ok": True, "executed": True}
+
+        cleanup_failed = ScenarioExecutor(self.catalog, fail_player_and_projector_cleanup).execute(
+            "movie_projection", {"stay_put": True}
+        )
+        self.assertFalse(cleanup_failed["ok"])
+        self.assertEqual(
+            [(skill, args.get("action")) for skill, args in calls],
+            [
+                ("head_control", "up"),
+                ("projector_control", "on"),
+                ("media_player", "play_movie"),
+                ("projector_control", "off"),
+                ("head_control", "level"),
+            ],
+        )
 
         calls.clear()
 
@@ -796,7 +954,6 @@ class ScenarioExecutorTests(unittest.TestCase):
             (("head_control", "up"), "preparation_failed"),
             (("push_up", "run"), "count_failed"),
             (("projector_control", "off"), "cleanup_failed"),
-            (("head_control", "level"), "cleanup_failed"),
         )
         for failed, expected in cases:
             with self.subTest(failed=failed):
@@ -809,6 +966,40 @@ class ScenarioExecutorTests(unittest.TestCase):
                 self.assertFalse(result["ok"])
                 self.assertEqual(result["outcome_groups"][0]["matched_outcome"], expected)
                 self.assertNotIn("已经完成", result["spoken_summary"])
+
+    def test_successful_projector_cleanup_uses_one_explicit_head_level(self):
+        for scenario in ("push_up_companion", "meeting_projection_stop", "movie_projection_stop"):
+            with self.subTest(scenario=scenario):
+                calls = []
+
+                def invoke(skill, arguments):
+                    calls.append((skill, arguments.get("action")))
+                    result = {"ok": True, "validation_ok": True, "executed": True}
+                    if skill == "push_up":
+                        result["spoken_summary"] = "运动结束，你完成了三个俯卧撑。"
+                    return result
+
+                result = ScenarioExecutor(self.catalog, invoke).execute(scenario, {})
+                self.assertTrue(result["ok"])
+                self.assertEqual(calls.count(("head_control", "level")), 1)
+
+    def test_failed_projector_cleanup_keeps_one_head_level_fallback(self):
+        for scenario in ("push_up_companion", "meeting_projection_stop", "movie_projection_stop"):
+            with self.subTest(scenario=scenario):
+                calls = []
+
+                def invoke(skill, arguments):
+                    calls.append((skill, arguments.get("action")))
+                    if skill == "projector_control" and arguments.get("action") == "off":
+                        return {"ok": False, "validation_ok": False, "executed": True, "error": "cleanup_failed"}
+                    result = {"ok": True, "validation_ok": True, "executed": True}
+                    if skill == "push_up":
+                        result["spoken_summary"] = "运动结束，你完成了三个俯卧撑。"
+                    return result
+
+                result = ScenarioExecutor(self.catalog, invoke).execute(scenario, {})
+                self.assertFalse(result["ok"])
+                self.assertEqual(calls.count(("head_control", "level")), 1)
 
     def test_pet_found_at_each_point_stops_search_and_feeds_once(self):
         cases = ((1, "found_living_and_fed", 1), (2, "found_study_and_fed", 2), (3, "found_dining_and_fed", 3))
@@ -871,6 +1062,74 @@ class ScenarioExecutorTests(unittest.TestCase):
                 result = ScenarioExecutor(self.catalog, invoke).execute("rest_lighting", {})
                 self.assertEqual(result["outcome_groups"][0]["matched_outcome"], expected)
 
+    def test_rest_navigation_continues_when_light_adapter_raises(self):
+        calls = []
+
+        def invoke(skill, arguments):
+            calls.append(skill)
+            if skill == "light_control":
+                raise RuntimeError("LoginError: 刷新Token失败，请重新登录")
+            return {"ok": True, "validation_ok": True, "executed": True}
+
+        result = ScenarioExecutor(self.catalog, invoke).execute("rest_lighting", {})
+        self.assertEqual(set(calls), {"light_control", "navigation_goto"})
+        self.assertEqual(result["outcome_groups"][0]["matched_outcome"], "light_auth_failed")
+        self.assertIn("已经回到客厅", result["spoken_summary"])
+        self.assertIn("重新登录", result["spoken_summary"])
+
+    def test_rest_navigation_still_runs_after_a_normal_light_failure(self):
+        calls = []
+
+        def invoke(skill, arguments):
+            calls.append(skill)
+            failed = skill == "light_control"
+            return {
+                "ok": not failed,
+                "validation_ok": not failed,
+                "executed": not failed,
+                "error": "light_control_failed" if failed else None,
+            }
+
+        result = ScenarioExecutor(self.catalog, invoke).execute("rest_lighting", {})
+        self.assertEqual(calls, ["light_control", "navigation_goto"])
+        self.assertEqual(result["outcome_groups"][0]["matched_outcome"], "light_failed")
+        self.assertNotIn("都没有正常完成", result["spoken_summary"])
+
+    def test_rest_both_failed_requires_both_independent_failures(self):
+        def invoke(skill, arguments):
+            return {
+                "ok": False,
+                "validation_ok": False,
+                "executed": False,
+                "error": f"{skill}_failed",
+            }
+
+        result = ScenarioExecutor(self.catalog, invoke).execute("rest_lighting", {})
+        self.assertEqual(result["outcome_groups"][0]["matched_outcome"], "both_failed")
+        self.assertIn("导航也单独执行了", result["spoken_summary"])
+
+    def test_rest_both_failures_still_report_the_light_reason(self):
+        def invoke(skill, arguments):
+            if skill == "light_control":
+                return {
+                    "ok": False,
+                    "validation_ok": False,
+                    "executed": False,
+                    "error": "LoginError:刷新Token失败",
+                    "structured_result": {"failure_reason": "auth_expired_or_invalid"},
+                }
+            return {
+                "ok": False,
+                "validation_ok": False,
+                "executed": False,
+                "error": "navigation_preflight_failed",
+            }
+
+        result = ScenarioExecutor(self.catalog, invoke).execute("rest_lighting", {})
+        self.assertEqual(result["outcome_groups"][0]["matched_outcome"], "both_auth_failed")
+        self.assertIn("重新登录", result["spoken_summary"])
+        self.assertIn("导航也单独执行了", result["spoken_summary"])
+
 
 class ScenarioBridgeBoundaryTests(unittest.TestCase):
     def make_bridge(self, root: Path) -> LocalSkillBridge:
@@ -892,14 +1151,22 @@ class ScenarioBridgeBoundaryTests(unittest.TestCase):
             (root / f"{name}.json").write_text(json.dumps(spec), encoding="utf-8")
         return LocalSkillBridge(spec_dir=root, scenario_catalog_path=CATALOG)
 
-    def test_protected_atomic_tools_are_not_exposed_to_model(self):
+    def test_only_safe_projector_transport_is_exposed_to_model(self):
         with tempfile.TemporaryDirectory() as directory:
             bridge = self.make_bridge(Path(directory))
             names = [item["function"]["name"] for item in bridge.tool_schemas]
             self.assertIn("run_robot_scenario", names)
             self.assertIn("navigation_goto", names)
-            self.assertNotIn("projector_control", names)
+            self.assertIn("projector_control", names)
             self.assertNotIn("push_up", names)
+            projector = next(
+                item for item in bridge.tool_schemas
+                if item["function"]["name"] == "projector_control"
+            )
+            self.assertEqual(
+                projector["function"]["parameters"]["properties"]["action"]["enum"],
+                ["on", "internal_on", "meeting_pause", "meeting_resume", "status"],
+            )
 
     def test_ambiguous_scene_call_asks_one_specific_question_without_execution(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -915,6 +1182,65 @@ class ScenarioBridgeBoundaryTests(unittest.TestCase):
             self.assertEqual(result["suggested_scenario"], "push_up_companion")
             self.assertIn("俯卧撑", result["spoken_summary"])
             self.assertIn("吗", result["spoken_summary"])
+            execute.assert_not_called()
+
+    def test_partial_recent_asr_phrases_get_specific_clarification_without_execution(self):
+        with tempfile.TemporaryDirectory() as directory:
+            bridge = self.make_bridge(Path(directory))
+            cases = (
+                (
+                    "homecoming_welcome",
+                    "Hello，李晓东。",
+                    "理想同学",
+                    "homecoming_welcome",
+                ),
+                (
+                    "meeting_projection",
+                    "我现在要开。",
+                    "开会",
+                    "meeting_projection",
+                ),
+                (
+                    "find_and_feed_doudou",
+                    "看看豆豆现在在哪，犯了。",
+                    "是否还要喂食",
+                    "find_pet",
+                ),
+            )
+            with patch.object(bridge.scenario_executor, "execute") as execute:
+                for requested, utterance, expected_text, suggested in cases:
+                    with self.subTest(utterance=utterance):
+                        result = bridge.invoke(
+                            "run_robot_scenario",
+                            {"scenario": requested},
+                            utterance,
+                        )
+                        self.assertEqual(result["mode"], "intent_rejected")
+                        self.assertIn(expected_text, result["spoken_summary"])
+                        self.assertEqual(result["suggested_scenario"], suggested)
+            execute.assert_not_called()
+
+    def test_lost_movie_negation_is_clarified_instead_of_starting_projection(self):
+        with tempfile.TemporaryDirectory() as directory:
+            bridge = self.make_bridge(Path(directory))
+            prior = "那需要放个电影放松一下吗？"
+            ok, reason = bridge.scenario_catalog.model_scenario_supported(
+                "movie_projection",
+                "想看我今天做了。",
+                prior_context=prior,
+            )
+            self.assertFalse(ok)
+            self.assertEqual(reason, "ambiguous_movie_polarity")
+            with patch.object(bridge.scenario_executor, "execute") as execute:
+                result = bridge.invoke(
+                    "run_robot_scenario",
+                    {"scenario": "movie_projection"},
+                    "想看我今天做了。",
+                    prior_assistant_text=prior,
+                )
+            self.assertEqual(result["mode"], "intent_rejected")
+            self.assertIn("想看电影", result["spoken_summary"])
+            self.assertIn("不看电影", result["spoken_summary"])
             execute.assert_not_called()
 
     def test_short_affirmation_recovers_only_the_specific_prior_question(self):
@@ -940,6 +1266,29 @@ class ScenarioBridgeBoundaryTests(unittest.TestCase):
                     "你是想让我陪你做俯卧撑吗？",
                 )
             )
+            confirmation_cases = (
+                (
+                    "是的",
+                    "我听见你在跟我打招呼，但称呼没听清。你是在叫我理想同学吗？",
+                    "homecoming_welcome",
+                ),
+                (
+                    "对",
+                    "你是想开会并让我开始会议投影吗？",
+                    "meeting_projection",
+                ),
+                (
+                    "好的",
+                    "你是想让我去找豆豆，找到后再给它喂食吗？",
+                    "find_and_feed_doudou",
+                ),
+            )
+            for answer, question, scenario in confirmation_cases:
+                with self.subTest(question=question):
+                    self.assertEqual(
+                        bridge.recover_contextual_plan(answer, question),
+                        {"name": "run_robot_scenario", "arguments": {"scenario": scenario}},
+                    )
 
     def test_navigation_destination_answer_can_complete_only_a_navigation_question(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -1053,13 +1402,14 @@ class ScenarioBridgeBoundaryTests(unittest.TestCase):
             self.assertEqual(first["scenario"], "meeting_projection")
             self.assertTrue(second["deduplicated"])
 
-    def test_homecoming_runs_once_but_explicit_replay_runs_again(self):
+    def test_every_explicit_homecoming_greeting_runs_the_full_scene(self):
         with tempfile.TemporaryDirectory() as directory:
             bridge = self.make_bridge(Path(directory))
             scene_result = {
                 "ok": True,
                 "validation_ok": True,
                 "executed": True,
+                "mode": "execute",
                 "scenario": "homecoming_welcome",
                 "spoken_summary": "欢迎画面播放好了。",
             }
@@ -1068,10 +1418,28 @@ class ScenarioBridgeBoundaryTests(unittest.TestCase):
                 second = bridge.invoke("navigation_goto", {}, "哈喽理想同学", "turn-2")
                 replay = bridge.invoke("navigation_goto", {}, "再播放一次欢迎画面", "turn-3")
             self.assertEqual(first["scenario"], "homecoming_welcome")
-            self.assertEqual(second["mode"], "greeting_only")
-            self.assertFalse(second["device_state_changed"])
+            self.assertEqual(second["scenario"], "homecoming_welcome")
+            self.assertEqual(second["mode"], "execute")
             self.assertEqual(replay["scenario"], "homecoming_welcome")
-            self.assertEqual(execute.call_count, 2)
+            self.assertEqual(execute.call_count, 3)
+
+    def test_duplicate_homecoming_call_in_one_turn_still_runs_only_once(self):
+        with tempfile.TemporaryDirectory() as directory:
+            bridge = self.make_bridge(Path(directory))
+            scene_result = {
+                "ok": True,
+                "validation_ok": True,
+                "executed": True,
+                "mode": "execute",
+                "scenario": "homecoming_welcome",
+                "spoken_summary": "欢迎画面播放好了。",
+            }
+            with patch.object(bridge.scenario_executor, "execute", return_value=scene_result) as execute:
+                first = bridge.invoke("navigation_goto", {}, "哈啰理想同学", "turn-1")
+                duplicate = bridge.invoke("navigation_goto", {}, "哈啰理想同学", "turn-1")
+            self.assertEqual(first["scenario"], "homecoming_welcome")
+            self.assertTrue(duplicate["deduplicated"])
+            execute.assert_called_once_with("homecoming_welcome", {})
 
     def test_model_cannot_invent_a_scene_not_supported_by_the_utterance(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -1193,6 +1561,14 @@ class ScenarioBridgeBoundaryTests(unittest.TestCase):
             self.assertEqual(
                 bridge.recover_contextual_plan("好的", "好的，那需要我陪您做运动吗？"),
                 {"name": "run_robot_scenario", "arguments": {"scenario": "push_up_companion"}},
+            )
+            self.assertEqual(
+                bridge.recover_contextual_plan("好的，陪我，好的", "好的，那需要我陪您做运动吗？"),
+                {"name": "run_robot_scenario", "arguments": {"scenario": "push_up_companion"}},
+            )
+            self.assertEqual(
+                bridge.recover_contextual_plan("那就看吧", "那需要放个电影放松一下吗？"),
+                {"name": "run_robot_scenario", "arguments": {"scenario": "movie_projection"}},
             )
             self.assertIsNone(
                 bridge.recover_contextual_plan("不看了，已经坐了一天了", "那需要放个电影放松一下吗？")

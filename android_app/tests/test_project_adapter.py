@@ -4,6 +4,7 @@ import asyncio
 import json
 import socket
 import sys
+import time
 import uuid
 from pathlib import Path
 
@@ -37,6 +38,10 @@ class RecordingProgramController(ProgramController):
                 "resident": state == "running",
                 "skill_host": state == "running",
                 "voice": state == "running",
+            },
+            "capabilities": {
+                "navigation_ready": state == "running",
+                "voice_ready": state == "running",
             },
         }
 
@@ -97,6 +102,10 @@ def test_app_start_rolls_back_if_any_required_component_is_missing(tmp_path):
             return {
                 "state": "stopped" if self.status_calls == 1 else "partial",
                 "components": components,
+                "capabilities": {
+                    "navigation_ready": True,
+                    "voice_ready": True,
+                },
             }
 
         def _run(self, argv, timeout):
@@ -112,6 +121,77 @@ def test_app_start_rolls_back_if_any_required_component_is_missing(tmp_path):
 def test_program_status_matches_the_car_real_copy_manager():
     controller = ProgramController(Path("/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test"), dry_run=False)
     assert controller.process_patterns["manager"] == "mapping_navigation_manager.py"
+
+
+def test_head_lidar_gate_is_runtime_mode_not_partial_program(tmp_path, monkeypatch):
+    project = tmp_path / "qwen_audio_3_realtime_flash_scenarios_resident_test"
+    health = project / "runtime/robot_stack/health.json"
+    health.parent.mkdir(parents=True)
+    health.write_text(
+        json.dumps({
+            "updated_at": time.time(),
+            "ready": {"manager": False},
+            "manager_publishers": 1,
+            "manager": {
+                "state": "NAVIGATION",
+                "sensor_gate_enabled": False,
+                "sensor_gate_state": "disabled",
+                "control_conflict": False,
+            },
+        }),
+        encoding="utf-8",
+    )
+    controller = ProgramController(project, dry_run=False)
+    monkeypatch.setattr(controller, "_process_running", lambda _pattern: True)
+    monkeypatch.setattr(controller, "_voice_process_running", lambda: True)
+    monkeypatch.setattr(controller, "_qwen_voice_connected", lambda: True)
+    monkeypatch.setattr(
+        bridge_module,
+        "APP_CONTROL_SOCKET",
+        type("SocketPath", (), {"is_socket": lambda self: True})(),
+    )
+
+    status = controller.status()
+
+    assert status["state"] == "running"
+    assert status["components"]["manager"] is True
+    assert status["capabilities"]["navigation_ready"] is False
+    assert status["runtime_mode"] == "head_motion"
+
+
+def test_stale_or_conflicting_manager_health_remains_partial(tmp_path, monkeypatch):
+    project = tmp_path / "qwen_audio_3_realtime_flash_scenarios_resident_test"
+    health = project / "runtime/robot_stack/health.json"
+    health.parent.mkdir(parents=True)
+    health.write_text(
+        json.dumps({
+            "updated_at": time.time() - 30.0,
+            "ready": {"manager": True},
+            "manager_publishers": 2,
+            "manager": {
+                "state": "NAVIGATION",
+                "sensor_gate_enabled": True,
+                "sensor_gate_state": "ready",
+                "control_conflict": True,
+            },
+        }),
+        encoding="utf-8",
+    )
+    controller = ProgramController(project, dry_run=False)
+    monkeypatch.setattr(controller, "_process_running", lambda _pattern: True)
+    monkeypatch.setattr(controller, "_voice_process_running", lambda: True)
+    monkeypatch.setattr(controller, "_qwen_voice_connected", lambda: True)
+    monkeypatch.setattr(
+        bridge_module,
+        "APP_CONTROL_SOCKET",
+        type("SocketPath", (), {"is_socket": lambda self: True})(),
+    )
+
+    status = controller.status()
+
+    assert status["state"] == "partial"
+    assert status["components"]["manager"] is False
+    assert status["capabilities"]["navigation_ready"] is False
 
 
 def test_terminal_start_in_progress_is_not_restarted_or_stopped(tmp_path, monkeypatch):
@@ -135,6 +215,38 @@ def test_terminal_start_in_progress_is_not_restarted_or_stopped(tmp_path, monkey
     assert result["status"] == "already_starting"
     assert result["program"]["state"] == "starting"
     assert calls == []
+
+
+def test_direct_terminal_voice_worker_is_accepted_without_service_pid(tmp_path, monkeypatch):
+    project = tmp_path / "qwen_audio_3_realtime_flash_scenarios_resident_test"
+    controller = ProgramController(project, dry_run=False)
+    monkeypatch.setattr(controller, "_service_running", lambda: False)
+
+    original_iterdir = Path.iterdir
+    fake_proc = tmp_path / "proc" / "123"
+    fake_proc.mkdir(parents=True)
+    (fake_proc / "cmdline").write_bytes(b"python3\0realtime_chat.py\0--execute-skills\0")
+
+    class CwdPath:
+        def resolve(self):
+            return project
+
+    def fake_iterdir(path):
+        if str(path) == "/proc":
+            return iter([fake_proc])
+        return original_iterdir(path)
+
+    original_truediv = Path.__truediv__
+
+    def fake_truediv(path, key):
+        if path == fake_proc and key == "cwd":
+            return CwdPath()
+        return original_truediv(path, key)
+
+    monkeypatch.setattr(Path, "iterdir", fake_iterdir)
+    monkeypatch.setattr(Path, "__truediv__", fake_truediv)
+
+    assert controller._voice_process_running() is True
 
 
 @pytest.mark.parametrize(
@@ -179,6 +291,48 @@ def test_app_voice_waits_through_a_short_realtime_reconnect(monkeypatch):
     monkeypatch.setattr(controller, "_qwen_voice_connected", lambda: next(samples))
     monkeypatch.setattr(bridge_module.time, "sleep", lambda _seconds: None)
     assert controller.wait_for_voice_ready(10.0) is True
+
+
+def test_program_start_survives_the_originating_app_connection_task_being_cancelled():
+    async def verify():
+        started = asyncio.Event()
+        release = asyncio.Event()
+        calls = []
+
+        class Program:
+            def start(self):
+                calls.append("start")
+                loop = asyncio.new_event_loop()
+                try:
+                    # The production function runs in a worker thread.  Signal
+                    # its lifecycle through thread-safe events owned by the
+                    # main test loop.
+                    main_loop.call_soon_threadsafe(started.set)
+                    while not release.is_set():
+                        time.sleep(0.01)
+                finally:
+                    loop.close()
+                return {"status": "started", "program": {"state": "running"}}
+
+        bridge = Bridge.__new__(Bridge)
+        bridge.program = Program()
+        bridge._program_start_task = None
+        bridge._program_stop_task = None
+        main_loop = asyncio.get_running_loop()
+
+        waiter = asyncio.create_task(bridge.durable_program_operation("start"))
+        await asyncio.wait_for(started.wait(), timeout=1.0)
+        inner = bridge._program_start_task
+        waiter.cancel()
+        await asyncio.gather(waiter, return_exceptions=True)
+        assert inner is not None and not inner.cancelled()
+
+        release.set()
+        result = await asyncio.wait_for(asyncio.shield(inner), timeout=1.0)
+        assert result["program"]["state"] == "running"
+        assert calls == ["start"]
+
+    asyncio.run(verify())
 
 
 def test_every_app_button_command_has_a_non_hardware_dry_run_result():
@@ -250,7 +404,7 @@ def test_microphone_control_does_not_route_through_ros_or_app_voice():
     asyncio.run(verify())
 
 
-def test_link_heartbeat_is_independent_of_ros_and_carries_live_status(monkeypatch):
+def test_link_heartbeat_is_independent_of_ros_and_carries_live_status():
     async def verify():
         bridge = Bridge(["http://127.0.0.1:9"], "token", dry_run=True)
         sent = []
@@ -263,12 +417,21 @@ def test_link_heartbeat_is_independent_of_ros_and_carries_live_status(monkeypatc
         bridge.program_state = {"state": "running"}
         bridge.task_state = {"active": False, "queued": 0}
         bridge.microphone_state = {"enabled": True, "accepting_local_voice": True}
-        monkeypatch.setattr(bridge_module, "LINK_HEARTBEAT_INTERVAL_SEC", 0.01)
+        original_interval = bridge_module.LINK_HEARTBEAT_INTERVAL_SEC
+        bridge_module.LINK_HEARTBEAT_INTERVAL_SEC = 0.01
         task = asyncio.create_task(bridge.link_heartbeat_loop())
-        while len(sent) < 2:
-            await asyncio.sleep(0.005)
-        task.cancel()
-        await asyncio.gather(task, return_exceptions=True)
+        try:
+            for _ in range(100):
+                if len(sent) >= 2:
+                    break
+                if task.done():
+                    raise task.exception() or AssertionError("heartbeat task stopped")
+                await asyncio.sleep(0.005)
+            assert len(sent) >= 2
+        finally:
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+            bridge_module.LINK_HEARTBEAT_INTERVAL_SEC = original_interval
         assert all(item["type"] == "link_heartbeat" for item in sent)
         assert sent[-1]["program"]["state"] == "running"
         assert sent[-1]["microphone"]["accepting_local_voice"] is True

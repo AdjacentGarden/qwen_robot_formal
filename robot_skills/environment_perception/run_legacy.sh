@@ -30,5 +30,5 @@ PY
 )"
 
 # ! modelscope api key
-export MODELSCOPE_SDK_TOKEN="${MODELSCOPE_SDK_TOKEN:-replace_me}"
+export MODELSCOPE_SDK_TOKEN="${MODELSCOPE_SDK_TOKEN:-}"
 exec python3 "$DIR/run.py" "$@"

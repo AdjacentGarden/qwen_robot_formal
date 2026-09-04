@@ -101,16 +101,27 @@ bash run.sh
 ```text
 runtime/memory/conversation_history.jsonl
 runtime/memory/long_term_memory.json
+runtime/memory/command_history.jsonl
+config/resident_profile.json
 ```
 
 - 当前 WebSocket 会话由千问保留最多 50 轮问答；
 - 默认持久保存最近 1000 条转写供 `memory_query` 查询，但启动或断线重连时不再自动注入原始对话，
   避免把过去的设备成功或失败结果误当成当前状态；
 - 用户明确说“记住我喜欢喝茶”时写入长期记忆；
+- `config/resident_profile.json` 保存不会频繁变化的部署事实，例如宠物名称和机器人常驻地区；
+  当前已配置“豆豆是用户的宠物狗”、家庭地址“请配置家庭地址”，以及公司地址
+  “北京市顺义区公司地址理想汽车研发总部”。未指定地点的本地天气、附近地点和路况默认使用家庭地址；
+  这类配置不会冒充实时 GPS 定位；
 - “你记得我什么”会查询长期记忆和近期对话；
+- 支持查询上一条、最近两条、倒数第几条、最早一条、从最早开始的第 N 条，以及今天、昨天、前天、
+  指定日期或包含某个动作关键词的历史指令和时间；
 - “忘掉我喜欢喝茶这件事”只删除匹配项；
 - “清空全部记忆”必须由用户明确提出，才会清空指定范围；
 - 密码、API Key、身份证号和银行卡信息不会写入长期记忆。
+
+修改固定住户信息时编辑 `config/resident_profile.json` 的 `facts` 数组；普通偏好仍应由用户明确说
+“请记住……”后写入 `runtime/memory/long_term_memory.json`，不要把临时设备状态写进固定配置。
 
 临时禁用跨会话记忆：
 

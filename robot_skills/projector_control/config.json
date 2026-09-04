@@ -19,6 +19,18 @@
     "/usr/local/sbin/robot-meeting-projection-v2",
     "loop-stop"
   ],
+  "meeting_presentation_pause_command": [
+    "sudo",
+    "-n",
+    "/usr/local/sbin/robot-meeting-projection-v2",
+    "loop-pause"
+  ],
+  "meeting_presentation_resume_command": [
+    "sudo",
+    "-n",
+    "/usr/local/sbin/robot-meeting-projection-v2",
+    "loop-resume"
+  ],
   "meeting_presentation_status_command": [
     "sudo",
     "-n",
@@ -30,9 +42,11 @@
     "/sdcard/Pictures/test-2.jpg"
   ],
   "meeting_slide_sha256": [
-    "88837f09935aa7579958d9b9a217a05473cc530886906a81f675246fca1d6123",
-    "9b6748f23f2e9ccede2a7c24d79b0a5d0c11b041b4c2ad0a2eb15cfb9a9dc618"
+    "1a15506352fe68dffdf8e61df85703e93e27e370ada8b8db6cf46b5a7880d542",
+    "84ea835ad85b415edf8e228790b9c93fe53c3f2eebba13df7d612745863c8e83"
   ],
+  "meeting_video_container_path": "/sdcard/Movies/meeting_slides_loop.mp4",
+  "meeting_video_sha256": "e812262a3bf0a93f4b852e5283bba18fda6ed8740b034e677f7b954dc735ec2a",
   "state_path": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/projector/state.json",
   "lock_path": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/projector/control.lock",
   "i2c_bus": 2,

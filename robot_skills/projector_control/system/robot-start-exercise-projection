@@ -25,4 +25,6 @@ pid="$(/usr/bin/pidof surfaceflinger | /usr/bin/awk '{print $1}')"
 /usr/bin/nsenter -t "$pid" -m -p -- /system/bin/cmd window fixed-to-user-rotation enabled
 /usr/bin/nsenter -t "$pid" -m -p -- /system/bin/cmd window set-ignore-orientation-request true
 "$PREP"
+/usr/bin/docker exec "$CONTAINER_NAME" /system/bin/settings put global policy_control 'immersive.full=*'
 /usr/bin/docker exec "$CONTAINER_NAME" sh -c "appops set android.rk.RockVideoPlayer MANAGE_EXTERNAL_STORAGE allow 2>/dev/null || true; appops set android.rk.RockVideoPlayer READ_EXTERNAL_STORAGE allow 2>/dev/null || true; appops set android.rk.RockVideoPlayer READ_MEDIA_VIDEO allow 2>/dev/null || true; appops set android.rk.RockVideoPlayer READ_MEDIA_AUDIO allow 2>/dev/null || true; am force-stop android.rk.RockVideoPlayer; am start -n android.rk.RockVideoPlayer/.VideoPlayActivity -a android.intent.action.VIEW -d file://$VIDEO_PATH -t video/mp4"
+/usr/bin/docker exec "$CONTAINER_NAME" sh -c "sleep 1.0; input tap 960 500"

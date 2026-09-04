@@ -188,6 +188,8 @@ def test_head_supervisor_uses_car_real_copy_feedback_topics_and_angle_convention
 
 
 def test_navigation_dry_run_describes_the_same_manager_gateway_as_execute():
+    points = json.loads((SKILLS / "points/named_points.json").read_text(encoding="utf-8"))
+    study = points["study_projection"]
     env = dict(os.environ)
     env["V8_NAVIGATION_POINTS_DB"] = str(SKILLS / "points/named_points.json")
     completed = subprocess.run(
@@ -211,8 +213,8 @@ def test_navigation_dry_run_describes_the_same_manager_gateway_as_execute():
     assert transport["backend"] == "Car_real_copy/mapping_navigation_manager"
     assert transport["topic"] == "/motion_controller/nav_goal_with_options"
     assert transport["yaw_unit"] == "degrees"
-    assert transport["gateway_goal"]["x"] == pytest.approx(0.0)
-    assert transport["gateway_goal"]["y"] == pytest.approx(-2.6)
+    assert transport["gateway_goal"]["x"] == pytest.approx(-float(study["x"]))
+    assert transport["gateway_goal"]["y"] == pytest.approx(-float(study["y"]))
     assert transport["gateway_goal"]["yaw_degrees"] == pytest.approx(-90.0, abs=0.001)
     assert "NavigateToPose" not in completed.stdout
 

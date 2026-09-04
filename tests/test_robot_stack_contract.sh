@@ -10,6 +10,7 @@ grep -Fq '/home/test/Car_real_copy' "$STACK" || fail "Car_real_copy workspace mi
 grep -Fq 'mapping_navigation_manager.py' "$STACK" || fail "Manager entrypoint missing"
 grep -Fq '/mapping_manager/shutdown' "$STACK" || fail "Manager shutdown interface missing"
 grep -Fq 'ready.manager' "$STACK" || fail "Manager readiness gate missing"
+grep -Fq 'wait_existing_manager_ready' "$STACK" || fail "existing Manager discovery grace missing"
 grep -Fq 'SAFE_STOP' "$STACK" || fail "SAFE_STOP handling missing"
 grep -Fq 'map.pbstream' "$STACK" || fail "map fallback preflight missing"
 

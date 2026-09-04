@@ -19,10 +19,18 @@ import sys
 import threading
 import time
 import traceback
+from collections import deque
 from pathlib import Path
 from typing import Any
 
 import preload_runtime as preload
+from localization_integrity import (
+    compact_map,
+    compact_pose,
+    compare_localization,
+    evaluate_scan_window,
+    motion_authorization_error,
+)
 from car_real_contract import (
     EXTERNAL_CMD_VEL_TOPIC,
     HEAD_ANGLE_TOPIC,
@@ -44,6 +52,42 @@ PID_FILE = STATE_DIR / "server.pid"
 STATUS_FILE = STATE_DIR / "status.json"
 MAX_HEADER = 65536
 MAX_PAYLOAD = 8 * 1024 * 1024
+
+
+def classify_navigation_handoff(snapshot: dict[str, Any]) -> dict[str, Any]:
+    """Classify whether a completed navigation goal has released base control.
+
+    Nav2 can report success before the motion controller finishes its zero-hold
+    and ownership-release transition.  Head tilt must not start in that window,
+    because the lidar guard intentionally rejects changes while base motion is
+    still active.
+    """
+    controller_status = str(snapshot.get("controller_status", "")).strip().lower()
+    manager_state = str(snapshot.get("manager_state", "")).strip().upper()
+    control_conflict = bool(snapshot.get("control_conflict"))
+    if manager_state == "SAFE_STOP":
+        return {
+            "ready": False,
+            "fatal": True,
+            "error": "navigation_handoff_manager_safe_stop",
+            "controller_status": controller_status,
+            "manager_state": manager_state,
+        }
+    if control_conflict:
+        return {
+            "ready": False,
+            "fatal": True,
+            "error": "navigation_handoff_control_conflict",
+            "controller_status": controller_status,
+            "manager_state": manager_state,
+        }
+    return {
+        "ready": controller_status == "idle",
+        "fatal": False,
+        "error": None if controller_status == "idle" else "navigation_controller_not_idle",
+        "controller_status": controller_status,
+        "manager_state": manager_state,
+    }
 
 
 def emit(event: str, **payload: Any) -> None:
@@ -126,6 +170,12 @@ class SharedRuntime:
         self.move_cancel = threading.Event()
         self.navigation_cancel = threading.Event()
         self.active_goal_handle = None
+        # A successful Nav2 result only proves that the base goal finished.
+        # Cartographer may still be publishing the final map/TF corrections for
+        # a short time.  Remember when the motion controller has fully handed
+        # control back so a following head tilt can leave a small settling
+        # window before sensor gating pauses localization.
+        self.last_navigation_handoff_monotonic = 0.0
         self.resource_status_provider = None
         self.map_lock = threading.RLock()
         self.latest_map: dict[str, Any] | None = None
@@ -142,6 +192,15 @@ class SharedRuntime:
         self.navigation_input_sequences = {"scan": 0, "imu": 0, "odom": 0}
         self.navigation_stamp_advance_sequences = {"scan": 0, "imu": 0, "odom": 0}
         self.scan_sequence = 0
+        self.raw_scan_history = deque(maxlen=max(24, int(os.getenv("HEAD_LEVEL_SCAN_HISTORY", "80"))))
+        self.localization_integrity_lock = threading.RLock()
+        self.localization_integrity: dict[str, Any] = {
+            "state": "ready",
+            "reason": "runtime_initialized",
+            "session_id": 0,
+            "baseline": None,
+            "updated_at": time.time(),
+        }
         self.latest_guard_status: dict[str, Any] | None = None
         self.car_feedback_condition = threading.Condition()
         self.car_feedback: dict[str, Any] = {
@@ -363,6 +422,26 @@ class SharedRuntime:
             self.navigation_health_condition.notify_all()
 
     def _on_navigation_scan(self, message) -> None:
+        ranges = list(getattr(message, "ranges", []) or [])
+        range_min = float(getattr(message, "range_min", 0.0) or 0.0)
+        range_max = float(getattr(message, "range_max", float("inf")) or float("inf"))
+        normalized = [
+            float(value)
+            if math.isfinite(float(value)) and range_min <= float(value) <= range_max
+            else None
+            for value in ranges
+        ]
+        minimum_finite = max(8, int(len(normalized) * 0.03)) if normalized else 8
+        with self.navigation_health_condition:
+            self.raw_scan_history.append({
+                "received_monotonic": time.monotonic(),
+                "stamp_sec": self._message_stamp_sec(message),
+                "sequence": int(self.scan_sequence) + 1,
+                "valid": sum(value is not None for value in normalized) >= minimum_finite,
+                "finite_range_count": sum(value is not None for value in normalized),
+                "minimum_finite_range_count": minimum_finite,
+                "ranges": normalized,
+            })
         self._note_navigation_input("scan", message)
 
     def _on_navigation_imu(self, message) -> None:
@@ -417,6 +496,10 @@ class SharedRuntime:
 
     def ensure_car_motion_authorized(self) -> dict[str, Any]:
         snapshot = self.car_feedback_snapshot()
+        integrity = self.localization_integrity_snapshot()
+        integrity_error = motion_authorization_error(integrity)
+        if integrity_error:
+            raise RuntimeError(integrity_error)
         allowed, reason = manager_allows_motion(
             str(snapshot.get("manager_state")),
             str(snapshot.get("sensor_gate_state")),
@@ -426,6 +509,161 @@ class SharedRuntime:
         if not allowed:
             raise RuntimeError(reason or "car_motion_not_authorized")
         return snapshot
+
+    def localization_integrity_snapshot(self) -> dict[str, Any]:
+        with self.localization_integrity_lock:
+            state = dict(self.localization_integrity)
+            baseline = state.get("baseline")
+            state["baseline"] = None if baseline is None else {
+                key: value for key, value in baseline.items() if key != "scan_reference"
+            }
+            return state
+
+    def _set_localization_integrity(self, state: str, reason: str, **details: Any) -> dict[str, Any]:
+        with self.localization_integrity_lock:
+            self.localization_integrity.update({
+                "state": str(state),
+                "reason": str(reason),
+                "updated_at": time.time(),
+                "details": details,
+            })
+            return self.localization_integrity_snapshot()
+
+    def mark_localization_invalid(self, reason: str, **details: Any) -> dict[str, Any]:
+        return self._set_localization_integrity("invalid", reason, **details)
+
+    def begin_head_tilt_session(self, *, action: str, target_angle: float) -> dict[str, Any]:
+        """Capture the stationary localization baseline before sensor gating."""
+
+        with self.localization_integrity_lock:
+            current = str(self.localization_integrity.get("state", "ready"))
+            existing = self.localization_integrity.get("baseline")
+            if current in {"tilted", "recovering"} and existing is not None:
+                self.localization_integrity.update({
+                    "state": "tilted",
+                    "reason": "continued_head_tilt",
+                    "updated_at": time.time(),
+                })
+                return self.localization_integrity_snapshot()
+            car = self.car_feedback_snapshot()
+            gate_ready = (
+                car.get("sensor_gate_enabled") is True
+                and str(car.get("sensor_gate_state", "")).strip().lower() == "ready"
+            )
+            # A scan is a valid geometric baseline only when captured before a
+            # new tilt while the production gate is known-good.  Never treat a
+            # scan observed after a resident restart with an already tilted
+            # head as the expected level profile.
+            with self.navigation_health_condition:
+                reference = (
+                    dict(self.raw_scan_history[-1])
+                    if gate_ready
+                    and str(action) in {"up", "down"}
+                    and self.raw_scan_history
+                    else None
+                )
+            map_snapshot = self.occupancy_grid_metadata_snapshot(max_age_sec=20.0)
+            pose_snapshot = self.lookup_pose("map", "base_footprint")
+            session_id = int(self.localization_integrity.get("session_id", 0)) + 1
+            self.localization_integrity = {
+                "state": "tilted",
+                "reason": "head_tilt_started",
+                "session_id": session_id,
+                "updated_at": time.time(),
+                "baseline": {
+                    "captured_at": time.time(),
+                    "action": str(action),
+                    "target_angle": float(target_angle),
+                    "pose": compact_pose(pose_snapshot),
+                    "map": compact_map(map_snapshot),
+                    "scan_reference": reference,
+                },
+                "details": {},
+            }
+            return self.localization_integrity_snapshot()
+
+    def wait_for_level_scan_preflight(
+        self,
+        *,
+        timeout_sec: float = 4.0,
+        minimum_samples: int = 6,
+    ) -> dict[str, Any]:
+        """Check raw level scans while Cartographer remains isolated."""
+
+        with self.localization_integrity_lock:
+            baseline = self.localization_integrity.get("baseline") or {}
+            self.localization_integrity.update({
+                "state": "recovering",
+                "reason": "validating_raw_level_scan",
+                "updated_at": time.time(),
+            })
+        with self.navigation_health_condition:
+            after_sequence = int(self.raw_scan_history[-1].get("sequence", 0)) if self.raw_scan_history else 0
+        deadline = time.monotonic() + max(0.2, float(timeout_sec))
+        last: dict[str, Any] = {"ok": False, "error": "level_scan_not_received"}
+        while time.monotonic() < deadline:
+            with self.navigation_health_condition:
+                samples = [
+                    dict(sample) for sample in self.raw_scan_history
+                    if int(sample.get("sequence", 0)) > after_sequence
+                    and time.monotonic() - float(sample.get("received_monotonic", 0.0)) <= 1.0
+                ]
+            last = evaluate_scan_window(
+                samples,
+                baseline.get("scan_reference"),
+                minimum_samples=minimum_samples,
+                maximum_median_frame_delta_m=float(os.getenv("HEAD_LEVEL_SCAN_STABILITY_M", "0.25")),
+                maximum_reference_median_delta_m=float(os.getenv("HEAD_LEVEL_SCAN_BASELINE_DELTA_M", "0.80")),
+                minimum_reference_overlap_ratio=float(os.getenv("HEAD_LEVEL_SCAN_MIN_OVERLAP", "0.03")),
+            )
+            if last.get("ok"):
+                return {**last, "after_sequence": after_sequence}
+            with self.navigation_health_condition:
+                self.navigation_health_condition.wait(timeout=min(0.05, max(0.0, deadline - time.monotonic())))
+        self._set_localization_integrity("invalid", str(last.get("error", "level_scan_preflight_failed")), preflight=last)
+        return {**last, "after_sequence": after_sequence}
+
+    def validate_localization_recovery(self, *, timeout_sec: float = 6.0) -> dict[str, Any]:
+        """Require healthy inputs and continuity with the pre-tilt map pose."""
+
+        with self.localization_integrity_lock:
+            baseline = self.localization_integrity.get("baseline") or {}
+        health = self.wait_for_navigation_health(
+            timeout_sec=max(1.0, float(timeout_sec)),
+            stable_sec=float(os.getenv("HEAD_POST_GATE_HEALTH_STABLE_SEC", "0.8")),
+            minimum_updates=int(os.getenv("HEAD_POST_GATE_MIN_UPDATES", "5")),
+            require_navigation_server=False,
+            maximum_pose_jump_m=0.20,
+            maximum_yaw_jump_rad=0.35,
+        )
+        comparison = compare_localization(
+            baseline.get("pose"),
+            compact_pose(health.get("pose") or self.lookup_pose("map", "base_footprint")),
+            baseline.get("map"),
+            compact_map(self.occupancy_grid_metadata_snapshot(max_age_sec=8.0)),
+            maximum_pose_shift_m=float(os.getenv("HEAD_POST_GATE_MAX_POSE_SHIFT_M", "0.35")),
+            maximum_yaw_shift_rad=float(os.getenv("HEAD_POST_GATE_MAX_YAW_SHIFT_RAD", "0.45")),
+            maximum_map_edge_shift_m=float(os.getenv("HEAD_POST_GATE_MAX_MAP_EDGE_SHIFT_M", "0.60")),
+        )
+        ok = bool(health.get("ok")) and bool(comparison.get("ok"))
+        result = {"ok": ok, "health": health, "continuity": comparison}
+        if ok:
+            with self.localization_integrity_lock:
+                self.localization_integrity.update({
+                    "state": "ready",
+                    "reason": "post_tilt_localization_validated",
+                    "updated_at": time.time(),
+                    "details": result,
+                    "baseline": None,
+                })
+        else:
+            errors = list(health.get("errors") or []) + list(comparison.get("errors") or [])
+            self._set_localization_integrity(
+                "invalid",
+                errors[0] if errors else str(health.get("error", "post_gate_validation_failed")),
+                validation=result,
+            )
+        return result
 
     def wait_for_car_feedback(
         self,
@@ -459,6 +697,131 @@ class SharedRuntime:
                         "sequence": sequence,
                     }
                 self.car_feedback_condition.wait(timeout=min(0.05, deadline - now))
+
+    def wait_for_navigation_handoff(
+        self,
+        *,
+        timeout_sec: float = 4.0,
+        stable_sec: float = 0.15,
+        cancel_event: threading.Event | None = None,
+    ) -> dict[str, Any]:
+        """Wait until the motion controller has fully released a finished goal.
+
+        This is an event-driven state barrier, not a fixed sleep.  It normally
+        returns as soon as the controller reaches a short, stable ``idle``
+        state.  A stuck transition is reported rather than allowing a following
+        head/lidar operation to race active base control.
+        """
+        started = time.monotonic()
+        deadline = started + max(0.05, float(timeout_sec))
+        stable_required = max(0.0, float(stable_sec))
+        stable_since: float | None = None
+        observed: list[dict[str, Any]] = []
+        last_signature: tuple[Any, ...] | None = None
+        last_state: dict[str, Any] = {}
+
+        with self.car_feedback_condition:
+            while True:
+                snapshot = self.car_feedback_snapshot()
+                state = classify_navigation_handoff(snapshot)
+                last_state = state
+                signature = (
+                    state.get("controller_status"),
+                    state.get("manager_state"),
+                    bool(snapshot.get("control_conflict")),
+                )
+                if signature != last_signature:
+                    observed.append({
+                        "controller_status": signature[0],
+                        "manager_state": signature[1],
+                        "control_conflict": signature[2],
+                        "elapsed_sec": round(time.monotonic() - started, 3),
+                    })
+                    observed = observed[-20:]
+                    last_signature = signature
+
+                now = time.monotonic()
+                if state.get("fatal"):
+                    return {
+                        "ok": False,
+                        **state,
+                        "observed": observed,
+                        "elapsed_sec": round(now - started, 3),
+                    }
+                if state.get("ready"):
+                    if stable_since is None:
+                        stable_since = now
+                    if now - stable_since >= stable_required:
+                        return {
+                            "ok": True,
+                            **state,
+                            "observed": observed,
+                            "stable_sec": round(now - stable_since, 3),
+                            "elapsed_sec": round(now - started, 3),
+                        }
+                else:
+                    stable_since = None
+
+                if cancel_event is not None and cancel_event.is_set():
+                    return {
+                        "ok": False,
+                        **last_state,
+                        "error": "navigation_handoff_cancelled",
+                        "observed": observed,
+                        "elapsed_sec": round(now - started, 3),
+                    }
+                if now >= deadline:
+                    return {
+                        "ok": False,
+                        **last_state,
+                        "error": "navigation_handoff_timeout",
+                        "observed": observed,
+                        "elapsed_sec": round(now - started, 3),
+                    }
+                self.car_feedback_condition.wait(timeout=min(0.05, deadline - now))
+
+    def wait_for_post_navigation_head_settle(
+        self,
+        *,
+        settle_sec: float | None = None,
+    ) -> dict[str, Any]:
+        """Leave a bounded quiet window between navigation and a head tilt.
+
+        This deliberately uses the completed controller handoff time rather
+        than the earlier Nav2 action result.  It only waits for the remaining
+        part of the configured window, so a separately spoken head command
+        normally incurs no extra delay.
+        """
+
+        try:
+            required = (
+                float(os.getenv("POST_NAVIGATION_HEAD_SETTLE_SEC", "3.0"))
+                if settle_sec is None
+                else float(settle_sec)
+            )
+        except (TypeError, ValueError):
+            required = 3.0
+        required = max(0.0, min(10.0, required))
+        completed_at = float(getattr(self, "last_navigation_handoff_monotonic", 0.0) or 0.0)
+        if required <= 0.0 or completed_at <= 0.0:
+            return {
+                "ok": True,
+                "waited_sec": 0.0,
+                "required_sec": required,
+                "reason": "no_recent_navigation_handoff",
+            }
+
+        elapsed = max(0.0, time.monotonic() - completed_at)
+        remaining = max(0.0, required - elapsed)
+        if remaining > 0.0:
+            time.sleep(remaining)
+        return {
+            "ok": True,
+            "waited_sec": round(remaining, 3),
+            "required_sec": required,
+            "elapsed_before_wait_sec": round(elapsed, 3),
+            "reason": "post_navigation_settle" if remaining > 0.0 else "already_settled",
+        }
 
     def current_scan_sequence(self) -> int:
         with self.navigation_health_condition:
@@ -693,16 +1056,20 @@ class SharedRuntime:
         *,
         tolerance_deg: float = 5.0,
         maximum_rate_dps: float = 2.0,
+        maximum_instant_rate_dps: float | None = None,
         maximum_roll_span_deg: float = 0.5,
         stable_sec: float = 0.25,
+        rebound_guard_sec: float = 0.0,
         timeout_sec: float = 15.0,
         maximum_feedback_age_sec: float = 0.25,
+        require_rate_stability: bool = False,
     ) -> dict[str, Any]:
         """Wait for fresh IMU feedback to remain at the requested head angle."""
         target = float(target_deg) % 360.0
         deadline = time.monotonic() + max(0.1, float(timeout_sec))
-        stable_samples: list[tuple[float, float]] = []
+        stable_samples: list[tuple[float, float, float | None]] = []
         last_roll_sample_ts = -1.0
+        rebound_guard_started: float | None = None
         last_result: dict[str, Any] = {"available": False, "error": "head_feedback_not_received"}
         with self.head_feedback_condition:
             while True:
@@ -719,6 +1086,23 @@ class SharedRuntime:
                     age = max(0.0, now - roll_ts)
                     error = (roll - target + 180.0) % 360.0 - 180.0
                     fresh = age <= max(0.05, float(maximum_feedback_age_sec))
+                    rate_fresh = (
+                        rate is not None
+                        and rate_age is not None
+                        and rate_age <= max(0.05, float(maximum_feedback_age_sec))
+                    )
+                    instant_rate_limit = max(
+                        max(0.1, float(maximum_rate_dps)),
+                        float(
+                            maximum_instant_rate_dps
+                            if maximum_instant_rate_dps is not None
+                            else maximum_rate_dps
+                        ),
+                    )
+                    rate_safe = (
+                        not require_rate_stability
+                        or (rate_fresh and abs(float(rate)) <= instant_rate_limit)
+                    )
                     at_target = fresh and abs(error) <= max(0.1, float(tolerance_deg))
                     last_result = {
                         "available": fresh,
@@ -729,27 +1113,82 @@ class SharedRuntime:
                         "error_deg": error,
                         "feedback_age_sec": age,
                         "at_target": at_target,
+                        "rate_feedback_fresh": rate_fresh,
+                        "rate_safe": rate_safe,
                     }
-                    if at_target:
+                    if at_target and rate_safe:
                         if roll_ts != last_roll_sample_ts:
-                            stable_samples.append((roll_ts, roll))
+                            stable_samples.append((roll_ts, roll, float(rate) if rate_fresh else None))
                             last_roll_sample_ts = roll_ts
-                        window = max(0.0, float(stable_sec))
-                        stable_samples = [sample for sample in stable_samples if sample[0] >= now - window]
+                        stable_window = max(0.0, float(stable_sec))
+                        rebound_window = max(0.0, float(rebound_guard_sec))
+                        window = stable_window
+                        # Keep a rolling stability window, including the last
+                        # sample at/before its left edge.  Keeping the complete
+                        # in-tolerance run forever means an early settling
+                        # overshoot permanently poisons ``roll_span`` even after
+                        # the head has become still.  Dropping every sample older
+                        # than the window, on the other hand, can make short
+                        # windows impossible at a 10 Hz IMU rate.  Retaining one
+                        # anchor sample solves both cases.
                         if stable_samples:
+                            cutoff = stable_samples[-1][0] - window
+                            while (
+                                len(stable_samples) >= 2
+                                and stable_samples[1][0] <= cutoff
+                            ):
+                                stable_samples.pop(0)
                             stable_for = stable_samples[-1][0] - stable_samples[0][0]
-                            roll_span = max(value for _, value in stable_samples) - min(value for _, value in stable_samples)
+                            roll_span = max(value for _, value, _ in stable_samples) - min(value for _, value, _ in stable_samples)
                             derived_rate = 0.0
                             if stable_for > 1e-3:
                                 derived_rate = abs(stable_samples[-1][1] - stable_samples[0][1]) / stable_for
-                            # The physical roll window is authoritative.  The
-                            # auxiliary rate topic is retained as telemetry but is
-                            # not a hard gate because it can be stale/noisy while
-                            # the angle samples themselves are demonstrably stable.
-                            if (
+                            rate_values = [
+                                abs(value)
+                                for _, _, value in stable_samples
+                                if value is not None
+                            ]
+                            mean_abs_rate = (
+                                sum(rate_values) / len(rate_values)
+                                if rate_values else None
+                            )
+                            maximum_abs_rate = max(rate_values) if rate_values else None
+                            rate_window_safe = (
+                                not require_rate_stability
+                                or (
+                                    len(rate_values) == len(stable_samples)
+                                    and mean_abs_rate is not None
+                                    and mean_abs_rate <= max(0.1, float(maximum_rate_dps))
+                                    and maximum_abs_rate is not None
+                                    and maximum_abs_rate <= instant_rate_limit
+                                )
+                            )
+                            # Angle stability alone can briefly pass immediately
+                            # before a delayed mechanical rebound.  For the strict
+                            # lidar-level contract, require a fresh filtered rate
+                            # window as well, then hold a separate short rebound
+                            # guard.  Keeping the guard separate avoids making
+                            # the original roll-span contract accidentally more
+                            # restrictive.  Legacy callers retain the previous
+                            # angle-only behaviour unless they opt in.
+                            base_window_safe = (
                                 stable_for >= window * 0.9
                                 and roll_span <= max(0.1, float(maximum_roll_span_deg))
                                 and derived_rate <= max(0.1, float(maximum_rate_dps))
+                                and rate_window_safe
+                            )
+                            if base_window_safe:
+                                if rebound_guard_started is None:
+                                    rebound_guard_started = now
+                                rebound_guard_elapsed = max(
+                                    0.0, now - rebound_guard_started
+                                )
+                            else:
+                                rebound_guard_started = None
+                                rebound_guard_elapsed = 0.0
+                            if (
+                                base_window_safe
+                                and rebound_guard_elapsed >= rebound_window * 0.9
                             ):
                                 return {
                                     **last_result,
@@ -757,9 +1196,15 @@ class SharedRuntime:
                                     "stable_sec": stable_for,
                                     "stable_roll_span_deg": roll_span,
                                     "derived_roll_rate_dps": derived_rate,
+                                    "mean_abs_roll_rate_dps": mean_abs_rate,
+                                    "maximum_abs_roll_rate_dps": maximum_abs_rate,
+                                    "rate_sample_count": len(rate_values),
+                                    "rebound_guard_sec": rebound_window,
+                                    "rebound_guard_elapsed_sec": rebound_guard_elapsed,
                                 }
                     else:
                         stable_samples.clear()
+                        rebound_guard_started = None
                 if now >= deadline:
                     return {**last_result, "ok": False, "error": "head_target_timeout"}
                 self.head_feedback_condition.wait(timeout=min(0.05, deadline - now))
@@ -768,14 +1213,18 @@ class SharedRuntime:
         """Use motion_controller's acknowledged gate; never stop the lidar node."""
 
         timeout_sec = max(0.2, float(timeout_sec))
+        started = time.monotonic()
+        deadline = started + timeout_sec
         snapshot = self.car_feedback_snapshot()
         before = int((snapshot.get("sequences") or {}).get("sensor_gate_state", 0))
-        if not self.sensor_gate_client.wait_for_service(timeout_sec=min(2.0, timeout_sec)):
+        service_wait = min(2.0, max(0.1, deadline - time.monotonic()))
+        if not self.sensor_gate_client.wait_for_service(timeout_sec=service_wait):
             return {"ok": False, "error": "sensor_gate_service_unavailable"}
         request = self.SetBool.Request()
         request.data = bool(enabled)
         future = self.sensor_gate_client.call_async(request)
-        state = self._wait_future(future, min(3.0, timeout_sec))
+        response_wait = min(3.0, max(0.1, deadline - time.monotonic()))
+        state = self._wait_future(future, response_wait)
         if state != "done":
             return {"ok": False, "error": f"sensor_gate_service_{state}"}
         response = future.result()
@@ -798,7 +1247,13 @@ class SharedRuntime:
             "sensor_gate_state",
             after_sequence=before,
             predicate=lambda value: str(value).strip().lower() == wanted,
-            timeout_sec=max(0.1, timeout_sec - 3.0),
+            # The service response and the retained status topic are separate
+            # DDS channels.  Either may arrive first.  Use the real remaining
+            # deadline instead of subtracting the maximum service timeout:
+            # with a 3-second disable budget the old calculation always left
+            # only 0.1 seconds and falsely rejected a gate that Car_real_copy
+            # reported as disabled about one second later.
+            timeout_sec=max(0.1, deadline - time.monotonic()),
         )
         return {
             "ok": bool(feedback.get("ok")),
@@ -895,6 +1350,21 @@ class SharedRuntime:
             output["data"] = snapshot["data"].copy()
             output["age_sec"] = age
             return output
+
+    def occupancy_grid_metadata_snapshot(self, max_age_sec: float = 8.0) -> dict[str, Any]:
+        """Return map geometry without copying the potentially large grid."""
+
+        with self.map_lock:
+            snapshot = self.latest_map
+            if snapshot is None:
+                return {"available": False, "error": "map_not_received", "source": "ros:/map"}
+            age = max(0.0, time.monotonic() - float(snapshot["received_monotonic"]))
+            if age > max(0.1, float(max_age_sec)):
+                return {"available": False, "error": f"map_stale:{age:.3f}s", "source": "ros:/map"}
+            return {
+                key: value for key, value in snapshot.items()
+                if key != "data"
+            } | {"age_sec": age}
 
     def _timed(self, name: str, builder):
         started = time.perf_counter()
@@ -1513,6 +1983,46 @@ class SharedRuntime:
                 "source": "resident_tf2",
             }
 
+    def finalize_navigation_terminal_result(
+        self,
+        *,
+        latest: dict[str, Any],
+        result: dict[str, Any],
+        request: dict[str, Any],
+        started: float,
+    ) -> dict[str, Any]:
+        """Turn gateway terminal feedback into a safe project-level result."""
+        response = dict(result)
+        if not bool(latest.get("ok")):
+            response["status"] = str(latest.get("status") or "navigation_failed")
+            response["elapsed_sec"] = round(time.monotonic() - started, 3)
+            return response
+
+        handoff = self.wait_for_navigation_handoff(
+            timeout_sec=max(
+                0.25,
+                min(10.0, float(request.get("post_navigation_handoff_timeout", 4.0))),
+            ),
+            stable_sec=max(
+                0.0,
+                min(1.0, float(request.get("post_navigation_handoff_stable_sec", 0.15))),
+            ),
+            cancel_event=self.navigation_cancel,
+        )
+        response["post_navigation_handoff"] = handoff
+        response["manager_state"] = handoff.get(
+            "manager_state", response.get("manager_state")
+        )
+        if handoff.get("ok"):
+            response["status"] = "succeeded"
+            self.last_navigation_handoff_monotonic = time.monotonic()
+        else:
+            error = str(handoff.get("error") or "navigation_handoff_failed")
+            response["status"] = error
+            response["error"] = error
+        response["elapsed_sec"] = round(time.monotonic() - started, 3)
+        return response
+
     def navigation_goal(self, request: dict[str, Any]) -> dict[str, Any]:
         if not self.navigation_lock.acquire(blocking=False):
             raise RuntimeError("navigation_goal_busy")
@@ -1607,14 +2117,17 @@ class SharedRuntime:
 
             latest = classify_nav_status(str(accepted.get("value")))
             if latest["terminal"]:
-                return {
-                    "status": "succeeded" if latest["ok"] else latest["status"],
-                    "goal": goal,
-                    "gateway_goal": gateway,
-                    "gateway_feedback": accepted,
-                    "manager_state": authorization.get("manager_state"),
-                    "elapsed_sec": round(time.monotonic() - started, 3),
-                }
+                return self.finalize_navigation_terminal_result(
+                    latest=latest,
+                    result={
+                        "goal": goal,
+                        "gateway_goal": gateway,
+                        "gateway_feedback": accepted,
+                        "manager_state": authorization.get("manager_state"),
+                    },
+                    request=request,
+                    started=started,
+                )
 
             deadline = started + timeout
             observed = [str(accepted.get("value"))]
@@ -1653,14 +2166,17 @@ class SharedRuntime:
                 observed.append(str(update["value"]))
                 latest = classify_nav_status(str(update["value"]))
                 if latest["terminal"]:
-                    return {
-                        "status": "succeeded" if latest["ok"] else latest["status"],
-                        "goal": goal,
-                        "gateway_goal": gateway,
-                        "gateway_status_history": observed[-20:],
-                        "manager_state": car.get("manager_state"),
-                        "elapsed_sec": round(time.monotonic() - started, 3),
-                    }
+                    return self.finalize_navigation_terminal_result(
+                        latest=latest,
+                        result={
+                            "goal": goal,
+                            "gateway_goal": gateway,
+                            "gateway_status_history": observed[-20:],
+                            "manager_state": car.get("manager_state"),
+                        },
+                        request=request,
+                        started=started,
+                    )
 
             cancel = self.navigation_cancel_request()
             return {

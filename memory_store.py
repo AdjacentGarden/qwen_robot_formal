@@ -42,6 +42,7 @@ class MemoryStore:
         max_history_items: int = 1000,
         max_facts: int = 200,
         timezone_name: str = "Asia/Shanghai",
+        profile_path: Path | None = None,
     ) -> None:
         self.root = Path(root)
         self.enabled = bool(enabled)
@@ -51,6 +52,7 @@ class MemoryStore:
         self.facts_path = self.root / "long_term_memory.json"
         self.commands_path = self.root / "command_history.jsonl"
         self.timezone_name = str(timezone_name or "Asia/Shanghai")
+        self.profile_path = Path(profile_path) if profile_path is not None else None
         try:
             self.timezone = ZoneInfo(self.timezone_name)
         except Exception:
@@ -74,7 +76,10 @@ class MemoryStore:
                             "content": {"type": "string", "description": "用户明确要求长期记住的简洁事实。"},
                             "category": {
                                 "type": "string",
-                                "enum": ["identity", "preference", "habit", "relationship", "other"],
+                                "enum": [
+                                    "identity", "preference", "habit", "relationship",
+                                    "pet", "location", "other",
+                                ],
                             },
                         },
                         "required": ["content"],
@@ -88,7 +93,7 @@ class MemoryStore:
                     "description": (
                         "查询机器人本机保存的长期记忆、对话历史或已调用的指令账本。"
                         "用户问上一条/倒数第几条/最早一条执行指令，必须 scope=command_history 并选择"
-                        " latest/offset/first；问今天、昨天、前天或某时间段的指令时使用 time_range。"
+                        " latest/recent/offset/first/ordinal；问今天、昨天、前天或某时间段的指令时使用 time_range。"
                         "不得只凭当前上下文猜测，也不得凭空声称没有记忆。"
                     ),
                     "parameters": {
@@ -101,7 +106,9 @@ class MemoryStore:
                             },
                             "query_type": {
                                 "type": "string",
-                                "enum": ["search", "latest", "offset", "first", "time_range"],
+                                "enum": [
+                                    "search", "latest", "recent", "offset", "first", "ordinal", "time_range",
+                                ],
                                 "description": "结构化检索方式；默认 search。",
                             },
                             "offset": {
@@ -109,6 +116,12 @@ class MemoryStore:
                                 "minimum": 0,
                                 "maximum": 999,
                                 "description": "仅 offset 使用：0 是上一条，1 是往前数两条/倒数第二条。",
+                            },
+                            "position": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000,
+                                "description": "仅 ordinal 使用；从最早开始按 1 计数，例如第二条为 2。",
                             },
                             "date_period": {
                                 "type": "string",
@@ -280,7 +293,7 @@ class MemoryStore:
         return list(reversed(selected))
 
     def facts_for_prompt(self, limit: int = 20, max_chars: int = 3000) -> str:
-        memories = self._load_facts()["memories"][-max(1, int(limit)) :]
+        memories = self._all_facts()[-max(1, int(limit)) :]
         compact = [
             {"id": item.get("id"), "category": item.get("category"), "content": item.get("content")}
             for item in memories
@@ -292,7 +305,7 @@ class MemoryStore:
 
         facts = [
             {"id": item.get("id"), "category": item.get("category"), "content": item.get("content")}
-            for item in self._load_facts()["memories"][-20:]
+            for item in self._all_facts()[-20:]
         ]
         commands = self._read_commands()[-max(1, int(command_limit)) :]
         compact_commands = [
@@ -374,7 +387,7 @@ class MemoryStore:
         history: list[dict[str, Any]] = []
         commands: list[dict[str, Any]] = []
         if scope in {"all", "long_term"}:
-            facts = self._match_items(self._load_facts()["memories"], query, limit=limit)
+            facts = self._match_items(self._all_facts(), query, limit=limit)
         if scope in {"all", "conversation_history"}:
             history = self._match_items(self._read_history(), query, limit=limit)
         if scope in {"all", "command_history"}:
@@ -469,15 +482,20 @@ class MemoryStore:
         records = self._read_commands()
         if query_type == "latest":
             selected = records[-1:]
+        elif query_type == "recent":
+            selected = records[-limit:]
         elif query_type == "offset":
             offset = min(999, max(0, int(arguments.get("offset") or 0)))
             selected = records[-offset - 1 : -offset] if offset else records[-1:]
         elif query_type == "first":
             selected = records[:1]
+        elif query_type == "ordinal":
+            position = min(1000, max(1, int(arguments.get("position") or 1)))
+            selected = records[position - 1 : position]
         elif query_type == "time_range":
             start, end = self._resolve_time_range(arguments)
             selected = [item for item in records if start <= float(item.get("ts") or 0) < end]
-            selected = selected[-limit:]
+            selected = self._match_items(selected, query, limit) if query else selected[-limit:]
         else:
             selected = self._match_items(records, query, limit=limit)
         return [self._public_command(item) for item in selected]
@@ -596,6 +614,54 @@ class MemoryStore:
         memories = value.get("memories") if isinstance(value, dict) else []
         return {"version": 1, "memories": memories if isinstance(memories, list) else []}
 
+    def _load_profile_facts(self) -> list[dict[str, Any]]:
+        """Read stable deployment facts without mixing them into user memory.
+
+        These facts describe the resident environment (for example the pet
+        name and deployment location).  They are intentionally kept in a
+        reviewable config file, while facts explicitly requested by the user
+        continue to live in long_term_memory.json.
+        """
+
+        if self.profile_path is None or not self.profile_path.is_file():
+            return []
+        try:
+            value = json.loads(self.profile_path.read_text(encoding="utf-8"))
+        except Exception:
+            return []
+        raw_facts = value.get("facts") if isinstance(value, dict) else []
+        if not isinstance(raw_facts, list):
+            return []
+        facts: list[dict[str, Any]] = []
+        for index, raw in enumerate(raw_facts[:100], 1):
+            if not isinstance(raw, dict):
+                continue
+            content = _clean_text(raw.get("content"), 1000)
+            if not content:
+                continue
+            key = re.sub(r"[^a-z0-9_-]+", "_", _clean_text(raw.get("key"), 80).lower()).strip("_")
+            if not key:
+                key = hashlib.sha256(content.encode("utf-8")).hexdigest()[:12]
+            facts.append(
+                {
+                    "id": f"profile_{key}",
+                    "content": content,
+                    "category": _clean_text(raw.get("category") or "other", 40),
+                    "source": "profile_config",
+                    "profile_order": index,
+                }
+            )
+        return facts
+
+    def _all_facts(self) -> list[dict[str, Any]]:
+        profile = self._load_profile_facts()
+        dynamic = self._load_facts()["memories"]
+        seen = {_normalized(item.get("content")) for item in profile}
+        return [
+            item for item in dynamic
+            if _normalized(item.get("content")) not in seen
+        ] + profile
+
     def _write_facts(self, data: dict[str, Any]) -> None:
         payload = {"version": 1, "memories": list(data.get("memories") or [])[-self.max_facts :]}
         self._atomic_write(self.facts_path, json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
@@ -629,14 +695,35 @@ class MemoryStore:
             return list(items[-limit:])
         exact: list[dict[str, Any]] = []
         fuzzy: list[dict[str, Any]] = []
+        category_matches: list[dict[str, Any]] = []
         query_chars = set(needle)
+        # Profile facts are written as natural sentences, while users often
+        # ask for a semantic field whose exact words do not occur in that
+        # sentence (for example “常驻在哪个城市和区”).  Use narrow category
+        # hints after exact/fuzzy matching instead of returning every profile
+        # fact or relying on a brittle full-string overlap threshold.
+        category_hint = ""
+        if re.search(r"常驻|所在地|位置|地址|城市|区县|街道|省份|国家|gps|经纬度", needle):
+            category_hint = "location"
+        elif re.search(r"宠物|狗|猫|豆豆", needle):
+            category_hint = "pet"
         for item in reversed(items):
-            haystack = _normalized(item.get("content") or item.get("text"))
+            searchable = item.get("content") or item.get("text") or ""
+            # Command history must also be searchable by the authoritative
+            # result and structured call.  Natural requests often omit the
+            # scene label (“我要开会了”), while the call/summary records that
+            # it was a meeting projection.  This remains read-only and keeps
+            # long-term facts/conversation records unchanged.
+            if item.get("calls"):
+                searchable = f"{searchable} {json.dumps(item.get('calls'), ensure_ascii=False)}"
+            haystack = _normalized(searchable)
             if needle in haystack:
                 exact.append(item)
             elif query_chars and len(query_chars & set(haystack)) / len(query_chars) >= 0.6:
                 fuzzy.append(item)
-        return (exact + fuzzy)[:limit]
+            elif category_hint and str(item.get("category") or "").lower() == category_hint:
+                category_matches.append(item)
+        return (exact + fuzzy + category_matches)[:limit]
 
     @staticmethod
     def _result(ok: bool, skill: str, error: str | None, message: str, **extra: Any) -> dict[str, Any]:

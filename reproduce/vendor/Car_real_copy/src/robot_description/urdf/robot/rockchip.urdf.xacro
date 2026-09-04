@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="my_robot">
+    
+    <!-- ========== 定义参数变量（对应你的 Python 代码） ========== -->
+    <xacro:property name="body_length" value="0.30" />
+    <xacro:property name="body_radius" value="0.175" />
+    <xacro:property name="body_mass" value="2.0" />
+    
+    <xacro:property name="wheel_radius" value="0.035" />
+    <xacro:property name="wheel_width" value="0.03" />
+    <xacro:property name="wheel_mass" value="0.2" />
+    
+    <xacro:property name="caster_radius" value="0.035" />
+    <xacro:property name="caster_mass" value="0.1" />
+    
+    <xacro:property name="lidar_radius" value="0.02" />
+    <xacro:property name="lidar_height" value="0.02" />
+    
+    <!-- 计算位置偏移 -->
+    <xacro:property name="body_offset" value="${body_length/2.0 + wheel_radius}" />
+    <xacro:property name="wheel_z_offset" value="${wheel_radius - body_offset}" />
+    <xacro:property name="caster_z_offset" value="${wheel_radius - body_offset}" />
+    <xacro:property name="lidar_z_position" value="${body_length/2.0}" />
+    
+    <!-- 轮子夹角 60 度三角布局 -->
+    <xacro:property name="wheel_x_offset" value="${body_radius/2.0}" />
+    <xacro:property name="wheel_y_offset" value="${1.732 * body_radius/2.0}" />
+    
+    <!-- ========== 包含组件宏定义 ========== -->
+    <!-- 基座组件 -->
+    <xacro:include filename="$(find robot_description)/urdf/robot/base.urdf.xacro" />
+    
+    <!-- 传感器组件 -->
+    <xacro:include filename="$(find robot_description)/urdf/robot/sensor/imu.urdf.xacro" />
+    <xacro:include filename="$(find robot_description)/urdf/robot/sensor/laser.urdf.xacro" />
+    <xacro:include filename="$(find robot_description)/urdf/robot/sensor/tof.urdf.xacro" />
+
+    <!-- 执行器组件 -->
+    <xacro:include filename="$(find robot_description)/urdf/robot/actuator/wheel.urdf.xacro" />
+    <xacro:include filename="$(find robot_description)/urdf/robot/actuator/caster.urdf.xacro" />
+    
+    <!-- ========== 实例化组件（使用你的参数） ========== -->
+    <!-- 基座 -->
+    <xacro:base_xacro length="${body_length}" radius="${body_radius}" wheel_radius="${wheel_radius}" wheel_x_offset="${wheel_x_offset}" mass="${body_mass}" />
+    
+    <!-- 传感器 -->
+    <xacro:property name="imu_x" value="-0.0357881"/>
+    <xacro:property name="imu_y" value="-0.0051315"/>
+    <xacro:property name="imu_z" value="0.0907072"/>
+    <xacro:imu_xacro xyz="${imu_x} ${imu_y} ${imu_z}" />
+    <xacro:laser_xacro xyz="0 0 0" radius="${lidar_radius}" height="${lidar_height}" z_pose="${lidar_z_position}"/>
+    <xacro:tof_xacro body_radius="${body_radius}"/>
+
+    <!-- 执行器 - 主动轮（60度三角布局） -->
+    <xacro:wheel_xacro wheel_name="left" 
+                       xyz="${wheel_x_offset} ${wheel_y_offset} ${wheel_z_offset}"
+                       radius="${wheel_radius}" length="${wheel_width}" mass="${wheel_mass}" />
+                       
+    <xacro:wheel_xacro wheel_name="right" 
+                       xyz="${wheel_x_offset} -${wheel_y_offset} ${wheel_z_offset}"
+                       radius="${wheel_radius}" length="${wheel_width}" mass="${wheel_mass}" />
+    
+    <!-- 执行器 - 从动轮（万向轮） -->
+    <xacro:caster_xacro caster_name="rear" 
+                        xyz="-${body_radius} 0 ${caster_z_offset}"
+                        radius="${caster_radius}" mass="${caster_mass}" />
+    
+    <!-- ========== Gazebo 插件 ========== -->
+    <!-- 差动驱动插件 -->
+    <!-- <xacro:include filename="$(find robot_description)/urdf/robot/robot.ros2_control.xacro" />
+    <xacro:robot_ros2_control /> -->
+    <!-- 传感器插件 -->
+    <!-- <xacro:include filename="$(find robot_description)/urdf/robot/plugins/gazebo_sensor_plugin.xacro" />
+    <xacro:gazebo_sensor_plugin /> -->
+    
+</robot>

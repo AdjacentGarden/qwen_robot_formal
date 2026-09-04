@@ -494,6 +494,7 @@ class InterruptResumeTests(unittest.IsolatedAsyncioTestCase):
             client.task_coordinator.interrupt("navigation_goto", {"point": "origin"})
             client.task_coordinator.interruption_completed()
 
+            client._speak_internal("attention", "刚才的运动还要继续吗？", event_id="ask-resume-test-decline")
             await client.accept_input_transcript("不用了，今天先到这里")
 
             self.assertEqual(client.task_coordinator.state, "idle")

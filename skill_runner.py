@@ -189,6 +189,21 @@ def concise_success_summary(
         }[skill]
         return cycle_spoken_variant(key, (f"{label}完成。", f"好了，已经{label}。", f"{label}好了。"))
     if skill == "head_control":
+        already_at_target = bool(
+            parsed.get("already_at_target")
+            or (
+                isinstance(parsed.get("result"), dict)
+                and parsed["result"].get("already_at_target")
+            )
+        )
+        if already_at_target:
+            options = {
+                "up": ("已经是抬头状态了。", "头已经抬好了，不用再调整。"),
+                "down": ("已经是低头状态了。", "头已经低下来了，不用再调整。"),
+                "level": ("现在已经是平视状态了。", "头部已经回正，不用再调整。"),
+            }.get(action)
+            if options:
+                return cycle_spoken_variant(f"{key}:already", options)
         options = {
             "up": ("已经抬头。", "头部抬好了。", "角度调高了。"),
             "down": ("已经低头。", "头部调低了。", "低头完成。"),
@@ -270,6 +285,8 @@ def build_spoken_summary(executor: Any, step: Any, result: dict[str, Any]) -> st
     parsed = extract_structured_result(result)
     arguments = dict(getattr(step, "arguments", {}) or {})
     action = str(arguments.get("action") or parsed.get("action") or "").strip().lower()
+    if skill == "pet_tracking" and parsed.get("found") and parsed.get("video_status") == "failed":
+        return "已经找到豆豆，不过这次视频录制失败，没有视频同步到手机。"
     if skill == "reminder_schedule":
         content = str(arguments.get("content") or "这件事").strip()
         return cycle_spoken_variant(

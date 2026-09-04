@@ -17,7 +17,7 @@ from robot_skills.car_real_contract import (
     [
         ((0.0, 0.0, -math.pi), (-0.0, -0.0, 0.0)),
         ((-2.2, 0.1, -math.pi / 2), (2.2, -0.1, 90.0)),
-        ((0.0, 2.6, math.pi / 2), (-0.0, -2.6, -90.0)),
+        ((0.0, 3.0, math.pi / 2), (-0.0, -3.0, -90.0)),
     ],
 )
 def test_known_points_convert_without_changing_physical_goal(pose, gateway):

@@ -54,7 +54,9 @@ assert.ok(appSource.includes('state.microphone = message.microphone || (state.ta
 assert.ok(appSource.includes('message.type === "link_heartbeat"'), "independent robot link heartbeat must update App connectivity");
 assert.ok(appSource.includes('message.type === "server_heartbeat"'), "App-to-relay health must stay independent from robot telemetry");
 assert.ok(appSource.includes('const CONNECT_TIMEOUT_MS = 5000'), "Tailscale connection setup must tolerate normal network latency");
-assert.ok(appSource.includes('const LINK_STALE_MS = 3500'), "server heartbeat loss must still be detected promptly");
-assert.ok(appSource.includes('const OFFLINE_GRACE_MS = 6500'), "brief network jitter must show reconnecting instead of false offline");
+assert.ok(appSource.includes('const LINK_STALE_MS = 4500'), "server heartbeat loss must still be detected promptly");
+assert.ok(appSource.includes('const OFFLINE_GRACE_MS = 8000'), "brief network jitter must show reconnecting instead of false offline");
+assert.ok(appSource.includes('retryLastHealthy'), "a healthy Tailscale endpoint must be retried before a slower fallback");
+assert.ok(appSource.includes('endpointFailures: new Map()'), "endpoint retry state must be tracked per relay");
 
 console.log(JSON.stringify({ok:true, greetingCases:10, requiredIds:14, actions:5, offlineMap:true, genericLabels:true}));

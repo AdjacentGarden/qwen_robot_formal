@@ -34,6 +34,7 @@ class HeadPoseSupervisor:
         sample_provider: Callable[[], tuple[float, float] | None],
         resource_provider: Callable[[], dict[str, dict[str, Any]]],
         projection_active_provider: Callable[[], bool],
+        level_recovery_needed_provider: Callable[[], bool] | None,
         correction: Callable[[], dict[str, Any]],
         state_path: Path,
         level_angle: float = 185.0,
@@ -51,6 +52,7 @@ class HeadPoseSupervisor:
         self.sample_provider = sample_provider
         self.resource_provider = resource_provider
         self.projection_active_provider = projection_active_provider
+        self.level_recovery_needed_provider = level_recovery_needed_provider
         self.correction = correction
         self.state_path = Path(state_path)
         self.level_angle = float(level_angle) % 360.0
@@ -76,6 +78,7 @@ class HeadPoseSupervisor:
         self.attempts_this_excursion = 0
         self.last_result: dict[str, Any] | None = None
         self.last_sample: dict[str, Any] | None = None
+        self.last_level_recovery_needed = False
         self._write_state("initialized")
 
     def start(self) -> None:
@@ -136,6 +139,7 @@ class HeadPoseSupervisor:
                 "attempts_this_excursion": self.attempts_this_excursion,
                 "last_result": dict(self.last_result) if self.last_result else None,
                 "last_sample": dict(self.last_sample) if self.last_sample else None,
+                "level_recovery_needed": self.last_level_recovery_needed,
                 "thresholds": {
                     "enter_error_deg": self.enter_error_deg,
                     "exit_error_deg": self.exit_error_deg,
@@ -152,7 +156,17 @@ class HeadPoseSupervisor:
         roll, received_monotonic = float(sample[0]), float(sample[1])
         age = max(0.0, now - received_monotonic)
         error = circular_error_deg(roll, self.level_angle)
+        try:
+            level_recovery_needed = bool(
+                self.level_recovery_needed_provider
+                and self.level_recovery_needed_provider()
+            )
+        except Exception:
+            # A transient feedback-read error must not move the head.  The
+            # next watchdog pass will re-evaluate the gate state.
+            level_recovery_needed = False
         with self.lock:
+            self.last_level_recovery_needed = level_recovery_needed
             self.last_sample = {
                 "roll_deg": roll,
                 "error_deg": error,
@@ -168,11 +182,14 @@ class HeadPoseSupervisor:
             if age > self.maximum_sample_age_sec:
                 self.deviation_since = None
                 return self._blocked_locked("head_feedback_stale")
-            if abs(error) <= self.exit_error_deg:
+            if abs(error) <= self.exit_error_deg and not level_recovery_needed:
                 self.deviation_since = None
                 self.attempts_this_excursion = 0
                 return self._blocked_locked("within_level_deadband")
-            if abs(error) < self.enter_error_deg:
+            gate_recovery_only = (
+                abs(error) <= self.exit_error_deg and level_recovery_needed
+            )
+            if not gate_recovery_only and abs(error) < self.enter_error_deg:
                 self.deviation_since = None
                 return self._blocked_locked("inside_hysteresis_band")
             resources = self.resource_provider() or {}
@@ -184,9 +201,15 @@ class HeadPoseSupervisor:
                 return self._blocked_locked("projection_owns_tilt")
             if self.deviation_since is None:
                 self.deviation_since = now
-                return self._blocked_locked("deviation_dwell_started")
+                return self._blocked_locked(
+                    "level_gate_recovery_dwell_started"
+                    if gate_recovery_only else "deviation_dwell_started"
+                )
             if now - self.deviation_since < self.deviation_hold_sec:
-                return self._blocked_locked("deviation_not_yet_stable")
+                return self._blocked_locked(
+                    "level_gate_recovery_not_yet_stable"
+                    if gate_recovery_only else "deviation_not_yet_stable"
+                )
             if self.attempts_this_excursion >= self.maximum_attempts_per_excursion:
                 return self._blocked_locked("attempt_limit_reached")
             if (
@@ -205,6 +228,7 @@ class HeadPoseSupervisor:
         result = {
             **result,
             "attempt": attempt,
+            "level_gate_recovery_only": gate_recovery_only,
             "trigger_roll_deg": roll,
             "trigger_error_deg": error,
             "completed_at": self.wall_time(),
@@ -234,6 +258,7 @@ class HeadPoseSupervisor:
                 "attempts_this_excursion": self.attempts_this_excursion,
                 "last_result": self.last_result,
                 "last_sample": self.last_sample,
+                "level_recovery_needed": self.last_level_recovery_needed,
             }
             self.state_path.parent.mkdir(parents=True, exist_ok=True)
             temporary = self.state_path.with_suffix(self.state_path.suffix + ".tmp")

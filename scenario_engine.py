@@ -10,6 +10,8 @@ import unicodedata
 from pathlib import Path
 from typing import Any, Callable
 
+from intent_policy import is_retrospective_query
+
 try:
     from pypinyin import Style, lazy_pinyin
 except ImportError:  # pragma: no cover - requirements.txt installs this in production.
@@ -124,8 +126,10 @@ SCENARIO_START_SPEECH = {
     "movie_projection_resume": ("好，继续播放电影。",),
     "movie_projection_stop": ("好，我来结束电影播放。",),
     "rest_lighting": (
-        "好，你先休息，我来调整。",
-        "你放松一下，交给我吧。",
+        "好的，我去客厅帮你把灯关了。",
+        "好，你先休息，我去客厅把灯光调好。",
+        "你先放松一下，我这就去客厅帮你关灯。",
+        "好的，我去到客厅帮你把灯关好。",
     ),
     "living_room_light_service": (
         "好，我去客厅调灯。",
@@ -390,6 +394,10 @@ class ScenarioCatalog:
             ]
         self.path = Path(catalog_path)
         self.procedures: dict[str, dict[str, Any]] = dict(payload.get("procedures") or {})
+        self.skill_resources: dict[str, tuple[str, ...]] = {
+            str(name): tuple(str(item) for item in resources or [])
+            for name, resources in dict(payload.get("skill_resources") or {}).items()
+        }
         # The resident demonstration has exactly three saved points.  Normalize
         # inherited catalog aliases at load time so no legacy point can leak
         # through a model-selected procedure.
@@ -443,6 +451,9 @@ class ScenarioCatalog:
                 "description": (
                     "执行一个完整且不可拆分的机器人场景流程。用户表达场景意图时必须调用本工具，"
                     "禁止自行组合导航、头部、投影、运动计数、寻找宠物等原子工具。"
+                    "场景是带默认参数的模板：未说参数时保留默认流程；原地、不要导航、指定地点、"
+                    "不要抬头等用户明示参数只覆盖对应默认项，禁止用默认值反向覆盖。"
+                    "会议 start 才能启动完整场景；pause/resume/stop/status 不得生成 start 或导航。"
                     "只把用户正向要求的完整目标选成场景；否定短语是约束而不是场景。"
                     "例如‘去书房，不要投影’只应导航，不得调用会议投影场景。\n"
                     + "\n".join(descriptions)
@@ -480,6 +491,51 @@ class ScenarioCatalog:
                             "type": "boolean",
                             "description": "仅当用户明确要求原地、当前位置或不要导航时设为true。",
                         },
+                        "operation": {
+                            "type": "string",
+                            "enum": ["start", "pause", "resume", "stop", "status"],
+                            "default": "start",
+                            "description": "开始场景与暂停、继续、结束、查询必须明确区分。",
+                        },
+                        "navigate": {
+                            "type": "boolean",
+                            "description": "用户明确要求原地或不要导航时为false；未明确时不要填写。",
+                        },
+                        "head": {
+                            "type": "string",
+                            "enum": ["up", "keep"],
+                            "description": "投影默认抬头；用户明确说不要抬头时为keep。",
+                        },
+                        "content": {
+                            "type": "string",
+                            "enum": ["meeting"],
+                            "description": "会议场景内容类型。",
+                        },
+                        "constraints": {
+                            "type": "object",
+                            "properties": {
+                                "forbid_base_motion": {"type": "boolean"},
+                                "forbidden": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                },
+                                "allowed_skills": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                },
+                            },
+                            "description": "只记录用户明确说出的禁止项或‘只做某事’白名单。",
+                        },
+                        "evidence": {
+                            "type": "string",
+                            "description": "支持本次意图和参数的用户原话片段。",
+                        },
+                        "confidence": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "description": "语义判断置信度；不影响本地安全不变量。",
+                        },
                     },
                     "required": ["scenario"],
                 },
@@ -516,15 +572,222 @@ class ScenarioCatalog:
         text = _normalize_text(transcript)
         wake_greeting = re.fullmatch(
             r"(?:hello|哈喽|哈啰|哈罗|嗨|你好)(?:呀|啊)?"
-            r"理想(?:同学)?(?:呀|啊)?"
+            # Qwen occasionally drops only the final “学”, producing
+            # “Hello，理想同”。  Accept that one-syllable truncation while
+            # keeping unrelated names such as “Hello 李想/李晓东” outside the
+            # automatic hardware scene.
+            r"理想(?:同学|同)?(?:呀|啊)?"
             r"(?:我)?(?:回来了|回家了|下班回来了)?",
             text,
         )
         direct_return = re.fullmatch(
-            r"理想(?:同学)?(?:我)?(?:回来了|回家了|下班回来了)",
+            r"理想(?:同学|同)?(?:我)?(?:回来了|回家了|下班回来了)",
             text,
         )
         return bool(wake_greeting or direct_return)
+
+    @staticmethod
+    def _ambiguous_movie_followup(transcript: str, prior_context: str) -> bool:
+        """Detect a likely lost negation after the robot offers a movie.
+
+        A field utterance “不想看，我今天坐了一天了” was transcribed as
+        “想看我今天做了”.  Treating the surviving “想看” as permission starts
+        hardware in the opposite direction.  This gate is deliberately
+        contextual and only asks for clarification when the object “电影” is
+        absent and the same fragment also contains fatigue/rejection residue.
+        """
+
+        text = _normalize_text(transcript)
+        context = _normalize_text(prior_context)
+        movie_offer = bool(
+            re.search(
+                r"(?:需要|要不要|想不想).{0,10}(?:放|看|播放).{0,4}(?:电影|影片)",
+                context,
+            )
+        )
+        if not movie_offer or not re.search(r"想看|要看", text):
+            return False
+        if re.search(r"电影|影片|看吧|就看|那就看|放吧|播放吧", text):
+            return False
+        return bool(re.search(r"一天|坐了|做了|今天.{0,6}(?:累|做|坐)|已经.{0,6}(?:累|做|坐)", text))
+
+    def parameter_defaults(self, name: str) -> dict[str, Any]:
+        """Return catalog-authored defaults without treating them as user input."""
+
+        procedure = self.procedures.get(name) or {}
+        values: dict[str, Any] = {}
+        for key, spec in dict(procedure.get("parameters") or {}).items():
+            if isinstance(spec, dict) and "default" in spec:
+                values[str(key)] = copy.deepcopy(spec["default"])
+        return values
+
+    @staticmethod
+    def explicit_constraints(transcript: str) -> dict[str, Any]:
+        """Translate explicit prohibitions and ``only`` language into constraints."""
+
+        text = _normalize_text(transcript)
+        raw_text = unicodedata.normalize("NFKC", str(transcript or "")).lower()
+        forbidden: set[str] = set()
+        allowed: list[str] | None = None
+        no_navigation = bool(
+            re.search(r"不要导航|不用导航|无需导航|不需要导航|别导航|不要去|不用去|别去", text)
+            or any(item in text for item in ("原地", "就在这里", "就在这", "当前位置"))
+        )
+        # “原地找豆豆”在既有产品语义中是允许底盘原地旋转搜寻，不能把
+        # “原地”机械地解释成禁止一切 base 资源。只有投影/通用动作中的
+        # 原地，或用户明确说底盘不动，才成为 forbid_base_motion。
+        local_pet_search = bool(
+            re.search(r"(?:原地|就在这里|就在这|当前位置).{0,8}(?:找|寻找|看看|搜).{0,5}(?:豆豆|狗|宠物)", text)
+            or re.search(r"(?:找|寻找|看看|搜).{0,5}(?:豆豆|狗|宠物).{0,8}(?:原地|就在这里|就在这|当前位置)", text)
+        )
+        forbid_base_motion = bool(
+            (no_navigation and not local_pet_search)
+            or re.search(r"不要移动|不用移动|别移动|底盘(?:不要|别|不许)动|原地不动", text)
+        )
+        if no_navigation:
+            forbidden.add("navigation_goto")
+        if re.search(
+            r"不要抬头|不用抬头|别抬头|不需要抬头|保持当前角度|"
+            r"(?:头|头部|镜头).{0,4}(?:不要|别|不用|无需|不需要)动|"
+            r"(?:不要|别|不用|无需|不需要)动.{0,3}(?:头|头部|镜头)",
+            text,
+        ):
+            forbidden.add("head_control:up")
+        if re.search(r"不要找|不用找|别找|不要寻找|不用寻找|别寻找", text):
+            forbidden.update(("pet_tracking", "pet_map_search"))
+        if re.search(r"不要投影|不用投影|别投影|不要播放|不用播放|别播放", text):
+            forbidden.update(("projector_control:start", "media_player:start"))
+        # Parse ``只`` from its own clause.  Searching the punctuation-free
+        # whole sentence made ``只设置提醒，不要投食`` span across the comma
+        # and become ``only feeder_control``.  Defaults may fill missing
+        # parameters, but a later negative clause must never redefine the
+        # positive allow-list.
+        only_clauses = [
+            clause.strip()
+            for clause in re.split(r"[，,。.!！?？、;；：:]", raw_text)
+            if "只" in clause
+        ]
+        for clause in only_clauses:
+            compact = _normalize_text(clause)
+            only_body = compact.split("只", 1)[1]
+            if re.search(r"(?:设置|新增|创建).{0,5}(?:提醒|闹钟)|提醒我|设.{0,3}提醒", only_body):
+                allowed = ["reminder_schedule"]
+                break
+            if re.search(r"(?:查|查询|查看|列出|念|读).{0,5}(?:提醒|闹钟)|提醒(?:列表|有哪些)", only_body):
+                allowed = ["reminder_query"]
+                break
+            if re.search(r"(?:删|删除|取消|撤销).{0,5}(?:提醒|闹钟)", only_body):
+                allowed = ["reminder_cancel"]
+                break
+            if re.search(r"(?:开|打开|开启|关|关闭).{0,5}(?:灯|照明)|(?:灯|照明).{0,5}(?:开|关)", only_body):
+                allowed = ["light_control"]
+                break
+            feeder_match = re.search(r"(?P<prefix>.{0,12})(?:喂|投食|出粮)", only_body)
+            if feeder_match and not re.search(
+                r"不要|不用|无需|不需要|别|禁止", feeder_match.group("prefix")
+            ):
+                allowed = ["feeder_control"]
+                break
+            if re.search(r"(?:打开|开启|关闭|关掉)?.{0,4}(?:投影仪|投影光源)", only_body):
+                allowed = ["projector_control"]
+                break
+        return {
+            "forbid_base_motion": forbid_base_motion,
+            "forbidden": sorted(forbidden),
+            "allowed_skills": allowed,
+        }
+
+    def normalize_intent(
+        self,
+        name: str,
+        arguments: dict[str, Any],
+        transcript: str,
+    ) -> dict[str, Any]:
+        """Build the canonical scene intent before compiling executable steps.
+
+        Precedence is fixed: explicit prohibitions, explicit transcript
+        parameters, model/context parameters, then catalog defaults.  Guarded
+        motion/head parameters are accepted only when grounded by transcript
+        inference; defaults can fill blanks but can never overwrite a user
+        prohibition.
+        """
+
+        scenario = self.normalize_scenario_name(name, transcript)
+        if scenario not in self.procedures:
+            raise ScenarioError(f"unknown_scenario:{scenario}")
+        raw = dict(arguments or {})
+        allowed_parameters = set(
+            dict((self.procedures.get(scenario) or {}).get("parameters") or {})
+        )
+        model_parameters = {
+            key: copy.deepcopy(value)
+            for key, value in raw.items()
+            if key in allowed_parameters
+        }
+        explicit = self.infer_arguments(scenario, transcript)
+        parameters = {
+            **self.parameter_defaults(scenario),
+            **model_parameters,
+            **explicit,
+        }
+        constraints = self.explicit_constraints(transcript)
+        if scenario in {"meeting_projection", "movie_projection"}:
+            # Location and motion are safety-relevant. Ignore an invented
+            # model point/stay_put value unless user words grounded it.
+            if "point" not in explicit:
+                parameters["point"] = self.parameter_defaults(scenario).get(
+                    "point", "study_projection"
+                )
+            if constraints["forbid_base_motion"] or explicit.get("stay_put"):
+                parameters["stay_put"] = True
+                parameters["navigate"] = False
+                parameters.pop("point", None)
+            else:
+                parameters["stay_put"] = False
+                parameters["navigate"] = True
+            if "head_control:up" in constraints["forbidden"]:
+                parameters["head"] = "keep"
+            else:
+                parameters["head"] = "up"
+            if scenario == "meeting_projection":
+                parameters["content"] = "meeting"
+        operation = str(raw.get("operation") or "start").strip().lower()
+        # 用户原话中的传输控制动词优先于模型字段；这可以阻止模型把
+        # “暂停/继续/结束”错误输出成 start 后重新启动整个会议场景。
+        normalized_transcript = _normalize_text(transcript)
+        explicit_stop = re.search(
+            r"(?:关闭|关掉|停止|停掉|停播|结束|收起|撤掉|取消).{0,8}"
+            r"(?:会议|投影|投屏|ppt|幻灯|画面|内容)|"
+            r"(?:会议|投影|投屏|ppt|幻灯|画面|内容).{0,8}"
+            r"(?:关闭|关掉|停止|停掉|停播|结束|收起|撤掉|取消|到这里|到这)|"
+            r"(?:不投了|别播了|不用继续|不用放了)",
+            normalized_transcript,
+        )
+        if explicit_stop:
+            operation = "stop"
+        elif re.search(r"暂停|停一下|先停", normalized_transcript):
+            operation = "pause"
+        elif re.search(r"继续|恢复|接着(?:播放|投影|放)", normalized_transcript):
+            operation = "resume"
+        elif re.search(r"状态|是否(?:正在|还在)|开着吗|关着吗", normalized_transcript):
+            operation = "status"
+        if operation not in {"start", "pause", "resume", "stop", "status"}:
+            operation = "start"
+        evidence = str(raw.get("evidence") or "").strip()
+        if not evidence or _normalize_text(evidence) not in _normalize_text(transcript):
+            evidence = str(transcript or "").strip()
+        try:
+            confidence = float(raw.get("confidence", 1.0))
+        except (TypeError, ValueError):
+            confidence = 1.0
+        return {
+            "intent": scenario,
+            "operation": operation,
+            "parameters": parameters,
+            "constraints": constraints,
+            "evidence": evidence,
+            "confidence": max(0.0, min(1.0, confidence)),
+        }
 
     def infer_arguments(self, name: str, transcript: str) -> dict[str, Any]:
         text = _normalize_text(transcript)
@@ -542,6 +805,12 @@ class ScenarioCatalog:
                 inferred["point"] = "origin"
             elif _contains_term(text, "客厅") or _contains_term(text, "白墙"):
                 inferred["point"] = "white_wall"
+        if name == "find_and_feed_doudou":
+            grams_match = re.search(rf"(?P<grams>{_SPOKEN_NUMBER})克", text)
+            if grams_match:
+                grams = _spoken_number_value(grams_match.group("grams"))
+                if grams is not None and float(grams).is_integer():
+                    inferred["grams"] = int(grams)
         if name == "movie_projection" and self._movie_stay_put_requested(text):
             inferred["stay_put"] = True
         if name == "movie_projection" and not inferred.get("stay_put"):
@@ -553,6 +822,7 @@ class ScenarioCatalog:
                 inferred["point"] = "origin"
         if name == "meeting_projection" and self._meeting_stay_put_requested(text):
             inferred["stay_put"] = True
+            inferred["navigate"] = False
         if name == "meeting_projection" and not inferred.get("stay_put"):
             if _contains_term(text, "书房"):
                 inferred["point"] = "study_projection"
@@ -560,6 +830,13 @@ class ScenarioCatalog:
                 inferred["point"] = "white_wall"
             elif _contains_term(text, "餐厅") or _contains_term(text, "原点"):
                 inferred["point"] = "origin"
+        if name == "meeting_projection" and re.search(
+            r"不要抬头|不用抬头|别抬头|不需要抬头|保持当前角度|"
+            r"(?:头|头部|镜头).{0,4}(?:不要|别|不用|无需|不需要)动|"
+            r"(?:不要|别|不用|无需|不需要)动.{0,3}(?:头|头部|镜头)",
+            text,
+        ):
+            inferred["head"] = "keep"
         return inferred
 
     @staticmethod
@@ -579,9 +856,7 @@ class ScenarioCatalog:
     @staticmethod
     def _meeting_stay_put_requested(transcript: str) -> bool:
         text = _normalize_text(transcript)
-        meeting_topic = bool(
-            re.search(r"会议|开(?:个|场|一下)?会|投影|投屏|ppt|幻灯|演示|汇报|会议内容", text)
-        )
+        meeting_topic = ScenarioCatalog._meeting_content_evidence(text)
         if not meeting_topic:
             return False
         if any(
@@ -648,7 +923,7 @@ class ScenarioCatalog:
         return bool(
             re.search(
                 r"(?:不要|别|不用|无需|不需要|不想)(?:帮我|给我)?"
-                r"(?:找|寻找|搜索|看看|去看)(?:一下)?(?:豆豆|小狗|狗狗|宠物|狗)",
+                r"(?:去)?(?:找|寻找|搜索|看看|去看)(?:一下)?(?:豆豆|小狗|狗狗|宠物|狗)",
                 text,
             )
         )
@@ -848,7 +1123,13 @@ class ScenarioCatalog:
                 for term in ("豆豆", "豆儿", "小狗", "宠物", "狗", "毛孩子", "小家伙")
             )
             feeding = any(_contains_term(transcript, term) for term in terms)
-            return pet and feeding
+            searching = any(
+                _contains_term(transcript, term)
+                for term in ("找", "找到", "寻找", "搜索", "看看", "瞧瞧", "在哪", "去看")
+            )
+            return pet and feeding and searching
+        if name == "meeting_projection":
+            return self._meeting_content_evidence(transcript)
         if name == "meeting_projection_stop":
             topic = any(_contains_term(transcript, term) for term in terms)
             closing = any(
@@ -874,6 +1155,36 @@ class ScenarioCatalog:
             }[name]
             return any(_contains_term(transcript, item) for item in actions)
         return any(_contains_term(transcript, term) for term in terms)
+
+    @staticmethod
+    def _meeting_content_evidence(transcript: str) -> bool:
+        """Require meeting content, not the bare word “projector/projection”."""
+
+        text = _normalize_text(transcript)
+        return bool(
+            re.search(r"会议|开(?:个|场|一下)?会|ppt|幻灯|汇报|演示|讨论", text)
+            or re.search(r"(?:投影|投屏).{0,6}(?:会议|内容|文档|材料)", text)
+            or re.search(r"(?:会议|内容|文档|材料).{0,6}(?:投影|投屏)", text)
+        )
+
+    @staticmethod
+    def _meeting_start_evidence(transcript: str) -> bool:
+        """Require a positive start predicate attached to meeting content."""
+
+        text = _normalize_text(transcript)
+        return bool(
+            re.search(r"(?:我要|我想|准备|一起|陪我)?开(?:个|场|一下)?会", text)
+            or re.search(
+                r"(?:开始|播放|投影(?!仪)|投屏|展示|放出来|投出来).{0,8}"
+                r"(?:会议|ppt|幻灯|会议内容|会议材料|汇报内容)",
+                text,
+            )
+            or re.search(
+                r"(?:会议|ppt|幻灯|会议内容|会议材料|汇报内容).{0,8}"
+                r"(?:开始|播放|投影(?!仪)|投屏|展示|放出来|投出来)",
+                text,
+            )
+        )
 
     def _context_corroborates_model_scene(
         self,
@@ -961,7 +1272,10 @@ class ScenarioCatalog:
             return True
         informational = any(
             term in text
-            for term in ("是什么", "什么意思", "怎么做", "如何做", "有什么好处", "几点开始", "是否支持")
+            for term in (
+                "是什么", "什么意思", "怎么做", "如何做", "怎么用", "如何使用", "怎样用",
+                "有什么好处", "几点开始", "是否支持",
+            )
         )
         if not informational:
             return False
@@ -1016,9 +1330,16 @@ class ScenarioCatalog:
         over conflicts, cancellations and minimum topic evidence, while exact,
         fuzzy and phonetic routes remain deterministic overrides.
         """
+        if is_retrospective_query(transcript):
+            return False, "retrospective_query_must_use_memory"
         requested = self.normalize_scenario_name(requested, transcript)
         if requested not in self.procedures:
             return False, "unknown_scenario"
+        if requested == "movie_projection" and self._ambiguous_movie_followup(
+            transcript,
+            prior_context,
+        ):
+            return False, "ambiguous_movie_polarity"
         resolved = self.match(transcript) if matched is None else matched
         if resolved:
             if requested == resolved:
@@ -1056,6 +1377,10 @@ class ScenarioCatalog:
         text = _normalize_text(transcript)
         if not text:
             return None
+        # A completed action mentioned in a history question is evidence for
+        # memory retrieval, not authority to execute that action again.
+        if is_retrospective_query(transcript):
+            return None
         # Questions about capability describe a function; they are not an
         # instruction to operate hardware.  Requests such as “你能不能帮我…”
         # are excluded by _capability_question and continue normally.
@@ -1069,7 +1394,12 @@ class ScenarioCatalog:
         # never be mistaken for a meeting presentation.
         movie_topic = bool(re.search(r"电影|影片", text))
         movie_start_negated = bool(
-            re.search(r"(?:不看|不要看|别看|不放|不要放|别放|不用放).{0,4}(?:电影|影片)", text)
+            re.search(
+                r"(?:不看|不要看|别看|不放|不要放|别放|不用放|"
+                r"不播放|不要播放|别播放|不用播放|不开始|不要开始|别开始)"
+                r".{0,4}(?:电影|影片)",
+                text,
+            )
         )
         if movie_topic:
             if re.search(r"暂停|停一下|先停", text) and not re.search(r"(?:不要|别|不用).{0,4}暂停", text):
@@ -1090,6 +1420,14 @@ class ScenarioCatalog:
                 and re.search(r"看|放|播放|投影|来一部|来个", text)
             ):
                 return "movie_projection"
+        if (
+            self._meeting_content_evidence(text)
+            and re.search(r"暂停|停一下|先停|继续|恢复|接着", text)
+            and not self._meeting_start_evidence(text)
+        ):
+            # Meeting transport is handled by projector_control. Do not let a
+            # fuzzy authored start example turn pause/resume into a full start.
+            return None
         # “不要导航，直接在这里投影” only negates the navigation stage;
         # it explicitly requests the remaining meeting projection stages.
         if self._meeting_stay_put_requested(text):
@@ -1108,6 +1446,11 @@ class ScenarioCatalog:
         feeding_negated = self._feeding_negated(text)
         pet_search_negated = self._pet_search_negated(text)
         fitness_negated = self._fitness_negated(text)
+        if self.explicit_constraints(text).get("allowed_skills") == ["feeder_control"]:
+            # A scene matcher cannot represent this whitelist without adding
+            # forbidden patrol/navigation steps. Leave the utterance to the
+            # direct feeder skill.
+            return None
 
         # Explicit deterministic routes authored in the original scene catalog.
         for name, procedure in self.procedures.items():
@@ -1137,7 +1480,16 @@ class ScenarioCatalog:
         # “豆儿”是实际日志中“豆豆”的稳定 ASR 别名，但只在
         # 找/看/位置/喂食语境中接受，避免一个名词单独触发硬件。
         pet = "豆豆" in text or "豆儿" in text or "狗" in text or "宠物" in text
-        if pet and not feeding_negated and any(word in text for word in ("喂", "吃饭", "吃东西", "该吃", "饿了", "狗粮", "开饭")):
+        pet_search_requested = any(
+            word in text for word in ("找", "找到", "寻找", "搜索", "看看", "瞧瞧", "在哪", "去看")
+        )
+        if (
+            pet
+            and pet_search_requested
+            and not pet_search_negated
+            and not feeding_negated
+            and any(word in text for word in ("喂", "吃饭", "吃东西", "该吃", "饿了", "狗粮", "开饭"))
+        ):
             return "find_and_feed_doudou"
         if pet and not pet_search_negated and any(word in text for word in ("找", "看看", "在哪")):
             if any(word in text for word in ("这里", "当前位置", "原地")) and "find_pet_here" in self.procedures:
@@ -1180,9 +1532,7 @@ class ScenarioCatalog:
             return repaired
 
         close = ("关闭", "关掉", "关了", "停止", "结束", "不投了")
-        meeting_topic = bool(
-            re.search(r"会议|开(?:个|场|一下)?会|投影|投屏|ppt|幻灯|演示|汇报", text)
-        )
+        meeting_topic = self._meeting_content_evidence(text)
         if not projection_stop_negated and meeting_topic and any(word in text for word in (*close, "别播", "取消")):
             return "meeting_projection_stop"
         if not fitness_negated and "引体" in text:
@@ -1195,7 +1545,7 @@ class ScenarioCatalog:
             not projection_start_negated
             and not projection_stop_negated
             and meeting_topic
-            and any(word in text for word in ("开", "开始", "投影", "投屏", "播放", "内容", "陪", "准备", "展示", "放出来"))
+            and self._meeting_start_evidence(text)
         ):
             return "meeting_projection"
         if self.explicit_homecoming_replay(text):
@@ -1214,11 +1564,97 @@ class ScenarioCatalog:
             return "rest_lighting"
         return None
 
+    @staticmethod
+    def _step_enabled(step: dict[str, Any], arguments: dict[str, Any]) -> bool:
+        condition = step.get("enabled_if")
+        if not condition:
+            return True
+        if not isinstance(condition, dict):
+            return False
+        key = str(condition.get("argument") or "")
+        value = arguments.get(key)
+        if "equals" in condition:
+            return value == condition["equals"]
+        if "truthy" in condition:
+            return bool(value) is bool(condition["truthy"])
+        return key in arguments
+
+    def validate_compiled_plan(
+        self,
+        plan: dict[str, Any],
+        arguments: dict[str, Any],
+        constraints: dict[str, Any] | None = None,
+        operation: str = "start",
+    ) -> None:
+        """Enforce final invariants on active steps immediately before dispatch."""
+
+        constraints = dict(constraints or {})
+        forbidden = {str(item) for item in constraints.get("forbidden") or []}
+        allowed_value = constraints.get("allowed_skills")
+        allowed = {str(item) for item in allowed_value or []} if allowed_value else None
+        active_steps = [
+            step for step in plan.get("steps") or []
+            if self._step_enabled(step, arguments)
+        ]
+        violations: list[str] = []
+        start_actions = {
+            ("projector_control", "on"),
+            ("projector_control", "meeting_presentation_on"),
+            ("media_player", "play_movie"),
+            ("media_player", "play_video"),
+        }
+        for step in active_steps:
+            skill = str(step.get("skill") or "")
+            action = str(step.get("action") or "")
+            resources = set(self.skill_resources.get(skill, ()))
+            if constraints.get("forbid_base_motion") and "base" in resources:
+                violations.append(f"forbid_base_motion:{skill}")
+            if allowed is not None and skill not in allowed:
+                violations.append(f"only_constraint:{skill}")
+            if skill in forbidden or f"{skill}:{action}" in forbidden:
+                violations.append(f"forbidden:{skill}:{action}")
+            if "projector_control:start" in forbidden and (skill, action) in start_actions:
+                violations.append(f"forbidden_projector_start:{skill}:{action}")
+            if "media_player:start" in forbidden and skill == "media_player" and action.startswith("play"):
+                violations.append(f"forbidden_media_start:{action}")
+            if operation in {"pause", "resume", "stop"} and (skill, action) in start_actions:
+                violations.append(f"transport_must_not_start:{operation}:{skill}:{action}")
+            if operation in {"pause", "resume"} and "base" in resources:
+                violations.append(f"transport_must_not_move:{operation}:{skill}")
+        if violations:
+            raise ScenarioError("intent_constraint_violation:" + ",".join(sorted(set(violations))))
+
+    def compile_intent(self, intent: dict[str, Any]) -> dict[str, Any]:
+        name = str(intent.get("intent") or "")
+        parameters = dict(intent.get("parameters") or {})
+        plan = self.compile(name, parameters)
+        self.validate_compiled_plan(
+            plan,
+            parameters,
+            dict(intent.get("constraints") or {}),
+            str(intent.get("operation") or "start"),
+        )
+        plan["normalized_intent"] = copy.deepcopy(intent)
+        return plan
+
     def compile(self, name: str, arguments: dict[str, Any]) -> dict[str, Any]:
         procedure = self.procedures.get(name)
         if procedure is None:
             raise ScenarioError(f"unknown_scenario:{name}")
-        arguments = dict(arguments)
+        allowed_parameters = set(dict(procedure.get("parameters") or {}))
+        arguments = {
+            **self.parameter_defaults(name),
+            **{
+                key: copy.deepcopy(value)
+                for key, value in dict(arguments or {}).items()
+                if key in allowed_parameters
+            },
+        }
+        if name in {"meeting_projection", "movie_projection"}:
+            if arguments.get("stay_put") is True:
+                arguments["navigate"] = False
+            if arguments.get("navigate") is False:
+                arguments["stay_put"] = True
         if name in {"push_up_companion", "pull_up_companion", "squat_companion"} and "duration" in arguments:
             try:
                 duration = float(arguments["duration"])
@@ -1390,6 +1826,95 @@ class ScenarioExecutor:
             return "我现在帮你调整灯光。"
         return ""
 
+    def _invoke_step_record(self, step: dict[str, Any], call_args: dict[str, Any]) -> dict[str, Any]:
+        """Run one atomic step without allowing its exception to cancel siblings.
+
+        Device adapters are expected to return structured failures, but an
+        upstream SDK can still raise (for example, an expired cloud login).
+        Treat that as this step's result so an independent navigation branch
+        can continue and the final scene report remains truthful.
+        """
+        try:
+            result = self.invoke_atomic(step["skill"], call_args)
+            if not isinstance(result, dict):
+                raise TypeError("atomic_result_not_object")
+
+            # A level command can physically reach a safe horizontal pose just
+            # before the strict stability window expires.  In that case the
+            # atomic adapter deliberately keeps lidar gated and returns
+            # head_level_not_safe_for_lidar.  Long scenarios used to treat the
+            # bounded confirmation timeout as a terminal scene failure even
+            # though a second confirmation immediately succeeds.  Retry this
+            # one idempotent cleanup action once; never retry navigation,
+            # projector startup, or any other state-changing scene step.
+            succeeded = bool(result.get("ok") or result.get("validation_ok"))
+            structured = result.get("structured_result")
+            if not isinstance(structured, dict):
+                structured = {}
+            first_error = str(result.get("error") or structured.get("error") or "")
+            recoverable_level_timeout = (
+                step.get("skill") == "head_control"
+                and step.get("action") == "level"
+                and not succeeded
+                and first_error in {
+                    "head_level_not_safe_for_lidar",
+                    "head_target_unconfirmed",
+                }
+            )
+            if recoverable_level_timeout:
+                time.sleep(6.5)
+                retry_result = self.invoke_atomic(step["skill"], call_args)
+                if not isinstance(retry_result, dict):
+                    raise TypeError("atomic_retry_result_not_object")
+                retry_result = dict(retry_result)
+                retry_result["scenario_recovery"] = {
+                    "attempted": True,
+                    "reason": first_error,
+                    "first_ok": bool(result.get("ok")),
+                    "first_validation_ok": bool(result.get("validation_ok")),
+                    "first_error": first_error,
+                }
+                result = retry_result
+        except Exception as exc:
+            error = f"{type(exc).__name__}:{exc}"
+            result = {
+                "ok": False,
+                "validation_ok": False,
+                "executed": False,
+                "skill": step["skill"],
+                "error": error,
+                "structured_result": {
+                    "failure_reason": self._classify_step_exception(step["skill"], error),
+                    "detail": str(exc)[:500],
+                },
+                "spoken_summary": "这项操作刚才没有完成。",
+            }
+        succeeded = bool(result.get("ok") or result.get("validation_ok"))
+        return {
+            "id": step["id"], "skill": step["skill"], "action": step["action"],
+            "finished": True, "succeeded": succeeded, "skipped": False,
+            "result": result, "error": result.get("error"),
+        }
+
+    @staticmethod
+    def _classify_step_exception(skill: str, error: str) -> str:
+        value = str(error or "").lower()
+        if skill == "light_control":
+            if "offline" in value:
+                return "device_offline"
+            if any(token in value for token in (
+                "token", "login", "登录", "凭证", "unauthorized", "forbidden", "401", "403",
+            )):
+                return "auth_expired_or_invalid"
+            if any(token in value for token in ("timeout", "timed out")):
+                return "service_timeout"
+            if any(token in value for token in (
+                "network", "dns", "name resolution", "connection refused", "connection reset",
+            )):
+                return "network_unavailable"
+            return "control_failed"
+        return "step_exception"
+
     def execute(
         self,
         name: str,
@@ -1410,6 +1935,12 @@ class ScenarioExecutor:
             }
         try:
             plan = self.catalog.compile(name, arguments)
+            condition_arguments = {
+                **self.catalog.parameter_defaults(name),
+                **dict(arguments or {}),
+            }
+            if name in {"meeting_projection", "movie_projection"} and condition_arguments.get("stay_put"):
+                condition_arguments["navigate"] = False
             if announce:
                 speech_name = name
                 fallback = f"收到，我现在开始{plan['description']}。"
@@ -1437,7 +1968,7 @@ class ScenarioExecutor:
                 )
             records: dict[str, dict[str, Any]] = {}
             for index, step in enumerate(plan["steps"]):
-                if not self._argument_condition(step.get("enabled_if"), arguments):
+                if not self._argument_condition(step.get("enabled_if"), condition_arguments):
                     records[step["id"]] = {
                         "id": step["id"],
                         "skill": step["skill"],
@@ -1479,7 +2010,7 @@ class ScenarioExecutor:
                 progress_text = self._step_progress_text(
                     name,
                     step,
-                    {**arguments, **call_args},
+                    {**condition_arguments, **call_args},
                     index,
                 )
                 if progress_text:
@@ -1490,13 +2021,44 @@ class ScenarioExecutor:
                         step_id=step["id"],
                         step_index=index,
                     )
-                result = self.invoke_atomic(step["skill"], call_args)
-                succeeded = bool(result.get("ok") or result.get("validation_ok"))
-                records[step["id"]] = {
-                    "id": step["id"], "skill": step["skill"], "action": step["action"],
-                    "finished": True, "succeeded": succeeded, "skipped": False,
-                    "result": result, "error": result.get("error"),
-                }
+                records[step["id"]] = self._invoke_step_record(step, call_args)
+
+            # Meeting projection intentionally remains active after a normal
+            # start, so cleanup must not appear in (or alter) its default plan.
+            # If the head was physically raised but projector startup failed,
+            # however, restore the safe neutral state exactly once.  This is a
+            # runtime rollback, not a second authored scene, and it never runs
+            # for dry-run validation, navigation failure, or a successful start.
+            if name == "meeting_projection":
+                raised = records.get("head_up") or {}
+                projected = records.get("project") or {}
+                raised_physically = bool(
+                    raised.get("succeeded")
+                    and (raised.get("result") or {}).get("executed")
+                )
+                projector_failed = bool(
+                    projected.get("finished")
+                    and not projected.get("skipped")
+                    and not projected.get("succeeded")
+                )
+                if raised_physically and projector_failed:
+                    off_step = {
+                        "id": "runtime_rollback_off",
+                        "skill": "projector_control",
+                        "action": "off",
+                    }
+                    off_record = self._invoke_step_record(
+                        off_step, {"action": "off"}
+                    )
+                    records[off_step["id"]] = off_record
+                    level_step = {
+                        "id": "runtime_rollback_level",
+                        "skill": "head_control",
+                        "action": "level",
+                    }
+                    records[level_step["id"]] = self._invoke_step_record(
+                        level_step, {"action": "level"}
+                    )
 
             selected = None
             for rule in plan["outcome_groups"][0]["rules"]:
@@ -1534,6 +2096,21 @@ class ScenarioExecutor:
                     ("辛苦了，喝口水吧。", "完成得不错，先补点水。", "做完啦，歇一下再喝口水。"),
                 )
                 spoken = spoken.rstrip("。！!") + "。" + care
+            video_warnings = []
+            if name in {"find_pet", "find_pet_at", "find_pet_here", "find_and_feed_doudou"} and executed:
+                for item in step_values:
+                    payload = (item.get("result") or {}).get("structured_result") or {}
+                    if item.get("skill") == "pet_tracking" and payload.get("found") and payload.get("video_status") == "failed":
+                        video_warnings.append(str(payload.get("video_error") or "pet_video_unavailable"))
+                if video_warnings:
+                    spoken = "已经找到豆豆，不过这次视频录制失败，没有视频同步到手机。"
+                    for item in step_values:
+                        if item.get("skill") == "feeder_control" and not item.get("skipped"):
+                            if item.get("succeeded"):
+                                spoken += "已经开始给它喂食了。"
+                            else:
+                                detail = str((item.get("result") or {}).get("spoken_summary") or "")
+                                spoken += "投食没有成功。" + detail
             dry_run = validation_ok and not executed
             return {
                 "ok": bool(all_succeeded and executed),
@@ -1553,6 +2130,7 @@ class ScenarioExecutor:
                 ],
                 "error": None if all_succeeded else self._first_error(step_values),
                 "elapsed_ms": round((time.monotonic() - started) * 1000.0, 1),
+                "video_warnings": video_warnings,
                 "spoken_summary": (
                     "安全模拟校验通过，但本次场景没有实际执行。" if dry_run else spoken
                 ),
@@ -1595,6 +2173,13 @@ class ScenarioExecutor:
             and not records.get(str(item), {}).get("skipped")
             and not records.get(str(item), {}).get("succeeded")
             for item in condition["any_executed_failed"]
+        ):
+            return False
+        if "all_executed_failed" in condition and not all(
+            records.get(str(item), {}).get("finished")
+            and not records.get(str(item), {}).get("skipped")
+            and not records.get(str(item), {}).get("succeeded")
+            for item in condition["all_executed_failed"]
         ):
             return False
         field = condition.get("field")

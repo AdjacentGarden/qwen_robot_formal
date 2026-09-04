@@ -1,0 +1,240 @@
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      # ==============================
+      # 基础配置
+      # ==============================
+      use_sim_time: true
+
+      global_frame: odom
+      robot_base_frame: base_footprint
+
+      # 廉价硬件和虚拟机环境适当放宽TF容忍度
+      transform_tolerance: 1.0
+
+      # ==============================
+      # 更新频率
+      # ==============================
+      # 雷达只有10Hz，局部地图3Hz已经够用
+      update_frequency: 3.0
+
+      # 发布主要用于RViz显示，降低到1Hz
+      publish_frequency: 1.0
+
+      # ==============================
+      # 局部地图尺寸
+      # ==============================
+      rolling_window: true
+
+      # 机器人位于中心，前后左右约4m
+      width: 6
+      height: 6
+
+      # 保留5cm分辨率，用于识别凳子腿等小型障碍
+      resolution: 0.05
+
+      # 局部地图通常不需要保留未知区域
+      track_unknown_space: false
+
+      # 只发送增量更新，降低CPU、DDS和RViz负担
+      always_send_full_costmap: true
+
+      # ==============================
+      # 机器人外形
+      # ==============================
+      # 实际半径约0.155m，增加2cm安全余量
+      robot_radius: 0.18
+
+      # 如果机器人是明显的矩形，后续建议改用实际footprint
+      # 设置footprint后，robot_radius会被footprint替代
+      #
+      # footprint: >
+      #   [[-0.24, -0.19],
+      #    [-0.24,  0.19],
+      #    [ 0.24,  0.19],
+      #    [ 0.24, -0.19]]
+      #
+      # footprint_padding: 0.02
+
+      # ==============================
+      # 图层
+      # inflation_layer必须放在obstacle_layer后面
+      # ==============================
+      plugins:
+        - obstacle_layer
+        - inflation_layer
+
+      # ==============================
+      # 激光障碍层
+      # ==============================
+      obstacle_layer:
+        plugin: nav2_costmap_2d::ObstacleLayer
+        enabled: true
+
+        # 清除机器人footprint内部的障碍点
+        footprint_clearing_enabled: true
+
+        observation_sources: scan
+
+        scan:
+          topic: /scan_gated
+          data_type: LaserScan
+
+          marking: true
+          clearing: true
+
+          # 对二维雷达影响不大，保持默认安全高度
+          max_obstacle_height: 2.0
+
+          # 雷达硬件最近测距0.15m
+          obstacle_min_range: 0.15
+          raytrace_min_range: 0.15
+
+          obstacle_max_range: 2.7
+
+          # 清除范围略大于标记范围
+          # 同时小于局部地图约3m的边界
+          raytrace_max_range: 2.9
+
+          # 无回波时如果LaserScan发布inf，可用于清除旧障碍
+          inf_is_valid: false
+
+          # 雷达10Hz，保留约3帧时间
+          # 减少廉价雷达偶发漏检导致障碍闪烁
+          observation_persistence: 0.5
+
+      # ==============================
+      # 障碍膨胀层
+      # ==============================
+      inflation_layer:
+        plugin: nav2_costmap_2d::InflationLayer
+        enabled: true
+
+        # 形成较宽的障碍物安全代价区域
+        inflation_radius: 0.5
+
+        # 原来的8.0衰减过快，容易贴障碍走
+        cost_scaling_factor: 3.0
+
+
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      # ==============================
+      # 基础配置
+      # ==============================
+      use_sim_time: true
+
+      global_frame: map
+      robot_base_frame: base_footprint
+
+      transform_tolerance: 1.0
+
+      # ==============================
+      # 更新频率
+      # ==============================
+      # 简单环境、低算力平台不需要高频全局更新
+      update_frequency: 0.5
+      publish_frequency: 0.5
+
+      resolution: 0.05
+
+      # 全局地图由Cartographer决定尺寸
+      # 不需要手动设置width和height
+      rolling_window: false
+
+      # Frontier探索需要保留未知区域
+      track_unknown_space: true
+
+      # 只发送更新区域
+      always_send_full_costmap: true
+
+      # ==============================
+      # 机器人外形
+      # 必须和local_costmap一致
+      # ==============================
+      robot_radius: 0.19
+
+      # 如果使用footprint，局部和全局必须同时修改
+      #
+      # footprint: >
+      #   [[-0.24, -0.19],
+      #    [-0.24,  0.19],
+      #    [ 0.24,  0.19],
+      #    [ 0.24, -0.19]]
+      #
+      # footprint_padding: 0.02
+
+      # ==============================
+      # 图层
+      # ==============================
+      plugins:
+        - static_layer
+        - obstacle_layer
+        - inflation_layer
+        
+        
+
+      # ==============================
+      # Cartographer静态地图层
+      # ==============================
+      static_layer:
+        plugin: nav2_costmap_2d::StaticLayer
+        enabled: true
+
+        # 接收Cartographer占据栅格地图
+        map_subscribe_transient_local: true
+
+        # 接收/map_updates增量地图
+        subscribe_to_updates: true
+        
+        
+        # ========================================
+        # 占据阈值设置（关键参数）
+        # ========================================
+        
+        # 将占据概率 > 0.6 的格子视为障碍物
+        lethal_cost_threshold: 43  # 0-100，对应占据概率 0-1
+
+
+      # ==============================
+      # 全局激光障碍层 雷达有左右遮挡，/scan 会带来不稳定信息 
+      # ==============================
+      obstacle_layer:
+        plugin: nav2_costmap_2d::ObstacleLayer
+        enabled: true
+
+        footprint_clearing_enabled: true
+
+        observation_sources: scan
+
+        scan:
+          topic: /scan_gated
+          data_type: LaserScan
+
+          marking: true
+          clearing: false
+
+          max_obstacle_height: 2.0
+
+          obstacle_min_range: 0.15
+          raytrace_min_range: 0.15
+
+          # 全局层也不必处理雷达全部12m量程
+          obstacle_max_range: 5.5
+          raytrace_max_range: 6.0
+
+          inf_is_valid: false
+          observation_persistence: 0.5
+
+      # ==============================
+      # 全局膨胀层
+      # ==============================
+      inflation_layer:
+        plugin: nav2_costmap_2d::InflationLayer
+        enabled: true
+
+        # 形成较宽的障碍物安全代价区域
+        inflation_radius: 0.55
+        # 原来的8.0衰减过快，容易贴障碍走
+        cost_scaling_factor: 2.5

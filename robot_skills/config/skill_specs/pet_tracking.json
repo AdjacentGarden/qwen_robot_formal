@@ -3,7 +3,7 @@
   "module": "/home/test/self_program/new_self_test.py",
   "entrypoint": "/home/test/single_function/pet_tracking/run.sh",
   "certification_status": "unchecked",
-  "description_zh": "按完整语义区分宠物任务：只寻找豆豆或家里的狗使用 find_at_home；寻找并明确要求喂食使用 find_and_feed_at_home；明确要求持续跟随才使用 track。两个寻找动作都会先去书房C点再原地旋转，找到即停且不跟随。",
+  "description_zh": "按完整语义区分宠物任务：只寻找豆豆或家里的狗使用 find_at_home；寻找并明确要求喂食使用 find_and_feed_at_home；明确要求持续跟随才使用 track。寻找时首次检测到宠物便立即开始录像，并继续原地对准，目标框连续稳定进入画面中央后才停止；找到后不自动跟随。",
   "allowed_actions": [
     "find",
     "track",

@@ -33,6 +33,7 @@ for directory in (DATA, VIDEOS, THUMBS):
 
 APP_TOKEN = os.environ.get("ROBOT_APP_TOKEN", "")
 ROBOT_TOKEN = os.environ.get("ROBOT_BRIDGE_TOKEN", "")
+ROBOT_INSTANCE_ID = os.environ.get("ROBOT_BRIDGE_INSTANCE_ID", "").strip()
 MAX_VIDEO_BYTES = int(os.environ.get("MAX_VIDEO_BYTES", str(80 * 1024 * 1024)))
 MAX_VOICE_BYTES = int(os.environ.get("MAX_VOICE_BYTES", str(4 * 1024 * 1024)))
 ROBOT_STALE_SECONDS = float(os.environ.get("ROBOT_STALE_SECONDS", "12.0"))
@@ -90,6 +91,7 @@ class Hub:
         self.last_broadcast_monotonic = 0.0
         self.robot_last_seen_monotonic = 0.0
         self.robot_generation = 0
+        self.robot_instance_id: Optional[str] = None
         self.robot_disconnect_task: Optional[asyncio.Task] = None
 
     def snapshot(self) -> Dict[str, Any]:
@@ -269,6 +271,14 @@ def app_authorized(token: str) -> bool:
 
 def robot_authorized(token: str) -> bool:
     return bool(ROBOT_TOKEN) and token == ROBOT_TOKEN
+
+
+def robot_instance_authorized(instance_id: str) -> bool:
+    """Fence out stale bridge copies that still possess an old shared token."""
+
+    if not ROBOT_INSTANCE_ID:
+        return True
+    return bool(instance_id) and instance_id == ROBOT_INSTANCE_ID
 
 
 def validate_command(raw: Dict[str, Any]) -> Dict[str, Any]:
@@ -575,6 +585,10 @@ async def robot_socket(ws: WebSocket) -> None:
     if not robot_authorized(ws.query_params.get("token", "")):
         await ws.close(code=4401)
         return
+    instance_id = str(ws.query_params.get("instance_id", ""))
+    if not robot_instance_authorized(instance_id):
+        await ws.close(code=4403)
+        return
     await ws.accept()
     hub.robot_generation += 1
     connection_generation = hub.robot_generation
@@ -588,6 +602,7 @@ async def robot_socket(ws: WebSocket) -> None:
         except Exception:
             pass
     hub.robot = ws
+    hub.robot_instance_id = instance_id or None
     hub.robot_last_seen_monotonic = time.monotonic()
     hub.robot_status.update({"online": True, "last_seen": time.time(), "mode": "connected"})
     await hub.broadcast({"type": "robot_status", "robot": dict(hub.robot_status)})
@@ -668,6 +683,7 @@ async def robot_socket(ws: WebSocket) -> None:
         await asyncio.gather(watchdog, return_exceptions=True)
         if hub.robot is ws:
             hub.robot = None
+            hub.robot_instance_id = None
             hub.task = {"active": False, "planning": False, "queued": 0}
             hub.robot_status.update({"online": False, "mode": "reconnecting", "last_seen": time.time()})
             hub.persist()

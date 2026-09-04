@@ -14,18 +14,6 @@ from pathlib import Path
 SKILL = "projector_control"
 ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = Path(os.getenv("PROJECTOR_CONTROL_CONFIG", ROOT / "config.json"))
-DEFAULT_HEAD_LEVEL_COMMAND = [
-    "bash",
-    "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/head_control/run.sh",
-    "level",
-    "--wait",
-    "0.45",
-    "--discovery-timeout",
-    "3.0",
-    "--json",
-]
-
-
 def load_config():
     return json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
 
@@ -132,56 +120,22 @@ def run_configured_command(config, key, timeout, required=True):
     }
 
 
-def restore_head_level(config, timeout):
-    """Return the head to its neutral angle after every projector shutdown.
-
-    Projector shutdown is the ownership boundary shared by fitness, meeting,
-    and standalone voice projection.  Keeping the guarantee here also covers
-    direct calls that bypass the dialogue planner.
-    """
-    command = list(config.get("head_level_command") or DEFAULT_HEAD_LEVEL_COMMAND)
-    env = os.environ.copy()
-    env.setdefault("CAR_REAL_WS", "/home/test/Car_real_copy")
-    attempts = []
-    for attempt in range(1, 3):
-        try:
-            completed = subprocess.run(
-                command,
-                capture_output=True,
-                text=True,
-                timeout=max(3.0, min(float(timeout), 12.0)),
-                check=False,
-                env=env,
-            )
-            record = {
-                "attempt": attempt,
-                "returncode": completed.returncode,
-                "stdout": completed.stdout.strip()[-2000:],
-                "stderr": completed.stderr.strip()[-2000:],
-            }
-            attempts.append(record)
-            if completed.returncode == 0:
-                return {"ok": True, "command": command, "attempts": attempts}
-        except Exception as exc:
-            attempts.append({"attempt": attempt, "error": f"{type(exc).__name__}: {exc}"})
-        time.sleep(0.15)
-    raise RuntimeError(f"head_level_restore_failed: {attempts}")
-
-
 def turn_projector_off(config, timeout):
+    """Stop projected content and switch off the projector light only.
+
+    Head motion is deliberately not owned by this device adapter.  Projection
+    scenarios perform exactly one explicit ``head_control level`` step after
+    this call.  Keeping the ownership boundary here prevents a timed-out
+    nested resident client from leaving a still-running head task behind and
+    colliding with cleanup retries.
+    """
     stop_error = None
-    head_error = None
     content = None
-    head = None
     try:
         content = run_configured_command(config, "meeting_presentation_stop_command", timeout)
     except Exception as exc:
         stop_error = exc
     light = call_light(config, False)
-    try:
-        head = restore_head_level(config, timeout)
-    except Exception as exc:
-        head_error = exc
     write_state(
         config,
         "off",
@@ -190,16 +144,10 @@ def turn_projector_off(config, timeout):
         scrolling=False,
         slides=[],
         slide_index=None,
-        head_level_ok=head_error is None,
     )
-    errors = []
     if stop_error is not None:
-        errors.append(f"meeting loop stop failed: {stop_error}")
-    if head_error is not None:
-        errors.append(str(head_error))
-    if errors:
-        raise RuntimeError("projector is off but cleanup was incomplete: " + "; ".join(errors))
-    return {"light": light, "content": content, "head": head}
+        raise RuntimeError(f"projector is off but content cleanup was incomplete: {stop_error}")
+    return {"light": light, "content": content}
 
 
 def start_meeting_presentation(config, timeout):
@@ -233,12 +181,12 @@ def meeting_scroll(config, action, timeout):
     if action == "pause":
         if state.get("scrolling") is False:
             return {"scrolling": False, "already_paused": True}
-        content = run_configured_command(config, "meeting_presentation_stop_command", timeout)
+        content = run_configured_command(config, "meeting_presentation_pause_command", timeout)
         write_state(config, "meeting_presentation_on", "meeting_loop", scrolling=False, session_active=True)
         return {"scrolling": False, "content": content}
     if state.get("scrolling") is True:
         return {"scrolling": True, "already_running": True}
-    content = run_configured_command(config, "meeting_presentation_start_command", timeout)
+    content = run_configured_command(config, "meeting_presentation_resume_command", timeout)
     write_state(config, "meeting_presentation_on", "meeting_loop", scrolling=True, session_active=True)
     return {"scrolling": True, "content": content}
 
@@ -293,8 +241,10 @@ def main(argv=None):
         elif args.action == "meeting_presentation_on":
             media = {
                 "media_kind": "meeting_slide_loop",
+                "playback_format": "fullscreen_image_loop",
                 "media_paths": list(config["meeting_slide_container_paths"]),
                 "media_sha256": list(config["meeting_slide_sha256"]),
+                "slide_interval_sec": 3,
             }
         emit(
             True,

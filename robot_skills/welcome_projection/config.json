@@ -1,10 +1,12 @@
 {
   "dian_module_path": "/home/test/dian.py",
-  "host_video_path": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/welcome_projection/assets/welcome_home.mp4",
-  "expected_sha256": "605524d8ee52682cd0a45907ad3d0ed0bd8555935e75d02e6ee55145bd33e54f",
+  "host_image_path": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/welcome_projection/assets/welcome_home.png",
+  "expected_sha256": "00a8385cfc4ea8b7ce810ccc24dfea2e30c694be153f641a170a07cb1509c529",
   "container": "android_0",
-  "container_video_path": "/sdcard/Movies/welcome_home.mp4",
-  "player_package": "android.rk.RockVideoPlayer",
+  "container_image_path": "/sdcard/Pictures/welcome_home.png",
+  "player_package": "com.android.gallery3d",
+  "display_rotation_degrees": 180,
+  "fullscreen": true,
   "helper_path": "/usr/local/sbin/robot-welcome-projection",
   "start_video_script": "/home/test/start_projection_video.sh",
   "lock_path": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/projector/welcome.lock"

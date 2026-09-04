@@ -1,0 +1,82 @@
+motion_controller:
+  ros__parameters:
+    use_sim_time: false
+
+    # 三路控制输入与底盘最终输出。AI 系统应只发布 /cmd_vel_external，
+    # 不要直接发布最终 /cmd_vel。
+    navigation_cmd_topic: /cmd_vel_nav_smoothed
+    wall_alignment_cmd_topic: /cmd_vel_wall_align
+    external_cmd_topic: /cmd_vel_external
+    output_cmd_topic: /cmd_vel
+
+    # Cartographer 的 scan/IMU/odom 必须同步门控，避免关闭雷达期间其
+    # ordered sensor queue 积压旧 IMU/odom，恢复后触发 TF past extrapolation。
+    raw_scan_topic: /scan
+    gated_scan_topic: /scan_gated
+    raw_imu_topic: /imu
+    gated_imu_topic: /imu_cartographer_gated
+    raw_odom_topic: /odom
+    gated_odom_topic: /odom_cartographer_gated
+    rf2o_odom_topic: /odom_rf2o
+    sensor_gate_min_scans: 30
+    sensor_gate_stable_duration: 3.0
+    sensor_gate_max_scan_gap: 0.25
+    sensor_gate_max_imu_age: 0.25
+    sensor_gate_max_odom_age: 0.5
+    sensor_gate_odom_stable_duration: 2.0
+    sensor_gate_max_tf_age: 0.5
+    sensor_gate_map_stable_duration: 2.0
+    sensor_gate_recovery_timeout: 15.0
+    sensor_gate_recovery_required: true
+    sensor_gate_allow_external_motion: false
+    nav_goal_map_margin: 0.20
+    nav_goal_require_map_bounds: true
+
+    # AI/上层系统发送 geometry_msgs/Pose2D：x、y 单位 m，theta 单位 rad。
+    # motion_controller 校验后在内部转发给 Nav2 NavigateToPose。
+    nav_goal_topic: /motion_controller/nav_goal
+    nav_goal_with_options_topic: /motion_controller/nav_goal_with_options
+    nav_goal_frame: map
+    nav_goal_server_timeout: 5.0
+    nav_goal_feedback_period: 1.0
+
+    # 兼容旧启动命令的保留参数。当前采用自动请求仲裁，不会预选或锁定控制源。
+    initial_mode: stop
+
+    # 输出频率与输入看门狗。当前控制源超过 input_timeout 未更新时立即输出零速度。
+    publish_frequency: 20.0
+    input_timeout: 0.30
+
+    # 一个控制源归零/超时释放后，切换到下一控制源前保持零速度的时间。
+    switch_stop_duration: 0.30
+
+    # 最终硬限幅，对三个控制系统都生效。
+    max_linear_velocity: 0.60
+    max_angular_velocity: 0.60
+
+    # AI 外部控制额外限幅，最终还会受到上面的全局限幅约束。
+    max_external_linear_velocity: 0.30
+    max_external_angular_velocity: 0.40
+
+    # AI 导航目标 yaw 输入单位为度，允许 [-180, 180]；本节点统一转为弧度。
+    # 只转换 AI 导航目标（/motion_controller/nav_goal*）的 x、y、yaw。
+    # 仿真坐标方向一致，保持 1；真机 -1 表示坐标系整体旋转 180°：
+    # x=-x, y=-y, yaw=normalize(yaw+pi)，不是 yaw=-yaw。
+    # /cmd_vel_external、Nav2 和墙面对齐的速度命令均不受此参数影响。
+    direction_reverse: 1.0
+
+    # Nav2 和 AI 外部速度的最终加速度限制。
+    # 切换模式、输入超时和 STOP 模式不走斜坡，会立即输出零速度。
+    # 墙面对齐自身生成限速短脉冲，为保证其角度积分与底盘实际命令一致，不重复走此斜坡。
+    max_linear_acceleration: 0.80
+    max_angular_acceleration: 0.80
+
+    # 多控制源监督：超过死区的非零命令才算运动请求，零速度不会占用控制器。
+    conflict_command_deadband: 0.001
+
+    # false：已有活动源时继续执行它，拒绝新请求并反馈 WARN 和占用原因。
+    # true：请求冲突期间立即将最终输出归零，冲突消失后恢复原活动源。
+    stop_on_conflict: false
+
+    # 节点停止时额外发布零速度的次数。
+    shutdown_zero_count: 5

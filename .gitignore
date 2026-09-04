@@ -26,3 +26,16 @@ android_app/android/.gradle/
 android_app/android/app/build/
 android_app/release/*.apk
 .DS_Store
+
+# Local credentials and personal memory are restored separately, not published.
+*.env
+!config.example.env
+!*.env.example
+config/resident_profile.json
+**/face_data/
+*.db
+*.sqlite*
+*.jks
+*.keystore
+*.new
+._*

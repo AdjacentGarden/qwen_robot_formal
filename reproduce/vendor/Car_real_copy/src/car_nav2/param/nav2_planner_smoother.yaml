@@ -1,0 +1,11 @@
+planner_server:
+  ros__parameters:
+    planner_plugins: ["GridBased"]
+    use_sim_time: True
+
+    GridBased:
+      # 将原来的 plugin 路径替换为 NavFn
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      tolerance: 0.15      # 到达目标点的容差距离 (米)
+      use_astar: false    # false: 使用 Dijkstra (更稳健), true: 使用 A* (理论最优)
+      allow_unknown: false # 允许穿越地图上的未知区域

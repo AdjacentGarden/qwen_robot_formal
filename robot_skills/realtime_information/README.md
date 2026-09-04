@@ -9,10 +9,12 @@ Location resolution order:
 3. The `location` object in `config.json`.
 4. IP geolocation, only when `allow_ip_fallback` is `true`.
 
-The configured coordinates for Beijing Shunyi District come from an Amap district-center result and are therefore marked `gcj02`. The skill converts them to WGS84 for Open-Meteo and OpenStreetMap, while Amap traffic requests use GCJ-02. Do not relabel a coordinate system without converting the numbers.
+The default home address is `请配置家庭地址`; its Baidu door-address geocode is stored as WGS-84 `0.0, 0.0`. The saved company address is `请配置公司地址`; its verified door-address geocode is stored as WGS-84 `0.0, 0.0`. Unqualified local weather, nearby-place, and traffic queries use the home address. Queries that explicitly name the company use the saved company address. The skill converts WGS-84 to GCJ-02 before calling Baidu map APIs.
 
 When changing `address`, update `latitude`, `longitude`, `coordinate_system`, `timezone`, and `precision` together. If coordinates are omitted, the skill attempts online place-name geocoding; configured coordinates are preferred because they remain deterministic when geocoding services are unavailable.
 
-`precision: "district_center"` means the configured point represents the district center. It is not the robot's GPS position.
+`precision: "address_geocoded"` records that the coordinates came from address geocoding. They are fixed configuration values, not a fresh satellite reading made during each query. Ordinary external-location questions get a short place-name answer; coordinates and the fixed-position boundary are spoken only when the user explicitly asks for coordinates, longitude, or latitude.
+
+Generic questions such as “你在哪里” use indoor map localization. Only explicit GPS, coordinates, city, district, street, or other external-geography questions use this configured external position.
 
 The skill uses a final-summary-only speech policy. It does not speak a generic start acknowledgement such as `收到`; it speaks the queried result once after execution completes.

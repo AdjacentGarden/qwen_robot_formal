@@ -1,6 +1,6 @@
 {
   "name": "welcome_projection",
-  "description_zh": "播放三秒欢迎回家专用视频。只能由受保护的 homecoming_welcome 场景调用。",
+  "description_zh": "将欢迎回家专用图片旋转180度全屏显示三秒。只能由受保护的 homecoming_welcome 场景调用。",
   "allowed_actions": ["prepare", "play", "stop", "status"],
   "parameters": {
     "type": "object",

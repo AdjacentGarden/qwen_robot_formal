@@ -293,6 +293,17 @@ class MicrophoneUploadGateTests(unittest.IsolatedAsyncioTestCase):
                 self.assertTrue(enabled["ok"])
                 self.assertTrue(conversation.local_microphone_enabled)
                 self.assertTrue(load_microphone_enabled(conversation.microphone_state_file))
+                self.assertTrue(enabled["microphone"]["recovering"])
+                self.assertFalse(enabled["microphone"]["accepting_local_voice"])
+                self.assertGreater(enabled["microphone"]["ready_after_ms"], 0)
+                self.assertEqual(
+                    [item["type"] for item in conversation.websocket.messages],
+                    ["input_audio_buffer.clear", "input_audio_buffer.clear"],
+                )
+                conversation.local_microphone_ready_monotonic = 0.0
+                settled = conversation.microphone_status_payload()
+                self.assertFalse(settled["recovering"])
+                self.assertEqual(settled["ready_after_ms"], 0)
             finally:
                 server.close()
                 await server.wait_closed()
@@ -316,6 +327,30 @@ class MicrophoneUploadGateTests(unittest.IsolatedAsyncioTestCase):
 
         async def unexpected_send(_payload):
             raise AssertionError("disabled local microphone uploaded audio")
+
+        conversation.send = unexpected_send
+        await conversation.send_microphone()
+
+    async def test_reenabled_microphone_drains_settling_frames_without_uploading(self):
+        conversation = RealtimeConversation.__new__(RealtimeConversation)
+        conversation.stop_event = asyncio.Event()
+        conversation.local_microphone_enabled = True
+        conversation.local_microphone_ready_monotonic = float("inf")
+        conversation.external_audio_active = False
+        loop = asyncio.get_running_loop()
+
+        class Audio:
+            def read_microphone(self):
+                loop.call_soon_threadsafe(conversation.stop_event.set)
+                return b"\x01\x00" * 160
+
+            def microphone_allowed(self, *_args):
+                raise AssertionError("settling local audio must be discarded before VAD")
+
+        conversation.audio = Audio()
+
+        async def unexpected_send(_payload):
+            raise AssertionError("settling local microphone uploaded transition audio")
 
         conversation.send = unexpected_send
         await conversation.send_microphone()

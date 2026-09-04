@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:macro name="gazebo_sensor_plugin">
+
+<gazebo reference="laser_link">
+    <sensor name="rplidar_c1" type="ray">
+        <plugin name="rplidar_c1_plugin" filename="libgazebo_ros_ray_sensor.so">
+            <ros>
+                <namespace>/</namespace>
+                <remapping>~/out:=scan_360</remapping>
+            </ros>
+            <output_type>sensor_msgs/LaserScan</output_type>
+            <frame_name>laser_link</frame_name>
+        </plugin>
+        <always_on>true</always_on>
+        <visualize>false</visualize>
+        <!-- <visualize>true</visualize> -->
+        <update_rate>10</update_rate>
+        <pose>0 0 0 0 0 0</pose>
+        <!-- 激光传感器配置 -->
+        <ray>
+            <!-- 设置扫描范围 -->
+            <scan>
+                <horizontal>
+                    <samples>360</samples>
+                    <resolution>1.000000</resolution>
+                    <min_angle>-3.14159</min_angle>  <!-- -180° (全向扫描) -->
+                    <max_angle>3.14159</max_angle>   <!-- 180° (全向扫描) -->
+                </horizontal>
+            </scan>
+            <!-- RPLIDAR C1 是单线雷达 -->
+            <vertical>
+                <samples>1</samples>
+                <min_angle>0</min_angle>
+                <max_angle>0</max_angle>
+            </vertical>
+            <!-- 设置扫描距离 -->
+            <range>
+                <min>0.05</min>
+                <max>12.0</max>
+                <resolution>0.015000</resolution>
+            </range>
+            <!-- 设置噪声 -->
+            <noise>
+                <type>gaussian</type>
+                <mean>0.0</mean>
+                <stddev>0.03</stddev>
+            </noise>
+        </ray>
+    </sensor>
+</gazebo>
+  
+
+<gazebo reference="imu_link">
+    <sensor name="imu_sensor" type="imu">
+        <plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
+            <ros>
+                <namespace>/</namespace>
+                <remapping>~/out:=imu</remapping>
+            </ros>
+            <frame_name>imu_link</frame_name>
+            <initial_orientation_as_reference>false</initial_orientation_as_reference>
+        </plugin>
+        <update_rate>100</update_rate>
+        <always_on>true</always_on>
+        <imu>
+            <!-- 角速度（陀螺仪）噪声 - 中度 -->
+            <angular_velocity>
+                <x>
+                    <noise type="gaussian">
+                        <mean>0.0</mean>
+                        <stddev>5e-3</stddev>           <!-- 提高噪声 -->
+                        <bias_mean>0.0001</bias_mean>    <!-- 增加 bias -->
+                        <bias_stddev>0.00005</bias_stddev>
+                    </noise>
+                </x>
+                <y>
+                    <noise type="gaussian">
+                        <mean>0.0</mean>
+                        <stddev>5e-3</stddev>
+                        <bias_mean>0.0001</bias_mean>
+                        <bias_stddev>0.00005</bias_stddev>
+                    </noise>
+                </y>
+                <z>
+                    <noise type="gaussian">
+                        <mean>0.0</mean>
+                        <stddev>5e-3</stddev>
+                        <bias_mean>0.0001</bias_mean>
+                        <bias_stddev>0.00005</bias_stddev>
+                    </noise>
+                </z>
+            </angular_velocity>
+            
+            <!-- 线性加速度（加速度计）噪声 - 中度 -->
+            <linear_acceleration>
+                <x>
+                    <noise type="gaussian">
+                        <mean>0.0</mean>
+                        <stddev>0.05</stddev>           <!-- 提高噪声 -->
+                        <bias_mean>0.15</bias_mean>      <!-- 增加 bias -->
+                        <bias_stddev>0.005</bias_stddev>
+                    </noise>
+                </x>
+                <y>
+                    <noise type="gaussian">
+                        <mean>0.0</mean>
+                        <stddev>0.05</stddev>
+                        <bias_mean>0.15</bias_mean>
+                        <bias_stddev>0.005</bias_stddev>
+                    </noise>
+                </y>
+                <z>
+                    <noise type="gaussian">
+                        <mean>0.0</mean>
+                        <stddev>0.05</stddev>
+                        <bias_mean>0.15</bias_mean>
+                        <bias_stddev>0.005</bias_stddev>
+                    </noise>
+                </z>
+            </linear_acceleration>
+        </imu>
+    </sensor>
+</gazebo>
+
+
+
+
+<!-- <gazebo reference="camera_link">
+    <sensor type="depth" name="camera_sensor">
+        <plugin name="depth_camera" filename="libgazebo_ros_camera.so">
+            <frame_name>camera_optical_link</frame_name>
+        </plugin>
+        <always_on>true</always_on>
+        <update_rate>10</update_rate>
+        <camera name="camera">
+            <horizontal_fov>1.5009831567</horizontal_fov>
+            <image>
+                <width>800</width>
+                <height>600</height>
+                <format>R8G8B8</format>
+            </image>
+            <distortion>
+                <k1>0.0</k1>
+                <k2>0.0</k2>
+                <k3>0.0</k3>
+                <p1>0.0</p1>
+                <p2>0.0</p2>
+                <center>0.5 0.5</center>
+            </distortion>
+        </camera>
+    </sensor>
+</gazebo> -->
+
+    </xacro:macro>
+</robot>

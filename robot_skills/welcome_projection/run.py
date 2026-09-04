@@ -51,9 +51,9 @@ def projector_light(config: dict, enabled: bool) -> None:
 
 
 def ensure_asset(config: dict) -> None:
-    host_path = Path(config["host_video_path"])
+    host_path = Path(config["host_image_path"])
     if not host_path.is_file() or host_path.stat().st_size < 1024:
-        raise RuntimeError(f"welcome_video_missing:{host_path}")
+        raise RuntimeError(f"welcome_image_missing:{host_path}")
     run(["sudo", "-n", str(config["helper_path"]), "prepare"], timeout=20.0)
 
 
@@ -105,10 +105,12 @@ def main(argv=None) -> int:
             args.action,
             "dry_run",
             duration=min(10.0, max(0.2, args.duration)),
-            media_kind="welcome_home_video",
-            host_media_path=config["host_video_path"],
-            container_media_path=config["container_video_path"],
+            media_kind="welcome_home_image",
+            host_media_path=config["host_image_path"],
+            container_media_path=config["container_image_path"],
             expected_sha256=config["expected_sha256"],
+            fullscreen=bool(config.get("fullscreen", True)),
+            display_rotation_degrees=int(config.get("display_rotation_degrees", 180)),
         )
     lock_path = Path(config["lock_path"])
     lock_path.parent.mkdir(parents=True, exist_ok=True)

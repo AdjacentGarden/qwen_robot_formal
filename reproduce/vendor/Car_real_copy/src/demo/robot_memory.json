@@ -1,0 +1,16 @@
+{
+    "short_term_x": [
+        {
+            "role": "user",
+            "content": "看到宠物的视频啊"
+        },
+        {
+            "role": "assistant",
+            "content": "好的，我这就去帮你找找小猫在哪。"
+        }
+    ],
+    "cache_y": [
+        "用户: 理想同学\n助手: 我在"
+    ],
+    "long_term": ""
+}

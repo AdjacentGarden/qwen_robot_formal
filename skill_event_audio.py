@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import array
 import base64
 import contextlib
 import hashlib
 import inspect
 import json
 import os
+import sys
 import time
 from pathlib import Path
 from typing import Any, Callable
@@ -15,12 +17,31 @@ from realtime_core import build_session_update, build_websocket_url
 
 
 SPEAKABLE_KINDS = {
-    "acknowledgement", "progress", "ready", "count", "attention", "result",
+    "acknowledgement", "progress", "ready", "count", "attention", "complete", "result",
 }
 EVENT_PRIORITIES = {
-    "count": 0, "ready": 1, "attention": 2,
+    "count": 0, "ready": 1, "complete": 1, "attention": 2,
     "acknowledgement": 3, "progress": 4, "result": 5,
 }
+
+
+def trim_count_leading_silence(pcm: bytes) -> tuple[bytes, float]:
+    """Remove only near-digital silence, retaining 20 ms before the voice.
+
+    Cached audio is 24 kHz mono S16LE. Never edit the cache on disk, crop
+    trailing audio, or process non-count announcements with this function.
+    """
+    if len(pcm) % 2:
+        return pcm, 0.0
+    samples = array.array("h")
+    samples.frombytes(pcm[:24000 * 2])
+    if sys.byteorder != "little":
+        samples.byteswap()
+    first_voice = next((i for i, sample in enumerate(samples) if abs(sample) > 8), None)
+    if first_voice is None:
+        return pcm, 0.0
+    trim = min(6000, max(0, first_voice - 480))
+    return pcm[trim * 2:], round(trim / 24.0, 3)
 
 
 class QwenSkillEventSpeaker:
@@ -64,6 +85,39 @@ class QwenSkillEventSpeaker:
         self._last_key = ""
         self._event_sequence = 0
         self._generation = 0
+        self._delivered_events: dict[tuple[str, str, str], dict[str, Any]] = {}
+
+    @staticmethod
+    def _delivery_key(event: dict[str, Any]) -> tuple[str, str, str]:
+        return (
+            str(event.get("turn_id") or ""),
+            str(event.get("skill_name") or ""),
+            str(event.get("kind") or ""),
+        )
+
+    def _mark_delivered(self, event: dict[str, Any]) -> None:
+        key = self._delivery_key(event)
+        self._delivered_events[key] = {
+            **dict(event),
+            "delivered_monotonic": time.monotonic(),
+        }
+        while len(self._delivered_events) > 256:
+            self._delivered_events.pop(next(iter(self._delivered_events)))
+
+    def delivered_event(
+        self,
+        *,
+        turn_id: str | int,
+        kind: str,
+        skill_names: set[str] | tuple[str, ...] | list[str],
+    ) -> dict[str, Any] | None:
+        """Return a live event only after its PCM entered the playback queue."""
+        turn = str(turn_id or "")
+        for skill_name in skill_names:
+            event = self._delivered_events.get((turn, str(skill_name), str(kind)))
+            if event is not None:
+                return dict(event)
+        return None
 
     def submit_from_thread(self, event: dict[str, Any]) -> None:
         kind = str(event.get("kind") or "")
@@ -85,6 +139,7 @@ class QwenSkillEventSpeaker:
             self._event_sequence += 1
             payload = dict(event)
             payload["_generation"] = self._generation
+            payload["_submitted_monotonic"] = time.monotonic()
             self.queue.put_nowait(
                 (
                     self._event_sequence,
@@ -220,8 +275,12 @@ class QwenSkillEventSpeaker:
         cache_path = self._cache_path(text)
         if cache_path is not None and cache_path.is_file():
             pcm = cache_path.read_bytes()
+            if event.get("kind") == "count":
+                pcm, trimmed_ms = trim_count_leading_silence(pcm)
+                self.log("skill_count_audio_trim", text=text, trimmed_ms=trimmed_ms)
             if pcm and self._event_is_current(event):
                 self.enqueue_pcm(pcm)
+                self._mark_delivered(event)
                 latency_ms = round((time.monotonic() - started) * 1000.0, 1)
                 self.log(
                     "skill_event_audio_first_chunk",
@@ -242,6 +301,9 @@ class QwenSkillEventSpeaker:
                     cached=True,
                 )
                 return
+        # Local cached audio must not wait for a cloud connection/reconnection.
+        if self.websocket is None:
+            await self._connect()
         await self.websocket.send(
             json.dumps(
                 {
@@ -286,6 +348,7 @@ class QwenSkillEventSpeaker:
                         )
                     if self._event_is_current(event):
                         self.enqueue_pcm(bytes(stream_buffer[:stream_chunk_bytes]))
+                        self._mark_delivered(event)
                     del stream_buffer[:stream_chunk_bytes]
             elif kind == "response.audio_transcript.done":
                 transcript = str(message.get("transcript") or "").strip()
@@ -302,6 +365,7 @@ class QwenSkillEventSpeaker:
                     latency_ms=round((first_chunk_at - started) * 1000.0, 1),
                 )
             self.enqueue_pcm(bytes(stream_buffer))
+            self._mark_delivered(event)
         self.log(
             "skill_event_audio_generated",
             skill=event.get("skill_name"),
@@ -357,6 +421,11 @@ class QwenSkillEventSpeaker:
         while True:
             _sequence, _priority, event = await self.queue.get()
             try:
+                submitted = event.get("_submitted_monotonic")
+                if submitted is not None:
+                    self.log("skill_event_audio_dequeued", kind=event.get("kind"),
+                             text=event.get("text"),
+                             queue_wait_ms=round((time.monotonic() - submitted) * 1000, 3))
                 # DashScope closes this dedicated TTS connection after a long
                 # idle period.  Reconnect once and retry the same event instead
                 # of silently dropping the first sentence after the timeout.
@@ -364,8 +433,6 @@ class QwenSkillEventSpeaker:
                     try:
                         if not self._event_is_current(event):
                             break
-                        if self.websocket is None:
-                            await self._connect()
                         await self._synthesize(event)
                         break
                     except asyncio.CancelledError:

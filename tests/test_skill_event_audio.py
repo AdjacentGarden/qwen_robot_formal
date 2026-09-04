@@ -31,6 +31,48 @@ class FakeRealtimeSocket:
 
 
 class SkillEventAudioTests(unittest.IsolatedAsyncioTestCase):
+    async def test_fitness_completion_is_speakable_and_receipted_after_pcm_enqueue(self):
+        with tempfile.TemporaryDirectory() as directory:
+            queued: list[bytes] = []
+            speaker = QwenSkillEventSpeaker(
+                api_key="unused",
+                voice="longanqian",
+                workspace="",
+                region="cn-beijing",
+                endpoint="",
+                connect_timeout=1,
+                enqueue_pcm=queued.append,
+                log=lambda _event, **_fields: None,
+                cache_dir=Path(directory),
+            )
+            speaker.loop = asyncio.get_running_loop()
+            text = "运动结束，你一共完成了三个俯卧撑。辛苦了，喝口水吧。"
+            path = speaker._cache_path(text)
+            self.assertIsNotNone(path)
+            path.parent.mkdir(parents=True)
+            path.write_bytes(b"\x01\x02" * 100)
+            speaker.submit_from_thread({
+                "turn_id": "8",
+                "skill_name": "push_up",
+                "kind": "complete",
+                "count": 3,
+                "text": text,
+            })
+            await asyncio.sleep(0)
+            _sequence, _priority, event = speaker.queue.get_nowait()
+            self.assertIsNone(speaker.delivered_event(
+                turn_id="8", kind="complete", skill_names={"push_up"}
+            ))
+            await speaker._synthesize(event)
+            speaker.queue.task_done()
+
+        self.assertEqual(queued, [b"\x01\x02" * 100])
+        delivered = speaker.delivered_event(
+            turn_id="8", kind="complete", skill_names={"push_up"}
+        )
+        self.assertIsNotNone(delivered)
+        self.assertEqual(delivered["text"], text)
+
     async def test_status_and_live_count_events_are_queued_and_audio_is_forwarded(self):
         pcm: list[bytes] = []
         logs: list[tuple[str, dict]] = []

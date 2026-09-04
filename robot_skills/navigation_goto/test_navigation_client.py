@@ -130,7 +130,7 @@ def run_preflight_case(path_available: bool) -> dict:
         return {"ok": False, "error": "fake_nav2_start_timeout"}
     try:
         return preflight_path_with_rclpy(
-            {"x": 0.0, "y": 2.6, "yaw": 1.5708, "frame_id": "map", "mode": "test", "name": "study"},
+            {"x": 0.0, "y": 3.0, "yaw": 1.5708, "frame_id": "map", "mode": "test", "name": "study"},
             timeout=3.0,
         )
     finally:

@@ -48,6 +48,24 @@ class MemoryStoreCommandTests(unittest.TestCase):
         self.assertEqual(self.query(query_type="offset", offset=1)[0]["text"], "导航到书房")
         self.assertEqual(self.query(query_type="first")[0]["text"], "打开客厅灯")
 
+    def test_recent_window_and_absolute_ordinal_are_unambiguous(self) -> None:
+        self.assertEqual(
+            [item["text"] for item in self.query(query_type="recent", limit=2)],
+            ["导航到书房", "播放一首轻松的音乐"],
+        )
+        self.assertEqual(
+            self.query(query_type="ordinal", position=2)[0]["text"],
+            "导航到书房",
+        )
+        self.assertEqual(self.query(query_type="ordinal", position=20), [])
+
+    def test_keyword_search_returns_the_original_timestamp(self) -> None:
+        result = self.query(query_type="search", query="书房", limit=5)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["text"], "导航到书房")
+        self.assertEqual(result[0]["timestamp"], self.times[1])
+        self.assertIn("T10:00:00+08:00", result[0]["time"])
+
     def test_relative_date_ranges_use_configured_timezone(self) -> None:
         self.assertEqual(
             [item["text"] for item in self.query(query_type="time_range", date_period="yesterday")],
@@ -93,6 +111,80 @@ class MemoryStoreCommandTests(unittest.TestCase):
         self.assertIn("导航到书房", rendered)
         self.assertNotIn("spoken_summary", rendered)
         self.assertNotIn("完成", rendered)
+
+    def test_profile_config_is_queryable_and_injected_without_becoming_runtime_state(self) -> None:
+        profile_path = Path(self.temporary.name) / "resident_profile.json"
+        profile_path.write_text(
+            json.dumps(
+                {
+                    "version": 1,
+                    "facts": [
+                        {
+                            "key": "pet_doudou",
+                            "category": "pet",
+                            "content": "用户有一只宠物狗，名字叫豆豆。",
+                        },
+                        {
+                            "key": "deployment_location",
+                            "category": "location",
+                            "content": "机器人的家庭地址配置为请配置家庭地址，不是实时GPS定位。",
+                        },
+                    ],
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        store = MemoryStore(
+            Path(self.temporary.name) / "profile-memory",
+            profile_path=profile_path,
+        )
+        pet = store.invoke(
+            "memory_query",
+            {"scope": "long_term", "query": "豆豆"},
+        )["facts"]
+        location = store.invoke(
+            "memory_query",
+            {"scope": "long_term", "query": "望京"},
+        )["facts"]
+        context = json.loads(store.decision_context_for_prompt())
+
+        self.assertEqual(pet[0]["id"], "profile_pet_doudou")
+        self.assertEqual(pet[0]["source"], "profile_config")
+        self.assertEqual(location[0]["category"], "location")
+        rendered = json.dumps(context["saved_user_facts"], ensure_ascii=False)
+        self.assertIn("豆豆", rendered)
+        self.assertIn("请配置家庭地址", rendered)
+        self.assertIn("不是实时GPS定位", rendered)
+
+    def test_command_and_dynamic_fact_survive_store_recreation(self) -> None:
+        root = Path(self.temporary.name) / "restart-memory"
+        before = MemoryStore(root)
+        before.invoke(
+            "memory_save",
+            {"content": "用户习惯喝温水", "category": "habit"},
+        )
+        before.record_command(
+            user_text="寻找豆豆",
+            session_id="before-restart",
+            turn_id=1,
+            skill="pet_tracking",
+            arguments={"action": "find"},
+            result={"ok": True, "executed": True, "mode": "execute"},
+            received_at=self.times[-1],
+        )
+
+        after = MemoryStore(root)
+        fact = after.invoke(
+            "memory_query",
+            {"scope": "long_term", "query": "温水"},
+        )["facts"]
+        command = after.invoke(
+            "memory_query",
+            {"scope": "command_history", "query_type": "latest"},
+        )["commands"]
+        self.assertEqual(fact[0]["content"], "用户习惯喝温水")
+        self.assertEqual(command[0]["text"], "寻找豆豆")
 
 
 if __name__ == "__main__":

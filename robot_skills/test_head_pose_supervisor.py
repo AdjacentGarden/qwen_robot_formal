@@ -26,6 +26,7 @@ class Harness:
         self.sample_time = self.clock()
         self.resources = {}
         self.projection_active = False
+        self.level_recovery_needed = False
         self.corrections = 0
         self.correction_ok = True
         self.temp = tempfile.TemporaryDirectory()
@@ -33,6 +34,7 @@ class Harness:
             sample_provider=lambda: (self.roll, self.sample_time),
             resource_provider=lambda: dict(self.resources),
             projection_active_provider=lambda: self.projection_active,
+            level_recovery_needed_provider=lambda: self.level_recovery_needed,
             correction=self.correct,
             state_path=Path(self.temp.name) / "state.json",
             deviation_hold_sec=0.8,
@@ -52,6 +54,7 @@ class Harness:
         if self.correction_ok:
             self.roll = 185.0
             self.sample_time = self.clock()
+            self.level_recovery_needed = False
         return {"ok": self.correction_ok}
 
     def close(self):
@@ -132,6 +135,29 @@ class HeadPoseSupervisorTests(unittest.TestCase):
             result = self.h.supervisor.evaluate_once()
             self.assertIn(result["reason"], {"inside_hysteresis_band", "within_level_deadband"})
             self.h.clock.advance(1.0)
+        self.assertEqual(self.h.corrections, 0)
+
+    def test_level_pose_recovers_disabled_gate_without_extra_deviation(self):
+        self.h.level_recovery_needed = True
+        self.h.fresh(185.5)
+        self.assertEqual(
+            self.h.supervisor.evaluate_once()["reason"],
+            "level_gate_recovery_dwell_started",
+        )
+        self.h.clock.advance(0.9)
+        self.h.fresh()
+        result = self.h.supervisor.evaluate_once()
+        self.assertEqual(result["action"], "corrected")
+        self.assertTrue(result["level_gate_recovery_only"])
+        self.assertEqual(self.h.corrections, 1)
+
+    def test_ready_gate_at_level_never_triggers_recovery(self):
+        self.h.level_recovery_needed = False
+        self.h.fresh(185.5)
+        self.h.clock.advance(2.0)
+        self.h.fresh()
+        result = self.h.supervisor.evaluate_once()
+        self.assertEqual(result["reason"], "within_level_deadband")
         self.assertEqual(self.h.corrections, 0)
 
     def test_failures_are_bounded_per_excursion(self):

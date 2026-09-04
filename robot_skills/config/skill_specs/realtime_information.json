@@ -1,13 +1,20 @@
 {
   "name": "realtime_information",
-  "description_zh": "通过联网校时的系统时钟或实时数据源查询当前日期时间、天气、机器人当前粗略地理位置、附近地点和交通状态。回答必须来自本次查询结果，不能凭模型常识猜测。location 只表示机器人，不表示手机、用户或宠物。",
+  "description_zh": "查询当前日期时间、天气、机器人室内位置、明确请求时的外部配置位置、附近地点、交通，以及前往任意可解析外部目的地的实时出行方式比较。泛问位置默认读取室内地图定位；只有明确询问 GPS、城市、街道等才返回外部配置位置。",
   "domain_tags": ["live_information", "time", "date", "weather", "location", "nearby", "traffic"],
-  "trigger_phrases_zh": ["现在几点", "今天几号", "今天星期几", "今天天气怎么样", "机器人现在在哪里", "附近有什么好玩的", "现在堵不堵车"],
-  "allowed_actions": ["current_time", "weather", "location", "nearby", "traffic"],
-  "resources": ["network"],
+  "trigger_phrases_zh": ["现在几点", "今天几号", "今天星期几", "今天天气怎么样", "出门穿什么衣服合适", "机器人现在在哪里", "附近有什么好玩的", "现在堵不堵车", "现在去公司开车还是坐地铁", "去颐和园怎么走", "前往某个外部地点需要多久"],
+  "allowed_actions": ["current_time", "weather", "location", "indoor_location", "external_location", "nearby", "traffic", "commute_recommendation"],
+  "resources": ["network", "localization_read"],
   "required_slots": [],
-  "optional_slots": ["location", "latitude", "longitude", "radius", "limit"],
+  "optional_slots": ["location", "latitude", "longitude", "radius", "limit", "origin", "destination"],
   "query_intents": [
+    {
+      "action": "commute_recommendation",
+      "patterns_zh": ["(?:去|到|前往).{1,32}(?:开车|自驾|驾车).*(?:地铁|公交)|(?:去|到|前往).{1,32}(?:地铁|公交).*(?:开车|自驾|驾车)|(?:去|到|前往).{1,32}(?:怎么去|如何去|怎么走|怎么过去|如何到达|路线|怎么坐车|坐什么车|需要多久|大概多久|多远|交通建议|出行建议)"],
+      "query_argument": "query",
+      "title_zh": "比较前往外部目的地的通勤方式",
+      "reason_zh": "用户询问前往某个外部地点时开车与地铁公交哪种更合适，必须查询实时路线和预计时间"
+    },
     {
       "action": "current_time",
       "patterns_zh": ["(?:现在|当前)?(?:几点|时间|日期|几号|星期几|年月日)"],
@@ -24,7 +31,7 @@
     },
     {
       "action": "weather",
-      "patterns_zh": ["(?:天气|气温|温度|下雨|降雨|风力)"],
+      "patterns_zh": ["(?:天气|气温|温度|下雨|降雨|风力)|(?:出门|外出).{0,12}(?:穿什么|穿哪|怎么穿|衣服|穿搭|带伞)|(?:穿什么|穿哪|怎么穿|衣服|穿搭).{0,12}(?:出门|外出|适合|合适)"],
       "exclude_patterns_zh": ["运动.*温度", "投影.*温度"],
       "query_argument": "query",
       "title_zh": "查询实时天气",
@@ -38,21 +45,33 @@
       "reason_zh": "用户询问当前位置周边地点，必须调用实时地图数据源"
     },
     {
-      "action": "location",
+      "action": "external_location",
+      "patterns_zh": ["(?:GPS|GNSS|卫星定位|经纬度|外部位置|地理位置|哪个城市|哪个街道|所在省份|所在城市)"],
+      "exclude_patterns_zh": ["(?:手机|电话|小狗|宠物|人|他|她|它).*(?:在哪里|在哪儿|在哪|定位)"],
+      "query_argument": "query",
+      "title_zh": "查询外部位置",
+      "reason_zh": "用户明确询问机器人外部地理位置，返回配置的区域位置而非虚构 GPS"
+    },
+    {
+      "action": "indoor_location",
       "patterns_zh": ["(?:机器人|你)(?:现在|当前)?(?:在什么地方|在哪里|在哪儿|在哪|位置在哪)"],
       "exclude_patterns_zh": ["(?:手机|电话|小狗|宠物|人|他|她|它).*(?:在哪里|在哪儿|在哪|定位)"],
       "query_argument": "query",
-      "title_zh": "查询当前位置",
-      "reason_zh": "用户询问机器人当前所在位置"
+      "title_zh": "查询室内位置",
+      "reason_zh": "用户未明确要求外部定位，默认从地图定位判断所在房间"
     }
   ],
   "planning_notes_zh": [
     "实时问题必须调用本 skill，不得直接用语言模型常识回答。",
     "手机、用户、宠物和其他设备的位置不属于本 skill；不得用机器人位置冒充手机位置。",
-    "用户未给地点时，skill 统一使用 realtime_information/config.json 中的位置配置；只有配置缺失时才允许网络粗略定位。",
-    "当前默认位置配置为北京市顺义区；时间使用配置时区，天气、附近地点和交通使用配置坐标。",
-    "网络粗略定位不是 GPS，回答中必须保留精度说明。",
-    "实时交通只有在已配置授权交通数据提供方时可用；未配置时必须如实说明。"
+    "泛问机器人在哪里时使用 indoor_location；定位链路不可用时如实说明，绝不回退成外部位置。",
+    "只有明确询问 GPS、经纬度、城市、街道或外部地理位置时使用 external_location。",
+    "外部位置默认只播报用户询问的地名层级，不主动播报经纬度或数据来源说明；只有用户明确询问经纬度、经度、纬度、具体坐标或精确坐标时才播报详细数值。",
+    "默认家庭位置配置为请配置家庭地址，公司位置配置为北京市顺义区公司地址理想汽车研发总部；二者均为固定配置位置，不是 GPS 实测。",
+    "未指定地点的天气、附近地点和本地路况默认查询家庭位置；明确提到公司、单位或上班地点时查询理想汽车研发总部。",
+    "已保存地点‘家庭’和‘公司’；用户查询家或公司附近天气、地点或路况时，location 分别传入‘家庭’或‘公司’。不得主动播报任一已保存地点的经纬度。",
+    "用户询问现在前往任意明确、合理的外部目的地时应开车还是坐地铁公交，或询问怎么去、要交通建议时，必须调用 commute_recommendation 并传入 destination，不得只用常识建议用户自行查地图。原点、客厅、书房等室内点不属于此功能。",
+    "天气、附近地点和交通优先使用已配置的百度地图实时数据源。"
   ],
   "result_contract": {
     "success_field": "ok",

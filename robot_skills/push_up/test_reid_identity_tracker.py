@@ -11,6 +11,7 @@ from engine import (
     FitnessFramingEventPolicy,
     Candidate,
     ContinuousIdentityTracker,
+    FaceReauthenticationState,
     PushupPhaseTracker,
     locked_continuity_candidates,
     predict_bbox,
@@ -32,6 +33,9 @@ class IdentityTrackerTests(unittest.TestCase):
     def setUp(self):
         self.frame = np.zeros((480, 640, 3), dtype=np.uint8)
         config = json.loads((Path(__file__).parent / "config.json").read_text(encoding="utf-8"))
+        # Orientation-normalized recovery performs extra real model inference;
+        # pure tracker tests feed one deterministic feature per candidate.
+        config["reid"]["body_reauth_orientation_normalization"] = False
         anchor = normalized([1.0, 0.0, 0.0])
         self.tracker = ContinuousIdentityTracker(
             {"reid_centroid": anchor, "reid_gallery": [anchor]},
@@ -231,15 +235,105 @@ class IdentityTrackerTests(unittest.TestCase):
         self.assertTrue(self.tracker.locked)
         self.assertTrue(diagnostics["authenticated_lock_preserved"])
 
-        # The immutable registered anchor can still safely reacquire the real
-        # target once it returns.
-        for _ in range(int(self.tracker.cfg["stable_accept_frames"])):
+        # The true target must recover from the persistent body identity memory
+        # without requiring another visible face.
+        required = int(self.tracker.cfg["body_reauth_required_confirmations"])
+        for index in range(required):
             selected, _, diagnostics = self.update_people(
                 ((370, 60, 570, 470),),
                 (target,),
             )
+            if index < required - 1:
+                self.assertIsNone(selected)
         self.assertIsNotNone(selected)
         self.assertEqual(selected.person.bbox, (370, 60, 570, 470))
+        self.assertEqual(diagnostics["selection_mode"], "body_reauthenticated")
+        self.assertEqual(self.tracker.body_reauthentications, 1)
+        self.assertEqual(self.tracker.face_reauthentications, 0)
+
+    def test_persistent_pose_memory_recovers_horizontal_target_without_face(self):
+        upright = normalized([0.96, 0.28, 0.0])
+        prone = normalized([0.25, 0.97, 0.0])
+        self.tracker.bootstrap_authenticated_target((330, 50, 540, 470))
+        # This sample represents a safely tracked, previously observed prone
+        # pose. It stays in identity memory when rolling galleries are reset.
+        self.tracker.identity_memory_gallery.extend([prone.copy() for _ in range(3)])
+        for _ in range(int(self.tracker.cfg["reauthenticate_after_lost_frames"]) + 2):
+            selected, _, _ = self.update_people(
+                ((0, 100, 100, 450),),
+                ([0.45, 0.89, 0.0],),
+            )
+            self.assertIsNone(selected)
+        self.assertTrue(self.tracker.reauthentication_required)
+
+        required = int(self.tracker.cfg["body_reauth_required_confirmations"])
+        for index in range(required):
+            selected, _, diagnostics = self.update_people(
+                ((180 + index * 2, 300, 560 + index * 2, 470),),
+                (prone,),
+            )
+        self.assertIsNotNone(selected)
+        self.assertEqual(diagnostics["selection_mode"], "body_reauthenticated")
+        self.assertLess(float(np.dot(upright, prone)), 0.55)
+
+    def test_nonspatial_body_match_cannot_override_face_authenticated_track(self):
+        self.tracker.bootstrap_authenticated_target((420, 40, 620, 470))
+        selected, _, diagnostics = self.update_people(
+            ((0, 180, 120, 470),),
+            ([1.0, 0.0, 0.0],),
+        )
+        self.assertIsNone(selected)
+        self.assertFalse(diagnostics["identity_override_active"])
+        self.assertEqual(diagnostics["freeze_reason"], "spatial_discontinuity")
+
+    def test_multi_person_frames_cannot_rewrite_authenticated_galleries(self):
+        # A spatially continuous but only moderately matching posture may be
+        # selected for continuity, but must not rewrite identity templates
+        # while another person is present.
+        target = [0.60, 0.80, 0.0]
+        bystander = [0.35, 0.94, 0.0]
+        self.tracker.bootstrap_authenticated_target((360, 60, 560, 470))
+        for offset in range(8):
+            selected, _, diagnostics = self.update(
+                (
+                    (360 - offset * 4, 60 + offset * 8, 560 + offset * 2, 470),
+                    (20, 150, 140, 450),
+                ),
+                (target, bystander),
+            )
+            self.assertIsNotNone(selected)
+        self.assertEqual(diagnostics["rolling_anchor_updates"], 0)
+        self.assertEqual(diagnostics["tracklet_updates"], 0)
+        self.assertEqual(diagnostics["adaptive_updates"], 0)
+        self.assertEqual(diagnostics["prone_updates"], 0)
+
+    def test_recording_1787402036_target_exit_cannot_adopt_remaining_person(self):
+        # In this recording the face-authenticated target's last box was the
+        # upright box below.  The target immediately left.  A prone bystander
+        # remained and slowly moved close enough to the stale box that the old
+        # 36-frame posture bridge accepted it at lost frame 19, after which the
+        # rolling gallery rewrote itself and the yellow box turned green.
+        self.tracker.bootstrap_authenticated_target((61, 110, 211, 476))
+        remaining = [0.35, 0.94, 0.0]
+        for index in range(20):
+            box = (33 + index // 4, 362 - index * 2, 404 - index, 477)
+            selected, _, diagnostics = self.update_people((box,), (remaining,))
+            self.assertIsNone(selected)
+        self.assertTrue(diagnostics["face_reauthentication_required"])
+        self.assertEqual(diagnostics["freeze_reason"], "identity_reauthentication_required")
+        self.assertEqual(diagnostics["rolling_anchor_updates"], 0)
+        self.assertEqual(diagnostics["tracklet_updates"], 0)
+
+        # Even if that bystander later looks deceptively similar in body-ReID,
+        # waiting must never authenticate them.  Only a new face lock may do so.
+        deceptive = [0.76, 0.65, 0.0]
+        for _ in range(20):
+            selected, _, diagnostics = self.update_people(
+                ((61, 110, 211, 476),),
+                (deceptive,),
+            )
+            self.assertIsNone(selected)
+        self.assertTrue(diagnostics["face_reauthentication_required"])
 
     def test_trusted_prone_gallery_separates_horizontal_target(self):
         upright = [0.98, 0.20, 0.0]
@@ -289,6 +383,84 @@ class IdentityTrackerTests(unittest.TestCase):
         self.assertEqual(len(self.tracker.prone_gallery), gallery_size)
 
 
+class FaceReauthenticationStateTests(unittest.TestCase):
+    def setUp(self):
+        self.config = json.loads(
+            (Path(__file__).parent / "config.json").read_text(encoding="utf-8")
+        )
+        self.state = FaceReauthenticationState(self.config)
+
+    @staticmethod
+    def match(box, score=0.86, margin=0.15):
+        return {
+            "identity": {
+                "name": "zhangsan",
+                "person_id": "person-1",
+                "score": score,
+                "margin": margin,
+            },
+            "person": Detection(0.95, box),
+            "focus": 30.0,
+            "face_box": box,
+        }
+
+    def test_returning_target_requires_three_face_confirmations(self):
+        first = self.state.observe(
+            [self.match((300, 60, 500, 470))],
+            640,
+        )
+        self.assertIsNone(first)
+        second = self.state.observe(
+            [self.match((308, 60, 508, 470))],
+            640,
+        )
+        self.assertIsNone(second)
+        third = self.state.observe(
+            [self.match((312, 60, 512, 470))],
+            640,
+        )
+        self.assertIsNotNone(third)
+        self.assertEqual(third["person"].bbox, (312, 60, 512, 470))
+
+    def test_low_face_score_can_never_accumulate_confirmation(self):
+        for _ in range(10):
+            confirmed = self.state.observe(
+                [self.match((300, 60, 500, 470), score=0.72, margin=0.15)],
+                640,
+            )
+            self.assertIsNone(confirmed)
+
+    def test_two_similar_face_candidates_are_rejected_as_ambiguous(self):
+        for _ in range(4):
+            confirmed = self.state.observe(
+                [
+                    self.match((40, 60, 220, 470), score=0.86, margin=0.15),
+                    self.match((360, 60, 540, 470), score=0.82, margin=0.15),
+                ],
+                640,
+            )
+            self.assertIsNone(confirmed)
+        self.assertEqual(self.state.confirmation_streak, 0)
+
+    def test_confirmations_cannot_be_combined_across_different_people(self):
+        self.assertIsNone(
+            self.state.observe([self.match((20, 60, 180, 470))], 640)
+        )
+        self.assertIsNone(
+            self.state.observe([self.match((440, 60, 620, 470))], 640)
+        )
+        self.assertIsNone(self.state.observe(
+            [self.match((435, 60, 615, 470))],
+            640,
+        ))
+        confirmed = self.state.observe(
+            [self.match((430, 60, 610, 470))],
+            640,
+        )
+        self.assertIsNotNone(confirmed)
+        self.assertEqual(confirmed["person"].bbox, (430, 60, 610, 470))
+
+
 class PushupLatencyTests(unittest.TestCase):
     def setUp(self):
         config = json.loads((Path(__file__).parent / "config.json").read_text(encoding="utf-8"))
@@ -297,11 +469,22 @@ class PushupLatencyTests(unittest.TestCase):
     def observe(self, angle, wrist):
         return self.tracker.process_observation(angle, wrist, 10.0, 2.0)
 
+    def arm_up(self):
+        required = int(self.tracker.cfg.get("initial_up_ready_frames", 3))
+        result = None
+        for _ in range(required):
+            result = self.observe(175.0, 0.9)
+        self.assertIsNotNone(result)
+        self.assertTrue(result["armed"])
+        self.assertEqual(result["phase"], "up")
+
     def establish_down(self):
+        self.arm_up()
         # Keep the down phase for more than one processed observation so the
         # subsequent transition represents a real dwell, not a one-frame blip.
-        self.observe(80.0, 0.3)
-        result = self.observe(80.0, 0.3)
+        result = None
+        for _ in range(3):
+            result = self.observe(80.0, 0.3)
         self.assertEqual(result["phase"], "down")
 
     def test_strong_up_after_confirmed_down_counts_in_one_frame(self):
@@ -326,18 +509,47 @@ class PushupLatencyTests(unittest.TestCase):
         self.assertTrue(result["incremented"])
 
     def test_short_down_transition_cannot_trigger_fast_count(self):
+        self.arm_up()
         self.observe(80.0, 0.3)
         self.tracker.filtered_angle = 151.0
         result = self.observe(180.0, 0.9)
         self.assertFalse(result["fast_up_confirmation"])
         self.assertFalse(result["incremented"])
 
-    def test_horizontal_reacquisition_does_not_need_three_extra_frames(self):
+    def test_preparation_down_to_up_only_arms_and_does_not_count(self):
+        # This remains the safe legacy behavior when no external geometry gate
+        # has proved that the subject is already in a staged push-up position.
+        self.tracker.cfg["count_initial_down_to_up"] = False
         first = self.observe(80.0, 0.3)
         second = self.observe(80.0, 0.3)
         self.assertTrue(first["horizontal_ready"])
-        self.assertEqual(first["phase"], "down")
-        self.assertEqual(second["phase"], "down")
+        self.assertIsNone(first["phase"])
+        self.assertIsNone(second["phase"])
+        result = None
+        # The EMA intentionally needs several high-angle samples to leave the
+        # preceding down pose.  Arming may therefore take longer than the raw
+        # candidate-frame threshold, but the preparation motion must never be
+        # counted as a repetition.
+        for _ in range(10):
+            result = self.observe(175.0, 0.9)
+            if result["armed"]:
+                break
+        self.assertTrue(result["armed"])
+        self.assertFalse(result["incremented"])
+        self.assertEqual(result["count"], 0)
+
+    def test_pose_dropout_preserves_session_arm_but_loses_partial_phase(self):
+        self.arm_up()
+        for _ in range(int(self.tracker.cfg["lost_reset_frames"]) + 1):
+            self.tracker.mark_missing()
+        self.assertTrue(self.tracker.armed)
+        self.assertIsNone(self.tracker.phase)
+
+    def test_leaving_horizontal_pushup_posture_requires_rearming(self):
+        self.arm_up()
+        result = self.tracker.process_observation(175.0, 0.9, 80.0, 0.7)
+        self.assertFalse(result["horizontal"])
+        self.assertFalse(self.tracker.armed)
 
 
 class FitnessFramingEventPolicyTests(unittest.TestCase):
