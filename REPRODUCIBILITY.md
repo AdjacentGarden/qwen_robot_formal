@@ -57,7 +57,7 @@
 2. 将本仓库放到正式项目路径，然后恢复配套快照：
 
    ```bash
-   git clone git@github.com:AdjacentGarden/qwen_robot.git /home/test/qwen_audio_3_realtime_flash_scenarios_resident_test
+   git clone git@github.com:AdjacentGarden/qwen_robot_formal.git /home/test/qwen_audio_3_realtime_flash_scenarios_resident_test
    cd /home/test/qwen_audio_3_realtime_flash_scenarios_resident_test
    bash reproduce/install_robot_snapshot.sh --user-files
    ```
