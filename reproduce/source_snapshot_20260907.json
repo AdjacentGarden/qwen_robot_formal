@@ -1,0 +1,3318 @@
+{
+  "date": "2026-09-07",
+  "source": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test",
+  "scope": "Current formal project source, retaining reviewed public adaptations. Independent local Qwen experiments excluded. Existing binary assets and older vendor dependencies are unchanged.",
+  "updated_robot_source_files": [
+    "head_intent.py",
+    "local_skills.py",
+    "realtime_chat.py",
+    "runtime_supervisor.py",
+    "scenario_engine.py",
+    "task_control.py",
+    "test_skill_event_audio.py",
+    "tests/test_parallel_task_control.py",
+    "tests/test_scenarios.py",
+    "tests/test_scene_parallel_handoff.py"
+  ],
+  "files": [
+    {
+      "path": "PROJECT_COPY_INFO.json",
+      "bytes": 710,
+      "sha256": "6a7e0156f74c10bdf22fd88a154c45b5ab0a769ed174c51a0a9d32fb211c72fa",
+      "matches_robot_source": true
+    },
+    {
+      "path": "README.md",
+      "bytes": 14250,
+      "sha256": "4bdf9c1308bfa56904bdf44844cc6af20f0e6678ffff271037d7973b4dc12a87",
+      "matches_robot_source": false,
+      "publication_adaptation": "retained reviewed public credential/location examples or release documentation/build metadata"
+    },
+    {
+      "path": "REPRODUCIBILITY.md",
+      "bytes": 4745,
+      "sha256": "a8d0c1d25dd1034971c3861a36156dbdde1bb9005e0b1cb50bc1bab1e045e63e",
+      "matches_robot_source": false,
+      "publication_adaptation": "retained reviewed public credential/location examples or release documentation/build metadata"
+    },
+    {
+      "path": "SOFTWARE_ARCHITECTURE.md",
+      "bytes": 32163,
+      "sha256": "1f0343b9244414e97c077d8284eaab7658b410344fe66c62a5808e335b969e1d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/.gitignore",
+      "bytes": 107,
+      "sha256": "659046a48592bd335842db63dbef3756da1a759573ac37c80213e30152fb2d52",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/HANDOFF_README.md",
+      "bytes": 1366,
+      "sha256": "ed21d8ff0fa7eeace1f7c4a7ab60b8435b8a0e867415f0efc96429e7dac08f63",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/QA_REPORT.md",
+      "bytes": 4892,
+      "sha256": "20baa84dbf512dc19fc2a41b068296959bf79e2b970c1ad665c57142d41a8819",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/README.md",
+      "bytes": 2160,
+      "sha256": "9b2ffe7cb03d7c60dd17bf9fd3dd1e05c02982694502a0528ed28f9a37c299a1",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/.gitignore",
+      "bytes": 1824,
+      "sha256": "065e4a92a240fe11a0ea230491ad9dabef143f5fd5a3e6884ad6f0395666a971",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/.gitignore",
+      "bytes": 26,
+      "sha256": "99c54e51ee601a60fbde8016b2cbf717483bc2e92773be86c9247d02a7fa6ea4",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/build.gradle",
+      "bytes": 2347,
+      "sha256": "56462421e59064e09da5b79b5fcc16e246aab0f3c305acb50723b60d11ed9f3f",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/capacitor.build.gradle",
+      "bytes": 370,
+      "sha256": "7051cadfdbc532197d2cfd4f8a11684d81367f23cf7952e5a208f7b6aa0833e0",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/proguard-rules.pro",
+      "bytes": 751,
+      "sha256": "1cf8c57e8f79c250b0af9c1a5a4edad71a5c348a79ab70243b6bae086c150ad2",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java",
+      "bytes": 774,
+      "sha256": "ff50b4c110a7434312f9af54171f9e8523b015836f707c9b387b76d4c38a97f8",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/AndroidManifest.xml",
+      "bytes": 1773,
+      "sha256": "5923a3935a6f66402c240cd99a488d5ce93f6e192675f30f9c3ffb13e0f35a3f",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/java/com/lixiang/robot/companion/fixed/MainActivity.java",
+      "bytes": 137,
+      "sha256": "a843c9928e696ec894e1a50d844d4eff492359d17fc89fc10720fa74c3cb919c",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-land-hdpi/splash.png",
+      "bytes": 7705,
+      "sha256": "08cc34ad7713fe7ed58bceaa37b2387b670c53cd60264b4bd6442db3098e75dc",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-land-mdpi/splash.png",
+      "bytes": 4040,
+      "sha256": "5cf98b4451bd99b20df26f9e608a46946118be6b0ae90762f9ca1786a30c76ff",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-land-xhdpi/splash.png",
+      "bytes": 9251,
+      "sha256": "22f87e1e3bc89aa01a7dbc39c9a4db058cd0bf4ad3fe9f55712bf69eb997f4bf",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-land-xxhdpi/splash.png",
+      "bytes": 13984,
+      "sha256": "42aa26392546fcdee1b8d3ac6d4b41bfcceb41dc6a4f3a3c30c24a8a8f4db862",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-land-xxxhdpi/splash.png",
+      "bytes": 17683,
+      "sha256": "60393ce8636fd263e4e1fea3fd4ab2de948c6295e898fda9b50ac4e5283be809",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-port-hdpi/splash.png",
+      "bytes": 7934,
+      "sha256": "c5015f4ba3628392b538386c5e210f0b94f352a3160adab934fd0311972137ca",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-port-mdpi/splash.png",
+      "bytes": 4096,
+      "sha256": "07fa579e1c83e04ba7f9cbcbfcf41b68e15fe3638f2c44a04e58b809103e6b69",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-port-xhdpi/splash.png",
+      "bytes": 9875,
+      "sha256": "b73049cb37fe76d6c11b87a796766bf6af0c85483b31eb6a921657b0d764a4b9",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-port-xxhdpi/splash.png",
+      "bytes": 13346,
+      "sha256": "0c7f1212f25b7b90e9a6e1d320013e4ff3d3e03e634cbb07b7b7981cac51627f",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-port-xxxhdpi/splash.png",
+      "bytes": 17489,
+      "sha256": "3db071a03b2f8ffe0dfd4170fc59842d53cd15bba5e88af59401d58efabf7827",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable-v24/ic_launcher_foreground.xml",
+      "bytes": 1880,
+      "sha256": "a8514094f754b099d3e55ce1d6e0b2de79db418b2eeacb0fc2a6bb0bfadef221",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable/ic_launcher_background.xml",
+      "bytes": 5606,
+      "sha256": "718ba51adf166bb55c3e9936bb8199a0148457f7f0191aaa2f37a94f3159d6ec",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/drawable/splash.png",
+      "bytes": 4040,
+      "sha256": "5cf98b4451bd99b20df26f9e608a46946118be6b0ae90762f9ca1786a30c76ff",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/layout/activity_main.xml",
+      "bytes": 535,
+      "sha256": "5d770feb791313b947020cbfc57e5c733c556dac5e9e49261a1190e527073253",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+      "bytes": 334,
+      "sha256": "e942c7fe3ff25dd038c0fbf921238a3189d46e17debf2875c6afa77102ea621e",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+      "bytes": 334,
+      "sha256": "e942c7fe3ff25dd038c0fbf921238a3189d46e17debf2875c6afa77102ea621e",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-hdpi/ic_launcher.png",
+      "bytes": 2786,
+      "sha256": "72b71c3581ca3b5a23b1c168d69b9d855b3f184fa079902a01f088eb4f0607d5",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png",
+      "bytes": 3450,
+      "sha256": "32baa10d2632a4417454a579f992bd640e0a3cec79321423559b2c9940de58a9",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png",
+      "bytes": 4341,
+      "sha256": "bfcc1b0fa931b14bb241372c76ab4f04374b67d02363c98d9cb12edfdacdf5f3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-mdpi/ic_launcher.png",
+      "bytes": 1869,
+      "sha256": "27ed3603010ebc278f64f8645741ab132ff517abb5308eb9df6c8e42a48956b2",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png",
+      "bytes": 2110,
+      "sha256": "58e78a618778926b1f6d9472a6468de878de8530970934e94aab5ba4ba08cc00",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png",
+      "bytes": 2725,
+      "sha256": "0166fc333074c373fbd0ce6b5defd71552166165ac778121ca9c9dff6b83f0fc",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png",
+      "bytes": 3981,
+      "sha256": "d35dbfff175b83c13ef59cf924abfc810f7b6a158595d7417c5498ea8c7c7ed1",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png",
+      "bytes": 5036,
+      "sha256": "6f88083b8166cc559102f7044688de7525287632ebe09ac45d001ac8bf4b3eae",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png",
+      "bytes": 6593,
+      "sha256": "40911a00922868686854a4804b93fd6e56b503664696de03f450bff690affb6d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
+      "bytes": 6644,
+      "sha256": "ed346eb1e3f0280f15709393705899b3ff55c20b88f4e0308006b3c33cf5fe14",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png",
+      "bytes": 9793,
+      "sha256": "4a82bc1e9923576275869998925ce0ae021a79aa18b24a0dd87ad6b61ca85053",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png",
+      "bytes": 10455,
+      "sha256": "1ee4cd9ff371dcb2e3938097e434f6fb8731688ed7165e61fc63693ad5b2f455",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+      "bytes": 9441,
+      "sha256": "87cb2f2ffe992652bb4fa768c73719a37b5852ab17fbf8e170e888f7a42b0761",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png",
+      "bytes": 15529,
+      "sha256": "bd24fd383253bf8d43f0a81f11c071d76d1d555114376dd647cd9fb38fa0a9da",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png",
+      "bytes": 15916,
+      "sha256": "ab93096331e7cd8ec379f73f1e9adcaaa9ee1115c9f4ff10411a811fb9700174",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/values/ic_launcher_background.xml",
+      "bytes": 120,
+      "sha256": "cd40bafe618ff506f4088778b135cb4faa15f25e0c9b475e22d730c74b7be115",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/values/strings.xml",
+      "bytes": 330,
+      "sha256": "e6fd0cdcd7cee7748b8bbc7f19be401fa78dc4625e74d11bae06d2d430038ed7",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/values/styles.xml",
+      "bytes": 823,
+      "sha256": "18ebba36575e9461347ee67361b23caf095f158ee85dbefe1b83a4669ba5bd6c",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/xml/data_extraction_rules.xml",
+      "bytes": 299,
+      "sha256": "c1648248f5da1d4a14636eb7e3d5917b07f41686222ab1f22a8e8c7b09b00e4b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/main/res/xml/file_paths.xml",
+      "bytes": 213,
+      "sha256": "a46ed43ef65c90cb6778f4581decf3556e3f0055aad8f36d69dae16f9a0e99aa",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/app/src/test/java/com/getcapacitor/myapp/ExampleUnitTest.java",
+      "bytes": 402,
+      "sha256": "d4045ae8fac1f0807e6b24eb34e68409a9a235df9d1a3f896fb8c9a49424363d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/build.gradle",
+      "bytes": 637,
+      "sha256": "46ade7db7afeb8049ccea59fce83095dca736ceb8c9acd79cc944e988c3357d9",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/capacitor.settings.gradle",
+      "bytes": 207,
+      "sha256": "b488e162f552d6efb8286793c7871bbc1061c9bf5ca3a6a495fdeb8988a541c7",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/gradle.properties",
+      "bytes": 987,
+      "sha256": "3bab15c5b8bc4c2f4b6cf525497d15ad4abca53a460e6dd2eb0f0135817d31e6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/gradle/wrapper/gradle-wrapper.jar",
+      "bytes": 43764,
+      "sha256": "7d3a4ac4de1c32b59bc6a4eb8ecb8e612ccd0cf1ae1e99f66902da64df296172",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/gradle/wrapper/gradle-wrapper.properties",
+      "bytes": 254,
+      "sha256": "8cd706eafe4767d642829ad92e29f84795257124c5eb0fbd25380b6728419a8a",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/gradlew",
+      "bytes": 8733,
+      "sha256": "b187b4c52e749f5760afdd6fadc31b2a98ad35fb249bf0dff03b72650f320409",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/gradlew.bat",
+      "bytes": 2937,
+      "sha256": "1d297e00bd21de3ace22b4d7f2de1f9dfa858883d66bbf7c1ccbecccec8f4f3b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/settings.gradle",
+      "bytes": 208,
+      "sha256": "6ce098d15ebd69b44c4ecd786bca1bdc366340d2459b2af4d7bb0ab317aa9669",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/android/variables.gradle",
+      "bytes": 498,
+      "sha256": "83d502c9ed8fcf1dd4791482067abeedbebae49fafe9cd14a8a1f5891deb0d88",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/build_android_app.bat",
+      "bytes": 331,
+      "sha256": "778c480cfbdcfb8f7a8ba0eb8f10cab6b8fcc5aa56839f72a65d4fee92deaddb",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/capacitor.config.json",
+      "bytes": 183,
+      "sha256": "3adf2deeaf1556b061d49ad1f5b87415102b3fe4403b38599465be74ad0a39a3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/deploy/ideal-robot-app-bridge.service",
+      "bytes": 899,
+      "sha256": "41880b3379f472c948d395b49ca15187cad0d8d5b846dfc8e70af648c6c2605d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/deploy/install_server.sh",
+      "bytes": 517,
+      "sha256": "3207fb5477882988825b2cc64822d3788708f816313aee7bc42dc91610e096b3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/deploy/start_android_system.sh",
+      "bytes": 1112,
+      "sha256": "a4c9cf2c6e9a61f7013c3d9c9c2c20e32bb21545b7892fb484d4bb1431b0ba15",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/design-qa.md",
+      "bytes": 3383,
+      "sha256": "ee10d8a3760ee46c9df4868e3fa429ee12f0574fa6749b769fadba62620fce99",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/install_android_app.bat",
+      "bytes": 646,
+      "sha256": "bfe980b78be5b07ccedcca82476b300847793eff5dcc1f5e37a0f3932475fd43",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/package-lock.json",
+      "bytes": 48530,
+      "sha256": "901d235b6a06d4c7a14376b0e7ef192dd0164926a1c0a80bedda8224cf671e67",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/package.json",
+      "bytes": 516,
+      "sha256": "84fda3179254850d85731f992eefe449b73d47b4d15a4aa6abc0ff8b229d33bf",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/pytest.ini",
+      "bytes": 42,
+      "sha256": "b160d82f7811555051f8966d8e02750a985227c1d022208c784e606946f2eada",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/requirements-dev.txt",
+      "bytes": 80,
+      "sha256": "406988f6ad1317fbd7227dffe8d91b8096661cea928fd878103eea44b26a43e6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/robot_bridge/__init__.py",
+      "bytes": 42,
+      "sha256": "6bd6a0e8f29eac77f1347d3c123371d4f9288c0526a43a011d0f491c9adc6b4a",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/robot_bridge/autonomy_exploration.py",
+      "bytes": 37745,
+      "sha256": "14eb40fabf12152a2999231a5978f1b8cb6c9c76b3aaa7737f5b983465ff281f",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/robot_bridge/bridge.py",
+      "bytes": 56109,
+      "sha256": "9a5b32179738760d0b60ed07369d81deb69073c3e9d53f51123d73325c52a751",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/robot_bridge/map_codec.py",
+      "bytes": 1183,
+      "sha256": "a2244df51b54ce18bde70e3990ef134fea33edd27c1e5e17bf7aca8556a92130",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/robot_bridge/procedure_catalog.json",
+      "bytes": 19163,
+      "sha256": "9ee101776d71c76f048b35e2a688b02b2a744a1ba17180ca16be2ddf30f2b56e",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/robot_bridge/robot_bridge.sh",
+      "bytes": 3935,
+      "sha256": "5fbe156cb8ea2bf29a82f94284b592b9e16c5d1319d21a54363f0146347f8194",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/robot_bridge/skill_catalog.json",
+      "bytes": 26568,
+      "sha256": "d20134e272f30f7ac58ca50a7dfbef54559cad9ce617a40977216682be2ea564",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/server/__init__.py",
+      "bytes": 36,
+      "sha256": "11aab471eac27d7a7bc8c205eb0c06c981d113f7a2a69d27c1d0ecd244ebcd4f",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/server/app.py",
+      "bytes": 30697,
+      "sha256": "208afb3d654775c88876182e7400735a8e2aeb412cb13806d7ef5e5c3ad815a9",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/server/requirements-dev.txt",
+      "bytes": 80,
+      "sha256": "406988f6ad1317fbd7227dffe8d91b8096661cea928fd878103eea44b26a43e6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/server/requirements.txt",
+      "bytes": 50,
+      "sha256": "675eeabdab05adc047cfe83820de315688a870d83c73b82b3b7054e733c170b4",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/server/run_server.py",
+      "bytes": 216,
+      "sha256": "6ef36aee106be1733c8a5b21c89dfdf312441291fdbdc9102b4139a1e5f8ea95",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/server/server.sh",
+      "bytes": 1721,
+      "sha256": "f33ad5878b9b83150a6bc59e9964cb2480e9fb2b4d701618e4daeb412369ea96",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/tests/assert_mock_commands.mjs",
+      "bytes": 1184,
+      "sha256": "2399f4a09e5577c7ef44466dc783e17428ae5396447c7d7129474cb297ba9cc4",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/tests/e2e_relay.mjs",
+      "bytes": 1855,
+      "sha256": "0d7783d091fe869605c8c6df1624265ca51f6116eda04a54988dfe4262529834",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/tests/mock_app_server.mjs",
+      "bytes": 6772,
+      "sha256": "bb73f20aff7c7087ad5ff8c8b34a0a4f6cb6ea43a4eb0c326b66eea5ddbde333",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/tests/mock_config.js",
+      "bytes": 114,
+      "sha256": "e4e0ebe3b7dba21507281edea35970bd2c773084826919ba2eb6ebe7e08382d5",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/tests/test_map_codec.py",
+      "bytes": 1431,
+      "sha256": "b044e06f77023affef597689e9db9a24fab3b1ab049bd6c0fc9d3dbba7ccb5f0",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/tests/test_project_adapter.py",
+      "bytes": 18655,
+      "sha256": "6c9f7179373fe1a964a7c5162268e83742c222d8767b046c63e2bd5f386163cf",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/tests/test_server.py",
+      "bytes": 13125,
+      "sha256": "93c2de63c12ef5100c5681316976ab1fcb0777ceef4931cfcdb79b7cf96b55dc",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/tests/test_voice_fitness_contract.mjs",
+      "bytes": 3412,
+      "sha256": "434947ef95f44f38e62e3ce7593debbf47b137f7a483761e771800cb1103b033",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/tests/test_web_contract.mjs",
+      "bytes": 6667,
+      "sha256": "2dc98effd551b5c5ae07ce89af6358f6c765685b59994a7389eeb85618b7520d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/tests/voice_replay_smoke.sh",
+      "bytes": 654,
+      "sha256": "f1006801e810189d481d53343f43bbe7411d9f9e597ff988568020ce7d335eff",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/web/app-refinement.css",
+      "bytes": 13912,
+      "sha256": "bebd1ee660325a3020ff8c167165b90beb66358f8a12e854c53dd9397af2a87a",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/web/app.js",
+      "bytes": 53034,
+      "sha256": "3a434087260de07be58aa08aa5280ba00a22def9d1568e9b3b3db168d5ea672c",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/web/assets/doudou-hero.png",
+      "bytes": 2022486,
+      "sha256": "9ba699ebcffd6a92e8d45ae7856838cc32df156cda59938037b5ecf46fb39fe5",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/web/assets/robot-mascot.png",
+      "bytes": 339020,
+      "sha256": "83668a5b0e31858cb571b854f87a71fa7d18e880edd7dfa8a7e06ff15939fa78",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/web/config.js",
+      "bytes": 434,
+      "sha256": "fe1284d6b7c29964306d90b4c7f4be248aaa61f77101f26c196c96b61d62696d",
+      "matches_robot_source": false,
+      "publication_adaptation": "retained reviewed public credential/location examples or release documentation/build metadata"
+    },
+    {
+      "path": "android_app/web/connection-states.css",
+      "bytes": 1005,
+      "sha256": "f3d2ac9a7a55555b581cd81d88ba1afb398128935f9b8b440cd6620d6d6b934d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/web/index.html",
+      "bytes": 15461,
+      "sha256": "3ca6e2e9be9be5fdfce6e85df68685ccb1430acb2b841d0c6dec429f9e7d77d4",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/web/layout-fixes.css",
+      "bytes": 190,
+      "sha256": "b0973ed37b400d3dec0803e77b40bda847e66d3dee5cde1d4c1bcbbae8a9e1b4",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/web/robot-showcase.css",
+      "bytes": 2097,
+      "sha256": "d6727588e07d98a09412e9a66de20172314bd20fcebddd58392437d91c1e050b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/web/styles.css",
+      "bytes": 12876,
+      "sha256": "907d70662a577aa0e07ac42f84c428efcee02512920d0106ab91acb94be97e12",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/web/vendor/css/all.min.css",
+      "bytes": 90336,
+      "sha256": "e0b69df26e19596d4b81bf7eb0c54b6047e7221ec18d5d4d40c11eefd3ef8a4b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/web/vendor/webfonts/fa-brands-400.woff2",
+      "bytes": 115420,
+      "sha256": "ff66d1cfb67dbe3da432bbe36572cabfa4eef0e591303c2cba111474ba1d15bc",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/web/vendor/webfonts/fa-regular-400.woff2",
+      "bytes": 19512,
+      "sha256": "f4722d10b9e1b41eefe3b51a026312ee1970edb7782f94b0080d3d475945734c",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/web/vendor/webfonts/fa-solid-900.woff2",
+      "bytes": 119488,
+      "sha256": "24e5fae26b41c08b2df81c91669f5aaae71d81a84a4713fc56b5c621b78dd456",
+      "matches_robot_source": true
+    },
+    {
+      "path": "android_app/web/vendor/webfonts/fa-v4compatibility.woff2",
+      "bytes": 4168,
+      "sha256": "c776ee1f1fe21cd72195e91de7afd5c9dbd007e9d06016254d65fbcc091398ca",
+      "matches_robot_source": true
+    },
+    {
+      "path": "benchmark_skill_feedback.py",
+      "bytes": 2359,
+      "sha256": "dfc7579322aa3e623a0421a826e83c3daa25c6a338ce2c77b58a09e6fdf65a69",
+      "matches_robot_source": true
+    },
+    {
+      "path": "config.example.env",
+      "bytes": 368,
+      "sha256": "486368f7eae8791a60951355246cf052978dac13a9365c8312e85fb11be057ca",
+      "matches_robot_source": true
+    },
+    {
+      "path": "head_intent.py",
+      "bytes": 3299,
+      "sha256": "e50ef49f3098445ac55d58f262ff65943880853a533f31a35e7c26aa5c1b1169",
+      "matches_robot_source": true
+    },
+    {
+      "path": "intent_policy.py",
+      "bytes": 10730,
+      "sha256": "a29378684f312394fe7538fd66315cb3f72b434db0f6e860a08de5f097f82aa3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "local_skills.py",
+      "bytes": 168451,
+      "sha256": "579be0a1b44715cc4cbcd351dc9f793c9604016f6bb2d2882cf9f1971ef2e8f1",
+      "matches_robot_source": true
+    },
+    {
+      "path": "memory_store.py",
+      "bytes": 32872,
+      "sha256": "4991d392a2c96441ecf0389feb57cb7fc929863bc7c03d94654d4a859c1ff210",
+      "matches_robot_source": true
+    },
+    {
+      "path": "migrate_command_memory.py",
+      "bytes": 3229,
+      "sha256": "a09ee64850dda1af8f6a98104d392ed897099e867691b2bb268db7c203b8dafd",
+      "matches_robot_source": true
+    },
+    {
+      "path": "projection_occlusion.json",
+      "bytes": 637,
+      "sha256": "2a005c68f7dd0e7a3ff3f0d220ac30762db031a10c43efff5eb7dd68286ce063",
+      "matches_robot_source": true
+    },
+    {
+      "path": "projection_occlusion_observer.py",
+      "bytes": 21268,
+      "sha256": "aa6a8c938925ebf6a08bce18c73a48e1cbfcf760085f22e384ec6187f625af1d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "realtime_chat.py",
+      "bytes": 177803,
+      "sha256": "999d63cf480348b50ef9f01a198ef688b7f3bb95dd7ea954fb36b575fd916aa4",
+      "matches_robot_source": true
+    },
+    {
+      "path": "realtime_core.py",
+      "bytes": 6393,
+      "sha256": "072ffa21afa4d658ee64a7ad4ce9e82347b5ef0f10293bbd066ad5446bc164a2",
+      "matches_robot_source": true
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 68,
+      "sha256": "159aaf3c0a77569152c2c65b2bebbf7d2fa3106215da4324107678413a59daab",
+      "matches_robot_source": true
+    },
+    {
+      "path": "resident_service.sh",
+      "bytes": 5982,
+      "sha256": "822b670fe410aee813b80dc9cd6c7e5e360e82034542473d709c7ee03e35b888",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/.gitignore",
+      "bytes": 645,
+      "sha256": "6f4f0eecf57628e296ef12303275e3d62477dab05e77e011867d88bb4971a0f8",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/PRELOAD_README.md",
+      "bytes": 1984,
+      "sha256": "fb26a652372c9decf70fd8b69a7b349bf1bf403304ea158876f40d3b5a49815e",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/README.md",
+      "bytes": 11249,
+      "sha256": "f1504f1eb87a2487b3f4221261245db85225ce61aa8e0b13be1011bea52a2d2c",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/RESIDENT_RUNTIME_README.md",
+      "bytes": 8668,
+      "sha256": "8286dea42cdc0a8b470aa5ab15cb489886607443c13c22608f4cbe07155800c5",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/SHARED_RUNTIME_BENCHMARK.md",
+      "bytes": 1687,
+      "sha256": "c5f30df3f4f518d28f8e76516eca4bad927aac6a63d793587c9a5325ed796e8c",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/SHARED_RUNTIME_README.md",
+      "bytes": 2117,
+      "sha256": "76c3245a7fad92330725d9b682a8032f8a6504b9d3671562ce3f84039cd542c8",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/SPEECH_PROTOCOL.md",
+      "bytes": 1225,
+      "sha256": "cbf584b80502e9462bf779f3383dea5b37ef006303bdbed96b7fcf1327c259e6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/_shared/__init__.py",
+      "bytes": 49,
+      "sha256": "0a098961d96dba30fd8fc8efcd7bfa80c1d8831459da33f29511087388d675b4",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/_shared/camera_skill.py",
+      "bytes": 5301,
+      "sha256": "9c1f9452dee35de66838b61f2e58e907c1adada3314a230fb963e5f9f904e6ee",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/_shared/mijia_client.py",
+      "bytes": 7006,
+      "sha256": "bc815cc869e6601f36f7642c04a636b98af06c5e041615ecffd219be64b9e77c",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/autonomous_projection/run.sh",
+      "bytes": 167,
+      "sha256": "2ce499cc03f849508fd69a14670e7a1ce25c4c4404cc77b1b77210d2b1f92b3f",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/autonomous_projection/skill.json",
+      "bytes": 927,
+      "sha256": "81465ea5bd423c6740d754ef0b0785f2be7aa0dbca2e9ff4fd6d898e2f5d4471",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/autonomy_exploration.py",
+      "bytes": 33982,
+      "sha256": "5f7069e6e0dc2d9cc74aac3570c3cd827a6359cb46bec5df4d5f3676e3e89e35",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/back_camera_capture/README_START.md",
+      "bytes": 408,
+      "sha256": "d49026b77d340b9db124e89d7f5b8cff40150ba2bc5fad56685ebcc67391c867",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/back_camera_capture/run.py",
+      "bytes": 258,
+      "sha256": "5fa5cef119689612abadc60017cdc7bbcf34811bbd95318b1cf5fb123a5e19e9",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/back_camera_capture/run.sh",
+      "bytes": 167,
+      "sha256": "8acb7f80affb32bf11c4353e667f4c2d7589bba395cf8f3947ca9142ccc5b4c6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/back_camera_capture/run_legacy.sh",
+      "bytes": 107,
+      "sha256": "fb3cc3ec19772e64fcc19ff3583800459009d63d6be3e8699f5a9cbb754cf723",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/back_camera_capture/skill.json",
+      "bytes": 3255,
+      "sha256": "65e8e9113a81ae79038cc295d353d3e6bf9b735d54761ecf0e9d10a8ea46b797",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/back_camera_capture/v11_skill_spec.json",
+      "bytes": 2831,
+      "sha256": "162bce0b1916e39991a4d51c379debf3b34b8918a660ca13adb0e673cd4f97ea",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/back_camera_record/README_START.md",
+      "bytes": 432,
+      "sha256": "5ce8d798e6a2d13b55e95bde7dabd50e7ac281ce1ced078fb79962c38baf71a6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/back_camera_record/run.py",
+      "bytes": 256,
+      "sha256": "1b79cca8450cf693eda405c951436fa68842cf785f661d7255ff90241948b85b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/back_camera_record/run.sh",
+      "bytes": 166,
+      "sha256": "98739ee48461e823e6f4c59bc8aadcd122e35a833acedbe95c669085acde9fa1",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/back_camera_record/run_legacy.sh",
+      "bytes": 107,
+      "sha256": "fb3cc3ec19772e64fcc19ff3583800459009d63d6be3e8699f5a9cbb754cf723",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/back_camera_record/skill.json",
+      "bytes": 3258,
+      "sha256": "8b2ea3d649ce03163d8268194a4f943b1e41e677cf0e3d2e4efa66c610deff02",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/back_camera_record/v11_skill_spec.json",
+      "bytes": 2835,
+      "sha256": "9d7513c4f2c07e6aea5d99fdc4f224fb0441bde76a76c81a6d151324da57f694",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/benchmark_model_probe.py",
+      "bytes": 1745,
+      "sha256": "0fa8e7252de73f2b18e2c807f14a1f3fbc3c5d56a8a47c091eccd4590d8da63b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/benchmark_preload_effect.py",
+      "bytes": 13076,
+      "sha256": "457bd4ea1836252e30871f46d094af5ceed9e83e6bf52a00bd8152f553a59272",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/benchmark_preload_effect.sh",
+      "bytes": 337,
+      "sha256": "3a3e85e38ec952372fd741526b2c83908331185ca19827ac705e1e72b7643113",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/benchmark_shared_runtime_clients.py",
+      "bytes": 2392,
+      "sha256": "42d646eebe3b84e33ec54952ef275f653c4ad46ae11914167d9c3c8396a97c0b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/calibrate_projection_footprint.py",
+      "bytes": 4309,
+      "sha256": "d2e0cd4fe7beaf8ed623d253e97b36b4922409b534822441451130271cf0db24",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/camera_capture/README_START.md",
+      "bytes": 462,
+      "sha256": "979a33ea5e742bff2c8c9faa289f05b94ca1695c6195442ff056ede19bdd3e2a",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/camera_capture/run.py",
+      "bytes": 251,
+      "sha256": "5ff8df96952ed8929353be4a678557a02696dc69bfbae93aed2596fdd91bf8d5",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/camera_capture/run.sh",
+      "bytes": 162,
+      "sha256": "e17fb7807eb8f49eefb09d55a3af3e84819492e308265a9d6b2c115b2123d4aa",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/camera_capture/run_legacy.sh",
+      "bytes": 107,
+      "sha256": "fb3cc3ec19772e64fcc19ff3583800459009d63d6be3e8699f5a9cbb754cf723",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/camera_capture/skill.json",
+      "bytes": 4923,
+      "sha256": "0fff72dacecc2246bf075a017f3773efef329fcc5b73284d0de447b07476fb2a",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/camera_capture/v11_skill_spec.json",
+      "bytes": 4504,
+      "sha256": "4a5e15a655571e84eb869a5ae30518cf9a324659d71a9b019885502afccb5393",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/camera_record/README_START.md",
+      "bytes": 480,
+      "sha256": "35057020823e2e6fafc104de39465b04e89363085179a5e131543ade4053b96f",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/camera_record/run.py",
+      "bytes": 249,
+      "sha256": "1c961f21a0dc9aed7da57d2789e487640d75fa5c285293304797889475dd4776",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/camera_record/run.sh",
+      "bytes": 161,
+      "sha256": "f3def9e70d8a4b5f6ad7ef6468b055f5b8955377095d0a75a66d55690ce922c3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/camera_record/run_legacy.sh",
+      "bytes": 107,
+      "sha256": "fb3cc3ec19772e64fcc19ff3583800459009d63d6be3e8699f5a9cbb754cf723",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/camera_record/skill.json",
+      "bytes": 5142,
+      "sha256": "27b5321663fe20587dd007fafd43d007df874427d3af35fe07f096e96b030329",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/camera_record/v11_skill_spec.json",
+      "bytes": 4724,
+      "sha256": "941af569e3070aa7dff94e3e26b46201a31cb311058f772d2c3c9cafd194f469",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/car_real_contract.py",
+      "bytes": 4773,
+      "sha256": "e5bdb937f3328bb159a3aeec7082876cb6e7e224d0175b3a396087e7f3a65e33",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/car_real_startup_guard.py",
+      "bytes": 4991,
+      "sha256": "5632ca25a3c561ce449f8917f09d173b44f257f8fd6fd1acf416cb3cc0f9433b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/check_all.sh",
+      "bytes": 868,
+      "sha256": "381cab958e3b6862c5b6e7a0588d0196d2da796eb88df65af63c8221f1eb2403",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/compute_path_probe.py",
+      "bytes": 2793,
+      "sha256": "8f864f70864b66a64f725819b8b46198bd4e832df456c3cde0dc9a0e8d06dfa9",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/exploration.json",
+      "bytes": 5006,
+      "sha256": "46ba91974cd68a20dbb4d8d96d6fc694dff3cf0e26cc88be78dd033307b3579e",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/hardware.json",
+      "bytes": 16798,
+      "sha256": "74ceac3edec833ddabc8979988f676c7cb17ac8731c35fe41b0ca5f30fa91eb6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/back_camera_capture.json",
+      "bytes": 2927,
+      "sha256": "32ccced011e6557f2f1e1508e61d1500763966d7f4ed77e58d7a5e70bb0d4c0d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/back_camera_record.json",
+      "bytes": 2931,
+      "sha256": "bfcda4b81055b31e3a411d991c640512051988e116103947737ffe38d338769d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/camera_capture.json",
+      "bytes": 4658,
+      "sha256": "1c37ce8983d7ee72f17a7b68c16f0c8104774b844fb3b63a4c238c0c887147d7",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/camera_record.json",
+      "bytes": 4888,
+      "sha256": "d8446857f0aa489655b595f395fe198e04e2c2069c9d94c9b5fabd8095fb7551",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/environment_perception.json",
+      "bytes": 6793,
+      "sha256": "aeede72076117da2a7a66bcf6d6f4221a5b12e06201b9557fa731373feb11926",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/face_recognition.json",
+      "bytes": 4215,
+      "sha256": "2205d012c2223e5902e88153deb451d10632fd2c58daea7e411a3fdd7215cbf8",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/face_registration.json",
+      "bytes": 4517,
+      "sha256": "4a56440ecd41a3da07ea1477aeddde64fed554e02b4c53a101ac1675d23af9f4",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/fan_control.json",
+      "bytes": 3804,
+      "sha256": "7e68e39c4f21937d4bbebb7a39e5d25ea51fee1df70dad51f7d0981bf6269ec5",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/feeder_control.json",
+      "bytes": 4577,
+      "sha256": "df38891b8c46e7324d0846d7474f9afacd280866c825606f8b5758b793c070c3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/front_camera_capture.json",
+      "bytes": 2938,
+      "sha256": "2d18c07fd3bc77fd1a0f5bb10647b003c2aee03bc16d9916320258761444dc36",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/front_camera_record.json",
+      "bytes": 2924,
+      "sha256": "45465691a90e019e4300ae45cbe3a61e145a8936c6d13f2e9f80349102eb4400",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/head_control.json",
+      "bytes": 6925,
+      "sha256": "24c7a4860022a0e98a445988d392b7cc0fc0809702a304309165fde4129030b4",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/light_control.json",
+      "bytes": 4331,
+      "sha256": "f0fae7820c75e62b5e22c3ad6a07ea8c3f9fb686834754ba327cf459fc5291de",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/media_player.json",
+      "bytes": 1858,
+      "sha256": "8b072e82c97ba0ebae7fb4f69af44ae83decb864bf1993c2e941c4623961d5ea",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/move_backward.json",
+      "bytes": 4362,
+      "sha256": "bbf81dc4742836acb08675f61bd0035427b0549d99db76885239cb8844d44c5f",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/move_forward.json",
+      "bytes": 4356,
+      "sha256": "9b0fe5cdbc4fb5ccd6ae8f61a53d21483755cfe0b8bb42d3d2acc0662af673d6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/move_left.json",
+      "bytes": 4348,
+      "sha256": "4d914242a036f800ee16223fa0df491d6d1ac7916a9c421ccb99d1a360cbf568",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/move_right.json",
+      "bytes": 4357,
+      "sha256": "ee88a636e26a1df282006c5a7bda9123d5d857d0c61b7989a393c3eace9142c7",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/navigation_goto.json",
+      "bytes": 8283,
+      "sha256": "647b24bd1138ed4343e778959d4a3c77c9e01a66629aef3fcd5aa2d8bc83449a",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/navigation_list.json",
+      "bytes": 4301,
+      "sha256": "8d47c94463facc86403680cbad47fb620b7418831323ed7884f4fb135d51fac9",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/person_tracking.json",
+      "bytes": 7362,
+      "sha256": "b7a2c53e0b2ba5dc7e2ff2089d13d2eb64fa00eb975717a3766017d9d32d63e2",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/pet_tracking.json",
+      "bytes": 4052,
+      "sha256": "e58b45145d1bf5322ca89e9e3028fb9a9ac4d0f4c192b1484cbb33f7c0106609",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/projector_control.json",
+      "bytes": 7575,
+      "sha256": "8a3d78257ed68e3e6f08c0e4a22f842da77034515b74a77d8e1e9602b3d71578",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/pull_up.json",
+      "bytes": 7249,
+      "sha256": "5bfdc710b3734ddf4a23caa7613c6b561a02c1baf92de41c169296afea8d41c8",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/push_up.json",
+      "bytes": 7819,
+      "sha256": "d017a3ba26fc0fccea6817fec350c42fbb7f3a0ac4267744225af2aed9ec2dbe",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/realtime_information.json",
+      "bytes": 6384,
+      "sha256": "390c015ac6f64b1ccc6e18db447b8a7e669f8079c4c2df07342db9361521e5b2",
+      "matches_robot_source": false,
+      "publication_adaptation": "retained reviewed public credential/location examples or release documentation/build metadata"
+    },
+    {
+      "path": "robot_skills/config/skill_specs/reminder_cancel.json",
+      "bytes": 4315,
+      "sha256": "91bf39ebb8d3c7cdf318b6cc9d02b7318e102ef7cadb9d978ded47e0eadc8457",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/reminder_query.json",
+      "bytes": 3637,
+      "sha256": "4c8f624408cac59c3b6574e3cfa48f0c82dcc17c059cb64109fecdf533903194",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/reminder_schedule.json",
+      "bytes": 5076,
+      "sha256": "42fa055730569cdcbe9d0963b13e37dcb83269ec1f2b31cc1a33faf5a6b40bd3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/squat.json",
+      "bytes": 7175,
+      "sha256": "0e237ee9ab4eb229c58b29176b2cc7f336ed2ef62f3f1e87a59c414b15936c76",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/config/skill_specs/welcome_projection.json",
+      "bytes": 655,
+      "sha256": "1bb418f5690930892d4e144d15265e524d806910c63aff0b01c55625546337f6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/diagnose_wall_candidates.py",
+      "bytes": 6005,
+      "sha256": "114c2449b091e7aea1800c3be3f3b383401746dc85291ee18322876d9cce640a",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/direct_candidate_paths.py",
+      "bytes": 1052,
+      "sha256": "d588aa1c6d3042ecbfbef5fb4252d6c37508fc43ddf6b6e9072042da065ab81b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/environment_perception/README_START.md",
+      "bytes": 795,
+      "sha256": "1cfe2343a0d244d77a04b7c67a2007f661e47bde84f4139bce3a9afaa744089c",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/environment_perception/run.py",
+      "bytes": 25568,
+      "sha256": "5ed631f645d528f0d4f8cc7bf944babfa3f9b6edaeea4572ad7cb5ea400ce687",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/environment_perception/run.sh",
+      "bytes": 170,
+      "sha256": "8d405ef0d29826673d9d3fb84588aebc8a9be95b2de8e515aa0f99a058a76b79",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/environment_perception/run_legacy.sh",
+      "bytes": 1170,
+      "sha256": "cd72feb7c05df69e2a191cf634f1202785dcfb845116928293367c5b0f19e329",
+      "matches_robot_source": false,
+      "publication_adaptation": "retained reviewed public credential/location examples or release documentation/build metadata"
+    },
+    {
+      "path": "robot_skills/environment_perception/skill.json",
+      "bytes": 2044,
+      "sha256": "a5c003555a09b399127480c44168c803b5aed18d8486e59807455a3b945b605b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/environment_perception/test_pucoding.py",
+      "bytes": 2731,
+      "sha256": "57fded27d14e83e1a4ecbfa54d171c234aa0e18a0cc3de6ddad03b8a482ba6bc",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/environment_perception/v11_skill_spec.json",
+      "bytes": 6639,
+      "sha256": "0421e37808a454e7aea0eefab7c0dfb2f85a1030a835a82368fddc045e277e74",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/exploration_core.py",
+      "bytes": 58164,
+      "sha256": "7a2e2a26f6e13418c7aac9f0c798c666b7a83c9a731757956c4bae98a495e447",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/face_recognition/README_START.md",
+      "bytes": 390,
+      "sha256": "08e95502b4b29d84b86989f747797281ccf69b071f6f9b8e436fe566118125ab",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/face_recognition/face_common.py",
+      "bytes": 33364,
+      "sha256": "e5d5d7d108ce63b4344188f28b6fcaad1da3418ce4fd977e205fff86f98fbcd5",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/face_recognition/retinaface_rknn.py",
+      "bytes": 7756,
+      "sha256": "44a4be0e1b28a98ad5e587e682facb4d7ebaebd4501d63452678b0ca0b09eefb",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/face_recognition/run.py",
+      "bytes": 202,
+      "sha256": "0b9826b35a34ff86cc72d3ce662400e1167129073348706b7d837d0d051fd5b2",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/face_recognition/run.sh",
+      "bytes": 164,
+      "sha256": "c27a499c3b9a4c7e4ff879a50912ead46a7823e318ef727fa928f800f3726920",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/face_recognition/run_legacy.sh",
+      "bytes": 1014,
+      "sha256": "d7cf77300bcdf794e0ea7804ef53e3bd610baee90589de45fe26fb401d960d08",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/face_recognition/skill.json",
+      "bytes": 1440,
+      "sha256": "43994354aa4c7ea02c550aee78f88b87282b108039379e5c018c8934f1b46653",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/face_recognition/v11_skill_spec.json",
+      "bytes": 3890,
+      "sha256": "de1c99d802ac6fdf16fe3b0bc532f1d4b2751e2b0527d1f8c4b6918e1be270b3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/face_registration/README_START.md",
+      "bytes": 388,
+      "sha256": "5811c8097b29cf52150654881236d5234bb90091dabbaa71bfb1670096c0dfaa",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/face_registration/face_common.py",
+      "bytes": 32051,
+      "sha256": "db06e9f80225164656869547255297695da0a4896e06b89424820dcd0beb6740",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/face_registration/retinaface_rknn.py",
+      "bytes": 7756,
+      "sha256": "44a4be0e1b28a98ad5e587e682facb4d7ebaebd4501d63452678b0ca0b09eefb",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/face_registration/run.py",
+      "bytes": 204,
+      "sha256": "587332f281dcd56199592f453dc8a029c12f48cb6078c33d201666a818968eca",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/face_registration/run.sh",
+      "bytes": 165,
+      "sha256": "8d1f8cbbeee298d43074a8c67c8a6c54dbb606798ad1fdc59cad8f035d06f075",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/face_registration/run_legacy.sh",
+      "bytes": 678,
+      "sha256": "580c71e17dcbba744aa502c0ed57a5b4e77a7aabca2f9245df0d6eb9e939bb12",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/face_registration/skill.json",
+      "bytes": 1440,
+      "sha256": "996db64485c87f674a5c4e9063273abcee4a763e551c42e31b3f14449c675dd3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/face_registration/v11_skill_spec.json",
+      "bytes": 4517,
+      "sha256": "4a56440ecd41a3da07ea1477aeddde64fed554e02b4c53a101ac1675d23af9f4",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/fan_control/README_START.md",
+      "bytes": 526,
+      "sha256": "14373f782f25e3596fbf3c5dbd02e2e8c1fbd363c35483df7e096c2c2ec60d6b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/fan_control/run.py",
+      "bytes": 682,
+      "sha256": "f22dfc1f27880fbddf7a57cb6813c067f7aaa9264f6efc11f984b805dfec0e8d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/fan_control/run.sh",
+      "bytes": 159,
+      "sha256": "b062777c4a7dc511e8ae914548722b9fa82afab2e5c022cf635353b04dbf37d4",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/fan_control/run_legacy.sh",
+      "bytes": 678,
+      "sha256": "580c71e17dcbba744aa502c0ed57a5b4e77a7aabca2f9245df0d6eb9e939bb12",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/fan_control/skill.json",
+      "bytes": 1528,
+      "sha256": "a2809a19e104f09d667f60f16d110d3f31bb12334bd15b9917776bf65f8ea1a6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/fan_control/v11_skill_spec.json",
+      "bytes": 3804,
+      "sha256": "7e68e39c4f21937d4bbebb7a39e5d25ea51fee1df70dad51f7d0981bf6269ec5",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/feeder_control/README_START.md",
+      "bytes": 500,
+      "sha256": "6e2cde525ea5aef20d4b670c41d955ecdbfff4347f5497df1e2b182c02f372be",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/feeder_control/config.json",
+      "bytes": 296,
+      "sha256": "d67fd663bc78cb48d8745191d5e85f357ae0dff6902332dda6d05614f8dfb0c5",
+      "matches_robot_source": false,
+      "publication_adaptation": "retained reviewed public credential/location examples or release documentation/build metadata"
+    },
+    {
+      "path": "robot_skills/feeder_control/run.py",
+      "bytes": 9030,
+      "sha256": "18bdfcbb291b4df15b782e34c5585d08ef511429da6835bbda7b9191b00500c7",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/feeder_control/run.sh",
+      "bytes": 162,
+      "sha256": "ec786009ad10f185e18d2c088681568aff2d323ba44f1d83e37b2a568e23244f",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/feeder_control/run_legacy.sh",
+      "bytes": 209,
+      "sha256": "9e19a1941a2c86a13803dbeb420a77448c3d5a6fc148b9524ce814fb45920364",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/feeder_control/skill.json",
+      "bytes": 2516,
+      "sha256": "a428d0ae39c438e23759872d525c60a3478095d0d881dff722dd42da08ed7586",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/feeder_control/v11_skill_spec.json",
+      "bytes": 4849,
+      "sha256": "1b27f23aec7f2615a652a1b89cfafec15d5eb27c328e3eea96aaaf8b9711ea0d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/front_camera_capture/README_START.md",
+      "bytes": 410,
+      "sha256": "4f54371fbd703c8180f677786c76c730c493bb8691f79c2120e950c75d0f33e5",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/front_camera_capture/run.py",
+      "bytes": 260,
+      "sha256": "e85c94f97320b04c028c8da1d6385225d600a3d0bdeb9e8382aaae37372f4f42",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/front_camera_capture/run.sh",
+      "bytes": 168,
+      "sha256": "a18fc079390c854efdb0fcde6cbb7966d3290fbaac0250b8063f7765a8977a7d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/front_camera_capture/run_legacy.sh",
+      "bytes": 107,
+      "sha256": "fb3cc3ec19772e64fcc19ff3583800459009d63d6be3e8699f5a9cbb754cf723",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/front_camera_capture/skill.json",
+      "bytes": 3266,
+      "sha256": "2a199587abc0d06ac69ca0bcdffe6969d0a1842ec0a58012ad8eeeb17348a94c",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/front_camera_capture/v11_skill_spec.json",
+      "bytes": 2841,
+      "sha256": "e0b47af64641d44e2d037f71e1bffa9dab24fd1d47e981bf8e3dc80c555118e1",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/front_camera_record/README_START.md",
+      "bytes": 434,
+      "sha256": "165c43f11488ada073f45df3546825ee26ced66fc8cc411977e955c97ea82803",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/front_camera_record/run.py",
+      "bytes": 258,
+      "sha256": "7b0300ac521c3339f8081e55bf055f159e9ff4d8fc86c7e1b075bd3bce0c3365",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/front_camera_record/run.sh",
+      "bytes": 167,
+      "sha256": "259b6943fccc70dc6bc8b10a1311127a8931f2bbdede1f8f5ca22fddefb4952a",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/front_camera_record/run_legacy.sh",
+      "bytes": 107,
+      "sha256": "fb3cc3ec19772e64fcc19ff3583800459009d63d6be3e8699f5a9cbb754cf723",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/front_camera_record/skill.json",
+      "bytes": 3251,
+      "sha256": "fcfafc897357c3013c9c8424608324609b76bc977dcac93985cac8aa476bfea7",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/front_camera_record/v11_skill_spec.json",
+      "bytes": 2827,
+      "sha256": "a4c2799e254dedceb80c504455ba2658d057ef102bad1a30d19d4059044929ac",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/head_control/README_START.md",
+      "bytes": 468,
+      "sha256": "e9d52f0f690af99656e624a93af88087e3ece955aad88394003fda0fbf1b7662",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/head_control/run.py",
+      "bytes": 16445,
+      "sha256": "47944d39283011ecbcbc407e2b099f1d1fdcedb9e88ed7a1fd18195938e7ff33",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/head_control/run.sh",
+      "bytes": 160,
+      "sha256": "050a9e968a4228a0570ee115ea1c121a668df547dbaed671e1f098aae65c09a6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/head_control/run_legacy.sh",
+      "bytes": 843,
+      "sha256": "b08c8afa1d6192aabcebaeb1cc5d195353320269729f8100a1b4f80c53b39ecb",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/head_control/skill.json",
+      "bytes": 2114,
+      "sha256": "6b1a10eb55f4ff3083fc3afe8418d5cf91cdeedd0513b1db3b11b194f4b46e34",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/head_control/v11_skill_spec.json",
+      "bytes": 6925,
+      "sha256": "24c7a4860022a0e98a445988d392b7cc0fc0809702a304309165fde4129030b4",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/head_pose_supervisor.py",
+      "bytes": 12346,
+      "sha256": "82a3a2891d0ef3ac8002c7621f050f8e5cad33e0e17a2d7a4feb8d28a3fdb662",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/install_resident_wrappers.py",
+      "bytes": 1621,
+      "sha256": "a44cbcefc84cd7844f01957729c989677aa4dbbb6a3dba2841f1acbfedc25544",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/light_control/README_START.md",
+      "bytes": 575,
+      "sha256": "54812a7bc90a5f12eaeab52762b8aacc3dd87fdb56823b0a0d8410f526ca0497",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/light_control/config.json",
+      "bytes": 247,
+      "sha256": "cd989869ec96fa0985fd9092a6c2d760978ad184b5cf2b261374c9932d98ca31",
+      "matches_robot_source": false,
+      "publication_adaptation": "retained reviewed public credential/location examples or release documentation/build metadata"
+    },
+    {
+      "path": "robot_skills/light_control/run.py",
+      "bytes": 8502,
+      "sha256": "27287a987ae91d5d5377b103f7c7a3b44af10bc5c5c3fc91d89ace10dd4a7d2d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/light_control/run.sh",
+      "bytes": 161,
+      "sha256": "3d02dc3e81e84bc910467a6450a697b3586ea37e60b698879b16f8d0e2d863da",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/light_control/run_legacy.sh",
+      "bytes": 209,
+      "sha256": "9e19a1941a2c86a13803dbeb420a77448c3d5a6fc148b9524ce814fb45920364",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/light_control/skill.json",
+      "bytes": 2178,
+      "sha256": "df83726f32b357eae52d9a2c3a0c8ecbafc591ba694ff540ef4edf77b84482af",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/light_control/v11_skill_spec.json",
+      "bytes": 4683,
+      "sha256": "000080492959ea7da0a6be87558f5f94f4368b32bfe7b78a72f6eacd8ae7524f",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/list_skills.sh",
+      "bytes": 289,
+      "sha256": "0a3918ba3cd42906f5e81e3136f0b7f6095a9460f30184ad581d3eccce90f403",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/localization_integrity.py",
+      "bytes": 7105,
+      "sha256": "36ab1cd543c0fba024e4b043ac189a22d94ec12d69ed2914513b574e945761bd",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/manifest.json",
+      "bytes": 11824,
+      "sha256": "a188e6862fa3cd55482c369e3d954974fd885e5cfe34222272bd5e7acbdba209",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/media_player/catalog.json",
+      "bytes": 996,
+      "sha256": "f835e6af1e3b03759bcb73620a1751afeef36c64b6ebb2490cd7425c12387cea",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/media_player/run.py",
+      "bytes": 8045,
+      "sha256": "933c8ebe543adcdf7d6b4ee558072b8b5521fdb240474dd67ec7df5e3f9071e8",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/media_player/run.sh",
+      "bytes": 158,
+      "sha256": "1dd7bec550c7f86e04188ac2b2af8d6035304fb42c117f1a171cd2d0d6b9ca74",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/media_player/system/robot-media-player",
+      "bytes": 3102,
+      "sha256": "b41f52a0fd2b8a49e35e28bdd777b9598556a783a86bde424cb072fc70317c02",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_backward/README_START.md",
+      "bytes": 399,
+      "sha256": "e4d4deb156a7f0c83440174cec374f164b5f033fd43c8e2a0e1b78534794bc9e",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_backward/run.py",
+      "bytes": 4184,
+      "sha256": "d8a54d449462da90b37277243a0cb76860c3c8836f4d0f56b986279662a322d5",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_backward/run.sh",
+      "bytes": 161,
+      "sha256": "5356e6d21823b1a4b3ba52552b3794cb4dd5ca9606b324d08de6185b2b452e3d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_backward/run_legacy.sh",
+      "bytes": 1190,
+      "sha256": "9edce43554d1089e857947535704795d67b6f34ab25709cfb65b62f2c5a1d521",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_backward/skill.json",
+      "bytes": 1337,
+      "sha256": "cb2723376330d0777f90075d9bdfc86ce699dd56dd48c43bed0bf0e4afb62327",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_backward/v11_skill_spec.json",
+      "bytes": 4362,
+      "sha256": "bbf81dc4742836acb08675f61bd0035427b0549d99db76885239cb8844d44c5f",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_forward/README_START.md",
+      "bytes": 396,
+      "sha256": "fe362288865efe973314847bb45dad3b54ce5cad4a322fe57227bcd8c84dbf95",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_forward/run.py",
+      "bytes": 4069,
+      "sha256": "a67cf91361dc49cc0c13d49d39291760f5d530b26bd97b246d07bc4b0327f250",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_forward/run.sh",
+      "bytes": 160,
+      "sha256": "033676daea02d5d5fc1f9cadce84df61e14addecd83c860bff61cf13d75a18b9",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_forward/run_legacy.sh",
+      "bytes": 1190,
+      "sha256": "9edce43554d1089e857947535704795d67b6f34ab25709cfb65b62f2c5a1d521",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_forward/skill.json",
+      "bytes": 1331,
+      "sha256": "4796dfe70ef86d6a10a4fe0a48780a02634cecdd92737941307987a249142dba",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_forward/v11_skill_spec.json",
+      "bytes": 4356,
+      "sha256": "9b0fe5cdbc4fb5ccd6ae8f61a53d21483755cfe0b8bb42d3d2acc0662af673d6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_left/README_START.md",
+      "bytes": 395,
+      "sha256": "f1053e6a5686e74c147af4beb2b20ae97686e9698298e3f098959f28445fee08",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_left/run.py",
+      "bytes": 4180,
+      "sha256": "25ac43d42eb5efbd2d9179930529bc4dfe5477961a4062e71e7e86202196941d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_left/run.sh",
+      "bytes": 157,
+      "sha256": "00cfb9dde0f8bb066a0868e8dbff0877f4e81ccc824ec6fece52ef6b38409859",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_left/run_legacy.sh",
+      "bytes": 1190,
+      "sha256": "9edce43554d1089e857947535704795d67b6f34ab25709cfb65b62f2c5a1d521",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_left/skill.json",
+      "bytes": 1313,
+      "sha256": "913ac3e724baf1a9f3e9e8c45501d7e0bf4ec641287fdded5bbb2d639cebeb71",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_left/v11_skill_spec.json",
+      "bytes": 4348,
+      "sha256": "4d914242a036f800ee16223fa0df491d6d1ac7916a9c421ccb99d1a360cbf568",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_right/README_START.md",
+      "bytes": 398,
+      "sha256": "a410a12811d566c1e041dc0c1f80ed80196f8cece1433fae0dc4bc7b157d4e40",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_right/run.py",
+      "bytes": 4186,
+      "sha256": "672720fedece96b4e0b40715125002eeacae95ae4215b6a2a4407c15a2416f01",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_right/run.sh",
+      "bytes": 158,
+      "sha256": "50099ad12f48eabe48860152c4e1da4a69633c43cd212fd64d8f429b4187b85b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_right/run_legacy.sh",
+      "bytes": 1190,
+      "sha256": "9edce43554d1089e857947535704795d67b6f34ab25709cfb65b62f2c5a1d521",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_right/skill.json",
+      "bytes": 1319,
+      "sha256": "6dea1a360e60c7ac7b42d20b02bb9e677686621c059d6bcedb9c576149ea10b3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/move_right/v11_skill_spec.json",
+      "bytes": 4357,
+      "sha256": "ee88a636e26a1df282006c5a7bda9123d5d857d0c61b7989a393c3eace9142c7",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/navigation_goto/README_START.md",
+      "bytes": 565,
+      "sha256": "0dd52634cddad15de467157cbeb08c645edf065dfb9f7993585de0dbf3ade7a5",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/navigation_goto/run.py",
+      "bytes": 45429,
+      "sha256": "3e6204f0a139ca16bd029760787a82b1a0a2c5a640c89fad0c6d91803ee5a11d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/navigation_goto/run.sh",
+      "bytes": 163,
+      "sha256": "eb6e9390edc7362226ce3c133038364191ec381cc1899376a0c685955590cd75",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/navigation_goto/run_legacy.sh",
+      "bytes": 1238,
+      "sha256": "eed8d94f201368cfad3fe1680da4b2d019d80d219c35ad1720a02780c2ead94c",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/navigation_goto/skill.json",
+      "bytes": 8721,
+      "sha256": "56e6d41cd3e61f92b76ab5fb19f159356eca51b9eeb01616740e99d037330ddc",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/navigation_goto/test_navigation_client.py",
+      "bytes": 6140,
+      "sha256": "7974b9295aac706e9b03c9f5ffcc42e637219e19826d2551ee67b3646fe95a89",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/navigation_goto/v11_skill_spec.json",
+      "bytes": 8283,
+      "sha256": "647b24bd1138ed4343e778959d4a3c77c9e01a66629aef3fcd5aa2d8bc83449a",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/navigation_list/README_START.md",
+      "bytes": 404,
+      "sha256": "6e16df252820585964ae0895220aa8d98325a8eee8a9d58fc809a400d7bff0a6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/navigation_list/run.py",
+      "bytes": 39924,
+      "sha256": "a9ee1fb1d0f08ef39e996bfcf56dd59355a0e334eb1c746a5e3965b05a2e5485",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/navigation_list/run.sh",
+      "bytes": 163,
+      "sha256": "cc36d4ab973c0f43fa3ca4b76b34c3c756f69fda64f49b0b154b31bb5e028455",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/navigation_list/run_legacy.sh",
+      "bytes": 1238,
+      "sha256": "eed8d94f201368cfad3fe1680da4b2d019d80d219c35ad1720a02780c2ead94c",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/navigation_list/skill.json",
+      "bytes": 4739,
+      "sha256": "68756c7f38b7767dc06a86500f1a9c7bf4e06e6694a763a5c728a202ebf3e33d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/navigation_list/test_navigation_client.py",
+      "bytes": 4172,
+      "sha256": "5beebc16292cb9ea5b128267c8feec52321a6d423116c376a52f1f7962a14c89",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/navigation_list/v11_skill_spec.json",
+      "bytes": 4301,
+      "sha256": "8d47c94463facc86403680cbad47fb620b7418831323ed7884f4fb135d51fac9",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/path_clearance_probe.py",
+      "bytes": 1123,
+      "sha256": "9b095454dcd5f62933f8a81a8d74048902b88831b06f1ff27a1abca7831fa4fc",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/person_tracking/README_START.md",
+      "bytes": 701,
+      "sha256": "ce52b9e6539400ce27e0e1c61e15e43e0bc7e4e9b67a4e2307cbd288fa1e88e5",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/person_tracking/config.json",
+      "bytes": 4395,
+      "sha256": "db3c0aec196c61a834f696d321e31be6814ab0dc90c81ca57b95891ff0c30487",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/person_tracking/face_reid_fitness_test.py",
+      "bytes": 20324,
+      "sha256": "6aac1a810fb49bc8e2be27b0d9920b2f02102934fb17b859a6a212a1aaa89fb5",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/person_tracking/face_reid_person_tracking.py",
+      "bytes": 28951,
+      "sha256": "20a204eab89307758dcd74ccd26046d57b8c382407ae03fd2e814b9247793064",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/person_tracking/fitness_reid_test.py",
+      "bytes": 19681,
+      "sha256": "62ec951787af813a324c645524e419bdca42d8031dc77adc1b046c5bec9da3ab",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/person_tracking/run.py",
+      "bytes": 133047,
+      "sha256": "9f8bc513fbe063572364ef23e43a06b2b07949929bba9566ee8cee47878e933d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/person_tracking/run.sh",
+      "bytes": 163,
+      "sha256": "230c243785ab3e8b18257679b106f8e6d362ab94c0fabc1652e9e064e701e178",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/person_tracking/run_legacy.sh",
+      "bytes": 2551,
+      "sha256": "ba13212715e15cb392c180c07ee5ca644a228b516842b08e9db7d2069b8a41ae",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/person_tracking/skill.json",
+      "bytes": 1890,
+      "sha256": "163661ea776bee48a09ac6f53eaf43149701282ffd7496ea065352c797d7759a",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/person_tracking/v11_skill_spec.json",
+      "bytes": 7362,
+      "sha256": "b7a2c53e0b2ba5dc7e2ff2089d13d2eb64fa00eb975717a3766017d9d32d63e2",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/person_tracking/wrapper.py",
+      "bytes": 5341,
+      "sha256": "6922dc0b0fbb35e19aa67b13f5d945f32f71dea80a072369d15856ba9492d372",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pet_map_search/run.sh",
+      "bytes": 160,
+      "sha256": "ddbe9c4afb0e1ec91295b6ed2bfed38b2c63c36f6bee660115931d0de38cda2c",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pet_map_search/skill.json",
+      "bytes": 810,
+      "sha256": "9d73f3ef5477aacba0cb80deeefc25a756a240de4d2b3a898fe7a3e042e208b6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pet_tracking/README_START.md",
+      "bytes": 956,
+      "sha256": "c4cdda07317c0993aa67144c04c2fa0278972f1bb50087e2929e783978597893",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pet_tracking/centering.py",
+      "bytes": 4716,
+      "sha256": "a06503349218537b604da9956ab14db10169d2b10c5d2047209a2db8d56527e7",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pet_tracking/run.py",
+      "bytes": 106598,
+      "sha256": "532d973ef090556f774610cfdf6b5b8c3cb3a93cd28d2c28dd00a6063d42f5ee",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pet_tracking/run.sh",
+      "bytes": 160,
+      "sha256": "dcc873976bd8949d6dc15d8c86ed5875e7749250d268d1069fb809609d2d87ee",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pet_tracking/run_legacy.sh",
+      "bytes": 2291,
+      "sha256": "7de1b239753d8a6831641ec1b0e866876e803710bc1f79aac796c11dc4444013",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pet_tracking/skill.json",
+      "bytes": 2085,
+      "sha256": "8b809ce368afc4e1e65489f91a696e6e4e2283be76840e2ae0234bd37fd2dabb",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pet_tracking/v11_skill_spec.json",
+      "bytes": 3953,
+      "sha256": "d3a4bf937ef87662708904db683da37df51fe265e7742f86ade7c7e2348816e7",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pet_tracking/video_recording.py",
+      "bytes": 2627,
+      "sha256": "af366a48714c476e2d2234ea96c6c8383b1116018c5f705445d885a1452bf44d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/points/location_regions.json",
+      "bytes": 1085,
+      "sha256": "bfa43f940d1d3918db9fda38036f30848ebf2c02e210ea32561aac98e42ec639",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/points/named_points.json",
+      "bytes": 1050,
+      "sha256": "9b4cc5a7f14c78ea887e15a8eb6874f832a328dfd2b2101ae3860159bb554113",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/preload_all.sh",
+      "bytes": 2511,
+      "sha256": "4e15919256ad667d72d21e651801c7735db61c1c223ca886e1949d1434087541",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/preload_runtime.py",
+      "bytes": 12857,
+      "sha256": "9693e2742348216f4b66525a802c165a79da52cfbedefcb9b183efa7a634c7b0",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/README.md",
+      "bytes": 564,
+      "sha256": "bfab7e503ac34c13554539091702b071bc71c417338bf00c80b69ca8ed9da7d8",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/README_START.md",
+      "bytes": 732,
+      "sha256": "47cc8fa5081ea28e42f717f8af2531e4e5905ed2b4b508cfec8481f8b885d4bd",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/android_meeting_viewer/AndroidManifest.xml",
+      "bytes": 890,
+      "sha256": "cabaefc97bd907eaa7ff115d27a8514b00d887ddf03beab3aa39cae05e594d62",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/android_meeting_viewer/build.sh",
+      "bytes": 2486,
+      "sha256": "f0c131e259f85dcacdc4fe3be1ddd895db2f5f1af8d427927a8a4f0b1d924656",
+      "matches_robot_source": false,
+      "publication_adaptation": "retained reviewed public credential/location examples or release documentation/build metadata"
+    },
+    {
+      "path": "robot_skills/projector_control/android_meeting_viewer/res/values/styles.xml",
+      "bytes": 653,
+      "sha256": "451f537a3eff5e123eaaee717dc508e38b7d3588cab7a942e8e83a4d17c9506e",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/android_meeting_viewer/src/com/adjacentgarden/meeting/MeetingSlidesActivity.java",
+      "bytes": 5263,
+      "sha256": "92568a8dde74883bd5e2fc637bd5b57f9d552fc3cce91e80b73bba8d0a06f8ee",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/assets/meeting-image-viewer.apk.sha256",
+      "bytes": 91,
+      "sha256": "f842c1e36811167f092f332eb7109276edba0b429ff5d1db24e6cde824e3b295",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/assets/test-1.jpg",
+      "bytes": 370360,
+      "sha256": "1a15506352fe68dffdf8e61df85703e93e27e370ada8b8db6cf46b5a7880d542",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/assets/test-2.jpg",
+      "bytes": 272131,
+      "sha256": "84ea835ad85b415edf8e228790b9c93fe53c3f2eebba13df7d612745863c8e83",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/config.json",
+      "bytes": 1774,
+      "sha256": "c0c22334d0da164cfe80d5170f201872024bf259ed5ebd0adbabd4872bf6b81d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/install_projection_helper.sh",
+      "bytes": 1227,
+      "sha256": "63d0fde0e5c3e16205d199e324764ca8d47785c91084c73412e76b1e5557f977",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/run.py",
+      "bytes": 12569,
+      "sha256": "3fa3b6de35ba429b20922ed4b5298f0987f9b296d20bef76ccba8aa801ed5290",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/run.sh",
+      "bytes": 165,
+      "sha256": "dad6775137a426cc5250b831814b948b978ca6f02ced4bcac2897b14d287b251",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/run_legacy.sh",
+      "bytes": 401,
+      "sha256": "deae4c093c81f8c473a127648fcf2e9e29e35d142498432bf9987e3cbf6bf580",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/skill.json",
+      "bytes": 1894,
+      "sha256": "ba7f02142f396055a004e8a488b6109b115798057e53af05c069e531f80802e3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/system/robot-meeting-projection",
+      "bytes": 2169,
+      "sha256": "cb0ebd1f7ee9d3aaf34b99e963e3a350c4cb1369685463baca4ad7bc0298d701",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/system/robot-meeting-projection-v2",
+      "bytes": 6985,
+      "sha256": "d055b30bade9c5e5eec4fc440e05986aa8486f3dfc0842ff26ae90aedb13ce06",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/system/robot-meeting-projection-v2.sudoers",
+      "bytes": 72,
+      "sha256": "6459484061307812e32b81d2bd8b055566e366684789c1e424e974efc1703665",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/system/robot-start-exercise-projection",
+      "bytes": 2014,
+      "sha256": "86ec4e70e277bd078d7ab58dc60e98f038d915443a6e77fdb72ced56bd0e15c4",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/system/start_projection_ppt.sh",
+      "bytes": 2885,
+      "sha256": "7b0b2098b859cb86941bc0be0023875d56903b3ae5b630e3c6008a5753b170e0",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/projector_control/v11_skill_spec.json",
+      "bytes": 7575,
+      "sha256": "8a3d78257ed68e3e6f08c0e4a22f842da77034515b74a77d8e1e9602b3d71578",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pull_up/README_START.md",
+      "bytes": 582,
+      "sha256": "3dbd337ecb2108a18aae107a4a17ee5e7cb433a6e341821c9c45276162e165b2",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pull_up/assets/fitness_poses_csvs_out/pull_down.csv",
+      "bytes": 25224,
+      "sha256": "bc9699432980855fd6306ff7705a0553f99fd71e3f33e232c403d3315e03c320",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pull_up/assets/fitness_poses_csvs_out/pull_up.csv",
+      "bytes": 25116,
+      "sha256": "4510cc53fe33aaa83a85a23a5b67a7850f8a5d33428804aa23de3802aa496fd2",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pull_up/assets/fitness_poses_csvs_out/push_down.csv",
+      "bytes": 194804,
+      "sha256": "7aa8fd99cbda11cd04527ee662db43018fa0348ce40ff55a9087a45258ae1bdd",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pull_up/assets/fitness_poses_csvs_out/push_up.csv",
+      "bytes": 202695,
+      "sha256": "e1aff81810987683d29b3e005172f689ab19f0b276da0a841575a5f2ce66f065",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pull_up/assets/fitness_poses_csvs_out/squat_down.csv",
+      "bytes": 227502,
+      "sha256": "0e7fae851448d3ae3bae3d93deeca223d0f9bfab3b2c24e1f2588044527641f6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pull_up/assets/fitness_poses_csvs_out/squat_up.csv",
+      "bytes": 193263,
+      "sha256": "96558af301ab2cb456a8e14ebbe9642b95a2a7d192b71e64277a9f1c6d778e5b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pull_up/assets/movement_count_2/Roboto-Regular.ttf",
+      "bytes": 515100,
+      "sha256": "56a45233d29f11b4dfb86d248e921939d115778f87325e7ae8cc108383d6664d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pull_up/run.py",
+      "bytes": 77294,
+      "sha256": "0ba371d0e680e9ae7a2a019529b6b2fc9219d6ea750d02643151eb3451291154",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pull_up/run.sh",
+      "bytes": 155,
+      "sha256": "13fc63922934f152138e9af958439bfd4983ec4a206698d21d4e416cd26b9358",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pull_up/run_legacy.sh",
+      "bytes": 1352,
+      "sha256": "c70dc4b2f57131b3ed4f9a8bcae64789f4712cc127f21a1cd0d9a781135d74b3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pull_up/skill.json",
+      "bytes": 1791,
+      "sha256": "f9cc4a0936495ec8f52a4c38205faf69f52a54611fc9a6112ee88d5b8d4c55e7",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/pull_up/v11_skill_spec.json",
+      "bytes": 7030,
+      "sha256": "f0b5db8ba7158c8b8ff8b36c8182025815e5ec0cbbac783b27a0e2cc140d0096",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/README_START.md",
+      "bytes": 749,
+      "sha256": "6bcd2a5e21833c90dd05a4205da41f8129e189f020afae4221716fd8b9bdb3ce",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/assets/fitness_poses_csvs_out/pull_down.csv",
+      "bytes": 25224,
+      "sha256": "bc9699432980855fd6306ff7705a0553f99fd71e3f33e232c403d3315e03c320",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/assets/fitness_poses_csvs_out/pull_up.csv",
+      "bytes": 25116,
+      "sha256": "4510cc53fe33aaa83a85a23a5b67a7850f8a5d33428804aa23de3802aa496fd2",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/assets/fitness_poses_csvs_out/push_down.csv",
+      "bytes": 194804,
+      "sha256": "7aa8fd99cbda11cd04527ee662db43018fa0348ce40ff55a9087a45258ae1bdd",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/assets/fitness_poses_csvs_out/push_up.csv",
+      "bytes": 202695,
+      "sha256": "e1aff81810987683d29b3e005172f689ab19f0b276da0a841575a5f2ce66f065",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/assets/fitness_poses_csvs_out/squat_down.csv",
+      "bytes": 227502,
+      "sha256": "0e7fae851448d3ae3bae3d93deeca223d0f9bfab3b2c24e1f2588044527641f6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/assets/fitness_poses_csvs_out/squat_up.csv",
+      "bytes": 193263,
+      "sha256": "96558af301ab2cb456a8e14ebbe9642b95a2a7d192b71e64277a9f1c6d778e5b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/assets/movement_count_2/Roboto-Regular.ttf",
+      "bytes": 515100,
+      "sha256": "56a45233d29f11b4dfb86d248e921939d115778f87325e7ae8cc108383d6664d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/config.json",
+      "bytes": 9630,
+      "sha256": "32b65ffb6e4c86f4d67b96d73fe74ff04d8320ce30c7725fd79d6c1fdc322d1a",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/engine.py",
+      "bytes": 168905,
+      "sha256": "5129dd0875f6a08c42058332fe8ec2c5659fea90d39e79387b9cc17dc714d40e",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/pipeline.py",
+      "bytes": 20069,
+      "sha256": "1fe181cc8f65aa4357789d9c141eaba29f56c9c09dfdf024048c30cc56d5924e",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/run.py",
+      "bytes": 7995,
+      "sha256": "bee997c81193e41d2539d6cc666bccee88f4d2bb6cd08ad5dfd99485aeb5dabf",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/run.sh",
+      "bytes": 155,
+      "sha256": "fa3937e8f8303bcbd737e9f8bab8535e64c7af72db44d528bb6fe339cd8366ee",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/run_legacy.sh",
+      "bytes": 470,
+      "sha256": "6e0b50af4b6fafd945236780ac59b8bbc046787f4f8dcdebbdec04f4ae04ca2d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/skill.json",
+      "bytes": 2369,
+      "sha256": "7bfebece97bc087b0a0b9d0467174719dd244bf23a158b2ec4ff62d1c97cdda7",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/test_anonymous_target_tracker.py",
+      "bytes": 1918,
+      "sha256": "6f4f3b03127c9f1988c46558681f57c5601dc7c17db014d6266bc189b50d3db5",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/test_fitness_latency_and_app_video.py",
+      "bytes": 9842,
+      "sha256": "b308f9715f9dec4e7d756ef0ec425621e34b5c9bac0655714a8d7912abfb2acc",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/test_lower_half_horizontal_target_tracker.py",
+      "bytes": 3694,
+      "sha256": "476b0ab26db540cc172e461473b8aead3e68109e7862aebcbe62a0a1a82d7fd7",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/test_reid_identity_tracker.py",
+      "bytes": 24894,
+      "sha256": "22768a2a31524ec67c995dc986dd026c5f3dfbe04f26ecc540a761a97af66abb",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/push_up/v11_skill_spec.json",
+      "bytes": 7617,
+      "sha256": "bba3dd54aea005e1895834d30a0fdaa54493564205d6584eb49b2c39a162574b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/realtime_information/README.md",
+      "bytes": 1939,
+      "sha256": "8400c9dbc4556254523e5e46e79da6f16f92807f8de51279aebf6d8156dc0ee0",
+      "matches_robot_source": false,
+      "publication_adaptation": "retained reviewed public credential/location examples or release documentation/build metadata"
+    },
+    {
+      "path": "robot_skills/realtime_information/README_START.md",
+      "bytes": 904,
+      "sha256": "a2547f72f1994433140a65c315a748e333d94835e6645c4a161e86789535976e",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/realtime_information/config.json",
+      "bytes": 2428,
+      "sha256": "37a2d75303093492c82547c42608b9c2327a0841a112aa066aa8e12eb2f5a4a3",
+      "matches_robot_source": false,
+      "publication_adaptation": "retained reviewed public credential/location examples or release documentation/build metadata"
+    },
+    {
+      "path": "robot_skills/realtime_information/run.py",
+      "bytes": 68296,
+      "sha256": "b7a1799c551eafd506f12716dd6248526e769938a02ff834d843f1c8c74fa48b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/realtime_information/run.sh",
+      "bytes": 168,
+      "sha256": "3b253c0fc9377dc3824f369d1fa7e417b07f52ac8301eef0c868af14e38e8fe1",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/realtime_information/run_legacy.sh",
+      "bytes": 139,
+      "sha256": "b0115a69f9ee2658d98e65c2aa927e1b041c4a6cebd2f3d4170fbe4aaab19a19",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/realtime_information/self_check.py",
+      "bytes": 11840,
+      "sha256": "bc6178334a0131a8b0f7ab5982d39829aa53a4d5d9ef7498a94a9c51c7006f99",
+      "matches_robot_source": false,
+      "publication_adaptation": "retained reviewed public credential/location examples or release documentation/build metadata"
+    },
+    {
+      "path": "robot_skills/realtime_information/skill.json",
+      "bytes": 1544,
+      "sha256": "4df62b28a6af85745b5509bccc8263030d5f92251f1b6100bbcba3d4e8664aa0",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/realtime_information/v11_skill_spec.json",
+      "bytes": 6384,
+      "sha256": "390c015ac6f64b1ccc6e18db447b8a7e669f8079c4c2df07342db9361521e5b2",
+      "matches_robot_source": false,
+      "publication_adaptation": "retained reviewed public credential/location examples or release documentation/build metadata"
+    },
+    {
+      "path": "robot_skills/reminder_cancel/README_START.md",
+      "bytes": 407,
+      "sha256": "8d593011e604766ee7265f9005a576a86064aaa21416e0af8e696e0a9d6590ae",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/reminder_cancel/run.py",
+      "bytes": 255,
+      "sha256": "de1a49cfedd0183401bb3e3d23e50a4119c5a4a585341307707baa83249ed94d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/reminder_cancel/run.sh",
+      "bytes": 163,
+      "sha256": "89822069001d786ab6c95438759f1106fbd917d6670ca8e186de1df18073ce11",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/reminder_cancel/run_legacy.sh",
+      "bytes": 472,
+      "sha256": "a1c02ece339be838130ad6697f014c49529fdbea588c4bafcef01c0074bf7c56",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/reminder_cancel/skill.json",
+      "bytes": 1909,
+      "sha256": "6f18ed7261129a982043967f82204b73d5e6b8613e5d167ae1e5d9e17e6531bf",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/reminder_cancel/v11_skill_spec.json",
+      "bytes": 4323,
+      "sha256": "8eb203007f652aba7ab0a6338a0e80ae3dc903cd450beaea55719f1fbc765ed9",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/reminder_query/README_START.md",
+      "bytes": 372,
+      "sha256": "c128a7777d20153b68f398f0c60564d1537e26c26d2d1aa4f838420e024c6bdf",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/reminder_query/run.py",
+      "bytes": 255,
+      "sha256": "de1a49cfedd0183401bb3e3d23e50a4119c5a4a585341307707baa83249ed94d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/reminder_query/run.sh",
+      "bytes": 162,
+      "sha256": "e426bddc1daba7d9e2c4e28f77f3347ced69c79c804a6d6e9447e9ba007925ac",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/reminder_query/run_legacy.sh",
+      "bytes": 472,
+      "sha256": "a1c02ece339be838130ad6697f014c49529fdbea588c4bafcef01c0074bf7c56",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/reminder_query/skill.json",
+      "bytes": 1622,
+      "sha256": "3aa2002b14c6ba8bff6bd61432515215d9fc21fffea3116457ab1e3447fa8902",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/reminder_query/v11_skill_spec.json",
+      "bytes": 3637,
+      "sha256": "4c8f624408cac59c3b6574e3cfa48f0c82dcc17c059cb64109fecdf533903194",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/reminder_schedule/README_START.md",
+      "bytes": 558,
+      "sha256": "65858bf082a0438dd058fb0f7cccb80287391982f570ab2a50f43e8635c87a44",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/reminder_schedule/run.py",
+      "bytes": 255,
+      "sha256": "de1a49cfedd0183401bb3e3d23e50a4119c5a4a585341307707baa83249ed94d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/reminder_schedule/run.sh",
+      "bytes": 165,
+      "sha256": "bb8788dec39184786f5f9d8dadd0fbe2f13360ad8a9a199a3de424fa20cf3160",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/reminder_schedule/run_legacy.sh",
+      "bytes": 472,
+      "sha256": "a1c02ece339be838130ad6697f014c49529fdbea588c4bafcef01c0074bf7c56",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/reminder_schedule/skill.json",
+      "bytes": 2482,
+      "sha256": "aa85a64587040c6528d696637bb1340e1cf79518a5d9e1ba5da31e92e5ee390b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/reminder_schedule/v11_skill_spec.json",
+      "bytes": 5088,
+      "sha256": "f85470545a99db37ae7e42fb8fd76ec9b949e08afa5c3113541cd1621fadf791",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/render_complex_map_simulation.py",
+      "bytes": 14639,
+      "sha256": "88827efc4281cad9c9780cb8bd046308bde4b0e1b656e2cdd49403ad996f2818",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/render_realistic_study_living_simulation.py",
+      "bytes": 14586,
+      "sha256": "4ec948af031e31c2ecb23d7c8382137b6ec9eb16e3d7d09212351d93d3de434c",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/render_simulation_video.py",
+      "bytes": 15040,
+      "sha256": "e999ae2d6090d3b169d926696c761696c0ce60a551c30aea71fa2bd01254420b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/resident_camera_broker.py",
+      "bytes": 8762,
+      "sha256": "a2d629a44c72690a36efbc62f1b725914618f579a9bcc2938adac5a0688ddbb4",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/resident_camera_ipc.py",
+      "bytes": 8368,
+      "sha256": "960a546c09bca3bf4b44a6127f4467ce6cb28309750b7deca32e813e22e13edd",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/resident_camera_startup.py",
+      "bytes": 3300,
+      "sha256": "dfc341ea3932ef13655bb11cf1a62273d3e2cd5a3547cb395590e732086186ad",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/resident_camera_startup.sh",
+      "bytes": 1212,
+      "sha256": "4f177923240e56d529888cfb54444fcf2129357cc678489b2e050ff4d47c745f",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/resident_pet_worker.py",
+      "bytes": 19246,
+      "sha256": "795eaaf3ca5fbfdb71921e12a6f396988109faff09e8190b46121f711fe1c388",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/resident_runtime.sh",
+      "bytes": 5091,
+      "sha256": "dc747eaba88a0ac778a69049aa61431f12651b5c79a0b163d03db39643f7f20c",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/resident_runtime_server.py",
+      "bytes": 101786,
+      "sha256": "be7b5e3854a27186f8cfcd308ed768b01c98449a737b01d869556c8008944158",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/resident_skill_client.py",
+      "bytes": 4219,
+      "sha256": "d9e7582e666c3af01bed41aeff616ac4a2402999193eb1da81d531c78c0edbda",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/rewrite_resident_paths.py",
+      "bytes": 2124,
+      "sha256": "e8f7273cb492b77dbc08412caf8b29e957df89250e961a37a45c9869f0f3c9b7",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/run_skill.sh",
+      "bytes": 420,
+      "sha256": "99ce6cee985c285ee807d20061c3fc60d1675ea9847174b9b0d20caf7a5f87a3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/safety_sweep_810test.py",
+      "bytes": 1352,
+      "sha256": "c85bf22db74f89a9f12f96061ecb36def9676c674ebbe7a08414eb5d5dc82a5b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/search_wall03_feasible.py",
+      "bytes": 2960,
+      "sha256": "249db271ef5dd439280e60efdf0b94509b9771d82cf2782512c809103717a434",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/shared_runtime.sh",
+      "bytes": 2786,
+      "sha256": "c6e8e8c7b02e8920b122b3790a07514f890388675bfb2158832edd82f63617f9",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/shared_runtime_client.py",
+      "bytes": 8357,
+      "sha256": "4b6f48266462385bcfbd8c75335055e471493b24e4b36e43372e076bb688ff29",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/shared_runtime_server.py",
+      "bytes": 112200,
+      "sha256": "6992ab5d88b865c74fcdc8133555984e0fc4e7facedcf4baf7272090cb0daa7c",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/simulate_810test_algorithms.py",
+      "bytes": 3649,
+      "sha256": "379ec7271793c14df70b86bcceb4215a5f1634f5f8a349a321b37cd6fa7886ee",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/simulation_results_810test/simulation_report.json",
+      "bytes": 14045,
+      "sha256": "bfa7462cf0531f568de8bcc7bf32c3c681584c4f9fe7e5f74dad2b6848fd0f9d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/speech_policy.json",
+      "bytes": 1256,
+      "sha256": "0b71f9fa09f8eb0be7518382c4285aa5881b73f3bb82ee1b35a6045155e5d712",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/squat/README_START.md",
+      "bytes": 564,
+      "sha256": "840f7ecb707daf66df35c92e9b08edd45b27e7a5646d5343cbf8ed7bc01eb7bd",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/squat/assets/fitness_poses_csvs_out/pull_down.csv",
+      "bytes": 25224,
+      "sha256": "bc9699432980855fd6306ff7705a0553f99fd71e3f33e232c403d3315e03c320",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/squat/assets/fitness_poses_csvs_out/pull_up.csv",
+      "bytes": 25116,
+      "sha256": "4510cc53fe33aaa83a85a23a5b67a7850f8a5d33428804aa23de3802aa496fd2",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/squat/assets/fitness_poses_csvs_out/push_down.csv",
+      "bytes": 194804,
+      "sha256": "7aa8fd99cbda11cd04527ee662db43018fa0348ce40ff55a9087a45258ae1bdd",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/squat/assets/fitness_poses_csvs_out/push_up.csv",
+      "bytes": 202695,
+      "sha256": "e1aff81810987683d29b3e005172f689ab19f0b276da0a841575a5f2ce66f065",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/squat/assets/fitness_poses_csvs_out/squat_down.csv",
+      "bytes": 227502,
+      "sha256": "0e7fae851448d3ae3bae3d93deeca223d0f9bfab3b2c24e1f2588044527641f6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/squat/assets/fitness_poses_csvs_out/squat_up.csv",
+      "bytes": 193263,
+      "sha256": "96558af301ab2cb456a8e14ebbe9642b95a2a7d192b71e64277a9f1c6d778e5b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/squat/assets/movement_count_2/Roboto-Regular.ttf",
+      "bytes": 515100,
+      "sha256": "56a45233d29f11b4dfb86d248e921939d115778f87325e7ae8cc108383d6664d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/squat/run.py",
+      "bytes": 75410,
+      "sha256": "b3263ae8d3eac61a79afe6e6eda763d84570417be9a92849de636e74ea4d90d2",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/squat/run.sh",
+      "bytes": 153,
+      "sha256": "2dae6de9390790fbe44033cbcb19c8aa6d0df23db9e72cd4693275c861de3e53",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/squat/run_legacy.sh",
+      "bytes": 1352,
+      "sha256": "c70dc4b2f57131b3ed4f9a8bcae64789f4712cc127f21a1cd0d9a781135d74b3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/squat/skill.json",
+      "bytes": 1779,
+      "sha256": "c129dbab4d5040edf1d81e8ef2069dd93109abb2b05a696b42cec3d0f14adda8",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/squat/v11_skill_spec.json",
+      "bytes": 6956,
+      "sha256": "495be56da87fe992ccc204a16fb2852c64f71a157261022ee85597ab641b3ff4",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/stress_test_810test.py",
+      "bytes": 2500,
+      "sha256": "15e10da79ba79c4ef422c8f8e64e40d8198a66a1678d9ba7a75c02dff1be5178",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/system_dispatch/robot-meeting-projection-v2",
+      "bytes": 345,
+      "sha256": "e2e4ca779c6827ede930c0f609fdc9048185121df15cce7c2c75778837a75f00",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/system_dispatch/robot-start-exercise-projection",
+      "bytes": 345,
+      "sha256": "e2e4ca779c6827ede930c0f609fdc9048185121df15cce7c2c75778837a75f00",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/system_dispatch/robot-welcome-projection",
+      "bytes": 345,
+      "sha256": "e2e4ca779c6827ede930c0f609fdc9048185121df15cce7c2c75778837a75f00",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/test_autonomy_exploration_simulation.py",
+      "bytes": 10751,
+      "sha256": "a0d0777fa5aaf42026a4fa9c3b03589a4b3d172cbeda59692a02f5fac6b51641",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/test_completion_gate_idempotence.py",
+      "bytes": 3070,
+      "sha256": "bf39aae9835eb60cf5bd293e43e50c9638333ba02264c12100e6eb8230ec5ea1",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/test_exploration_core.py",
+      "bytes": 11075,
+      "sha256": "cde4e80deab69b3f84fd2b3543c3928eb9a760f467ab71900986d5a5b6935d25",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/test_head_closed_loop.py",
+      "bytes": 3517,
+      "sha256": "c2cde8b98216f1a029033f68adbde0d4ef2ecfc8b63b4ea3af0af33a7a2689b7",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/test_head_pose_supervisor.py",
+      "bytes": 7000,
+      "sha256": "84c7c9e1d88d48ce9908992436c5741c57072f9ade457d127ca0762ad6373159",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/test_navigation_recovery_gate.py",
+      "bytes": 4253,
+      "sha256": "c4945717695927a98dbbb5154041704bda2abcfa0f142418ecba4ec780107767",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/test_projection_fullscreen_contract.py",
+      "bytes": 2605,
+      "sha256": "a3d3de919057b423320cc9018872fb3b273848945528dc7f800da5b1664d3fb8",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/test_strict_level_gate.py",
+      "bytes": 5433,
+      "sha256": "22dd4a8c822f2b3f4e2c11c8729c580f5cb2876bf3d5297a49e1b7ad72b5f5bb",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/validate_resident_runtime.py",
+      "bytes": 3607,
+      "sha256": "a4a83ee354baf7c40c73f4f53d5acb8b4ffc1f1b1de12df33ee1c396bf7abca6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/welcome_projection/android_viewer/AndroidManifest.xml",
+      "bytes": 889,
+      "sha256": "05e60801aff75b1c477d6cde166a2a20bdfdc638b740ea9b66ae4c3f67b787d4",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/welcome_projection/android_viewer/build.sh",
+      "bytes": 2362,
+      "sha256": "cbc39ca172952c26b01e6c6a961d445940cc6fe8e1554d6de79715014b088ebf",
+      "matches_robot_source": false,
+      "publication_adaptation": "retained reviewed public credential/location examples or release documentation/build metadata"
+    },
+    {
+      "path": "robot_skills/welcome_projection/android_viewer/res/values/styles.xml",
+      "bytes": 761,
+      "sha256": "4f2290490241acecc3071ee5c831c49f9e8291b8844bfe989cc7c73f8391152a",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/welcome_projection/android_viewer/src/com/adjacentgarden/welcome/WelcomeImageActivity.java",
+      "bytes": 2504,
+      "sha256": "b5787cb28cae271d722b93566410a150b22ea31124772dd4e39c342cbb314e68",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/welcome_projection/assets/welcome-image-viewer.apk.sha256",
+      "bytes": 91,
+      "sha256": "a8704d15b98a766145933e5500d1eaa224ed2fbd7b310cae8e949c5991699a21",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/welcome_projection/assets/welcome_home.png",
+      "bytes": 508656,
+      "sha256": "00a8385cfc4ea8b7ce810ccc24dfea2e30c694be153f641a170a07cb1509c529",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/welcome_projection/assets/welcome_home.png.sha256",
+      "bytes": 83,
+      "sha256": "4e6881e16611f65b5d130594f5b53a008e96633f7a34183f87cf5cd53e9b9b98",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/welcome_projection/assets/welcome_home.sha256",
+      "bytes": 83,
+      "sha256": "c2adbf4808db68583309f56a0c4647bd7c640d3cecde48454d6e82c134a46d89",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/welcome_projection/config.json",
+      "bytes": 722,
+      "sha256": "b3c8409af7d20e9aff3226c19dd199b19b172107608ccebc8406f93a94528e53",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/welcome_projection/run.py",
+      "bytes": 5816,
+      "sha256": "4d6b84de2781b47e69b843cb80f6d5155d13db79234b1cdd85f57961827607a9",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/welcome_projection/run.sh",
+      "bytes": 164,
+      "sha256": "9de84fc48c4914fd1bb59c0ca189c9e32b452a068f229c2dacf85bc79f1083a7",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/welcome_projection/skill.json",
+      "bytes": 222,
+      "sha256": "7db032ddd9480442bac433625ba5b867724cd9906e52831d575c6f84eb8b2a50",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_skills/welcome_projection/system/robot-welcome-projection",
+      "bytes": 5224,
+      "sha256": "8b4fe5922925cd6fc9331740f31b1f6f3183a7fb6be1b519b07eee331c09fb96",
+      "matches_robot_source": true
+    },
+    {
+      "path": "robot_stack.sh",
+      "bytes": 10830,
+      "sha256": "7c65f57ce8a94a6d257de295b842ffb974b7d82c071709d8c8d876beb8ac9dba",
+      "matches_robot_source": true
+    },
+    {
+      "path": "ros_health_monitor.py",
+      "bytes": 15642,
+      "sha256": "028ce0ee6aead0ee6a13c91ebb35ab9134bd40aceed920f3dca7a673570fe1b1",
+      "matches_robot_source": true
+    },
+    {
+      "path": "run.sh",
+      "bytes": 3656,
+      "sha256": "dfba04945be17d6ff2722c59f3f5b00239ec3d1b8e80209ad99380ce1e1fa5a9",
+      "matches_robot_source": true
+    },
+    {
+      "path": "runtime_supervisor.py",
+      "bytes": 26461,
+      "sha256": "7207a93ec5be62df2ca555a4b995bafd01439790e1737739cd112bcc7d2951e6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "scenario_engine.py",
+      "bytes": 108013,
+      "sha256": "44d2292defbb87b266971fdf401315d811b9c5075e44b0910ec7f9c5936d3654",
+      "matches_robot_source": true
+    },
+    {
+      "path": "scenarios/home_scene_catalog.json",
+      "bytes": 24893,
+      "sha256": "e1f8e381b6e522064168fbf91b8654821ff45e6342524fd6785ceb9d5d6ceb06",
+      "matches_robot_source": true
+    },
+    {
+      "path": "scenarios/procedure_catalog.json",
+      "bytes": 43189,
+      "sha256": "e854c5645174f976185a8bbd229dd95a8c51c98567ab3850db9202d25a00fd88",
+      "matches_robot_source": true
+    },
+    {
+      "path": "skill_event_audio.py",
+      "bytes": 18555,
+      "sha256": "f4f81ed21156f61e67d5dade2bb881894d70feed8647e0abbd2b2b420c5333af",
+      "matches_robot_source": true
+    },
+    {
+      "path": "skill_host.py",
+      "bytes": 8330,
+      "sha256": "b468865f925bd173bbd3ce18bf1b777b244ba158f3e007f03ec489d2ddf11da0",
+      "matches_robot_source": true
+    },
+    {
+      "path": "skill_host.sh",
+      "bytes": 2305,
+      "sha256": "4c0a0518a270f772531f0bf95f0a60bc47b8e063ea19c4fbde652f0385c422fc",
+      "matches_robot_source": true
+    },
+    {
+      "path": "skill_runner.py",
+      "bytes": 32025,
+      "sha256": "1d3cf39ab6680acb1ee31fdf4194a20e2174d208992b9eac9d6caf82d3a8d941",
+      "matches_robot_source": true
+    },
+    {
+      "path": "startup_reliability_test.py",
+      "bytes": 21424,
+      "sha256": "6f98ecb48beb0d6cc3249201ad31e7c893afd93e3521fad0c9a74eae588a8fe9",
+      "matches_robot_source": true
+    },
+    {
+      "path": "task_control.py",
+      "bytes": 1137,
+      "sha256": "4735ae5533a4cf9d5ba2a5cbe9faac7ca7f8cdf523f078729333365dc03788e3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "test_client_handshake.py",
+      "bytes": 24096,
+      "sha256": "66b493994f6dc553c873f119983774fd2c22a5f0ef60622667a11cda3354e056",
+      "matches_robot_source": true
+    },
+    {
+      "path": "test_memory_store.py",
+      "bytes": 4221,
+      "sha256": "1457a53d239d78607a3646b91829e98f68ea29b113ae4c8f5949f32307fcdb43",
+      "matches_robot_source": true
+    },
+    {
+      "path": "test_skill_event_audio.py",
+      "bytes": 6648,
+      "sha256": "b594fb385db3ec73ca9d122f69f1c71b6423ca111c69d120279f4ae7ef192a9e",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/beijing_location_agent_probe.py",
+      "bytes": 3386,
+      "sha256": "d4ac6fcc667a99a3c4ca4819f8c012d03319607ba0615f6d02e59a6bb7b027f3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/cloud_capability_matrix.py",
+      "bytes": 7328,
+      "sha256": "212db2d1d888fb80deac6ab63c674690afbe2dcb4fa84e5fb41a0caa485751b6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/cloud_dialogue_probe.py",
+      "bytes": 2213,
+      "sha256": "0cc108ebf60fbec7afba484587d5bc0d991f77ba25a69c93689dec40a1f79bb0",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/cloud_intent_matrix.py",
+      "bytes": 5549,
+      "sha256": "d2602ea8ab9df429125001ed127166402bfc321f002ac4bde2a3aa7ca8b78caa",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/cloud_memory_matrix.py",
+      "bytes": 6932,
+      "sha256": "630a93463970e3796fb57f8d895467355f7fda5bb6d552b70ce1b183d30ce6d3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/cloud_parameterized_intent_matrix.py",
+      "bytes": 6981,
+      "sha256": "c07c9bf5363719aadc479f56550c67169ebc89fa1166181debab2cfb97f093fc",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/cloud_semantic_flex_matrix.py",
+      "bytes": 5216,
+      "sha256": "cfad2f3d37c730a44893b47bdca9d41e0279f8e7b95a7fa0c14468f5b59c9583",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/fake_ros_health_graph.py",
+      "bytes": 3815,
+      "sha256": "a58309dc6c9b4d96f8586eb51668998b0bfc7166907f4a16998d68716608c607",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/manual_welcome_A_fullscreen_test.sh",
+      "bytes": 2136,
+      "sha256": "a1f2b9f2d3f3c8df356f20f4c80ef099b8ca86df154f2547e39202668db8e931",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/nonwheel_agent_accuracy_matrix.py",
+      "bytes": 13650,
+      "sha256": "34b97a000cecb30b07ab7cf310c9d17cc734f75805e6b88cc968e793424e0226",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/projection_head_scene_matrix.py",
+      "bytes": 3459,
+      "sha256": "ca6123f4dd3b5ed686200a041f6d4f57d69c7cce0963a5da2a8ca42c902ca8cf",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_all_scenario_memory_boundaries.py",
+      "bytes": 6000,
+      "sha256": "7fe11ce1976b782dada27d543227c37173857a927ad78171ef2a4cf6208d40b4",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_app_control.py",
+      "bytes": 3132,
+      "sha256": "7d5127852ce2810caa86e47213f6c8d79b2d224c9a75e02a9dfa284b24079443",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_car_manager_adapter.py",
+      "bytes": 8408,
+      "sha256": "ce447a11f4b1bb7ac37d0eb610e66c2a4d188b33f86836d95c0b90332ebaca6f",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_car_real_contract.py",
+      "bytes": 2597,
+      "sha256": "6651de53fb42176550d7a3e211456218d438863fa887949e5c38916095f4a543",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_client_handshake.py",
+      "bytes": 39090,
+      "sha256": "43c6dab6c54de9d7b55e9ffafac6385dc3d08a468cfd3cac7b0241a2d193316a",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_fitness_completion_speech.py",
+      "bytes": 2520,
+      "sha256": "aca187195541972286e9c2871a03cf6ebe9fe6237ff90164da447db34febba2d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_head_lidar_rate_gate.py",
+      "bytes": 4113,
+      "sha256": "86bea49c05a24472f7b938b92c5d0045d530c73e605e6f03cca5e7301f0c3840",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_head_tolerance_adapter.py",
+      "bytes": 8550,
+      "sha256": "218f065fd2c5ceb783e87f4d5fc1677e7259c2b17b8d939c21dec0560adb0b86",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_idle_speaker.py",
+      "bytes": 3757,
+      "sha256": "f7c11374af114554db34b15bd7eddd8dc2095dfb7b40b6f8c6348afd8bd51da1",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_imu_monotonic_timestamp.py",
+      "bytes": 2372,
+      "sha256": "9b99cdea2b08f6a7564e3d43bbe98e16b16d53d3651e9b946161940dc29f61e3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_indoor_baidu_location.py",
+      "bytes": 3766,
+      "sha256": "d6ac2791879dc20d01077e70594fe06173b6ea846a6a0b332bd45c79f81eb6f3",
+      "matches_robot_source": false,
+      "publication_adaptation": "retained reviewed public credential/location examples or release documentation/build metadata"
+    },
+    {
+      "path": "tests/test_local_skills.py",
+      "bytes": 50725,
+      "sha256": "29dd2ba17d3b227e1ee789c2830df0f966aa273d1f5aa05b1ea6921cdfe90408",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_meeting_viewer_contract.py",
+      "bytes": 4217,
+      "sha256": "4ff16599cde8d6d16eb710789764301119940fe5205d5452ab934a3b660fd33e",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_memory_intent_policy.py",
+      "bytes": 11530,
+      "sha256": "b38af2d5a1ac4f90ff203648ba4cbccbe8ce5fbc9a3a67cefa77e0a697822a34",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_memory_store.py",
+      "bytes": 8010,
+      "sha256": "8bd667173c6ecc6f52a38146a515a61f30b3dd92b5e105dd966f08285bd84d6d",
+      "matches_robot_source": false,
+      "publication_adaptation": "retained reviewed public credential/location examples or release documentation/build metadata"
+    },
+    {
+      "path": "tests/test_navigation_failure_speech.py",
+      "bytes": 1423,
+      "sha256": "96bf69675e13b49263885fa02306029683aa43b8d290ec9dce04f7f301767fcc",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_navigation_handoff.py",
+      "bytes": 4684,
+      "sha256": "ebb73c2cdc622e2cf24785219157319366a0c976ecac8b823429a9bc413af084",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_parallel_task_control.py",
+      "bytes": 15268,
+      "sha256": "ecec361349af633b7e0812542f547a4d2a5755ce744cf9bc8f09ce178b213d6f",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_parameterized_intents.py",
+      "bytes": 11323,
+      "sha256": "5b611f902c076957e6b651adcd2ad684d637b1cf740ed8595f10119d06a2910d",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_pet_centering.py",
+      "bytes": 5150,
+      "sha256": "98d7dd6c797cd0718a4de3d68c8f0c856cb1161cffff98d7bd7df3007b36680c",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_pet_video_resume_fix.py",
+      "bytes": 10761,
+      "sha256": "4eeadfa82c792f9bf50931b26772b88e8b2004bff1fd432775313b8a56c8259b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_post_navigation_head_settle.py",
+      "bytes": 1925,
+      "sha256": "1ffe5d72f87786e5a33bf951c3e7aa3d74b67d71d37186e6a0193db792460e31",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_project_localization_guard_disabled.py",
+      "bytes": 1798,
+      "sha256": "d2681d4024c610c1b1263f0e33a2b4c0ec2ec3404d81b1af3b1a54bf6676d9c3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_projection_media.py",
+      "bytes": 7048,
+      "sha256": "416122b21078437f75eb9bb87e51dcf9a386e91323a3d43258a038982b78adcf",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_projection_occlusion_observer.py",
+      "bytes": 6663,
+      "sha256": "230f4b48e1a2697c973b3ba5181f2141eea5b2f5aa6432689c4160f66ffc610c",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_realtime_core.py",
+      "bytes": 15907,
+      "sha256": "1549aa7c4061165cfb53f2c668620a3a236a648b49a7cc29ef63e13e8e8c37e6",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_realtime_information_location.py",
+      "bytes": 3308,
+      "sha256": "876ce7340a110c5ef45ab803fe0ae85b87cc9007979e9d712720fc43f1f188fd",
+      "matches_robot_source": false,
+      "publication_adaptation": "retained reviewed public credential/location examples or release documentation/build metadata"
+    },
+    {
+      "path": "tests/test_resource_guard.py",
+      "bytes": 743,
+      "sha256": "78a4aeb6d6d875d78ef37c1881f078d104e7ae7cb9e7d1f0b97212bafe264e4b",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_robot_stack_contract.sh",
+      "bytes": 2651,
+      "sha256": "efe31acefde30847b3a0a7b2479eb54eab6fb7b7ccf974c88c0131b543b06710",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_ros_health_monitor.py",
+      "bytes": 4381,
+      "sha256": "8d8623d34aced7e7a7c63671dae9b409f356f9f13956fa20091caf58e9bed8ef",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_runtime_safety.py",
+      "bytes": 688,
+      "sha256": "e38d8b56acb031b59789e0072cd3db8301b6e3b1812e9e0a73fa0d038d886da0",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_scenarios.py",
+      "bytes": 75719,
+      "sha256": "86342d666b8c7ec7fa0982632e6808e4213b04bc351ef500019ff29067ab1d5e",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_scene_parallel_handoff.py",
+      "bytes": 4355,
+      "sha256": "fb627b2669004eec4d6023fdffbcdc664300df5cc5061c1d72a40ad59fa10b27",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_sensor_gate_feedback_timing.py",
+      "bytes": 4324,
+      "sha256": "051ef6547e6c1792ac1bc81cb9fd1a0f645e3754f8a4c78288490398f8544cd3",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_skill_event_audio.py",
+      "bytes": 10481,
+      "sha256": "9164fb7530080d02790e4d480434f65a6e3469980c41c7ba5e42f288ebca3188",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_startup_control.py",
+      "bytes": 2551,
+      "sha256": "3c27925eb1db11fc24036d2d1520f6de7de4083402c868e04eb33163c4c3b7e5",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_task_interruption.py",
+      "bytes": 26299,
+      "sha256": "17650bff29a67a5b60f0402eb29579751a04bc335fccc1725aae5c0769d8907e",
+      "matches_robot_source": true
+    },
+    {
+      "path": "tests/test_tilt_integrity_guard.py",
+      "bytes": 5395,
+      "sha256": "99b6b80bbbe3a9caaba57fb9a96dbf20750cc470d38cfb5847e1fc5ca40984ec",
+      "matches_robot_source": true
+    }
+  ],
+  "paired_car_repository": "https://github.com/AdjacentGarden/car_real_copy_formal",
+  "paired_car_commit": "3b08c25",
+  "embedded_car_files_verified": 399,
+  "public_only_paths_retained": [
+    "android_app/release/README.md",
+    "robot_skills/config/modelscope.env.example"
+  ]
+}

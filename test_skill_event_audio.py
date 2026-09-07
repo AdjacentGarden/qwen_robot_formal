@@ -49,11 +49,13 @@ class SkillEventAudioTests(unittest.IsolatedAsyncioTestCase):
         speaker.submit_from_thread({"skill_name": "push_up", "kind": "acknowledgement", "text": "现在开始"})
         speaker.submit_from_thread({"skill_name": "push_up", "kind": "count", "count": 1, "text": "第一个"})
         await asyncio.sleep(0)
-        _priority, _sequence, event = speaker.queue.get_nowait()
-        self.assertEqual(event["text"], "第一个")
-        speaker.queue.task_done()
-        _priority, _sequence, acknowledgement = speaker.queue.get_nowait()
+        # The production queue already preserves chronology: a count must not
+        # jump ahead of its start acknowledgement. Priority is the tie-breaker.
+        _sequence, _priority, acknowledgement = speaker.queue.get_nowait()
         self.assertEqual(acknowledgement["text"], "现在开始")
+        speaker.queue.task_done()
+        _sequence, _priority, event = speaker.queue.get_nowait()
+        self.assertEqual(event["text"], "第一个")
         speaker.queue.task_done()
         self.assertTrue(speaker.queue.empty())
         speaker.websocket = FakeRealtimeSocket()
@@ -153,7 +155,7 @@ class SkillHostStreamingProtocolTests(unittest.TestCase):
             result = bridge._run_host("push_up", {"action": "run"}, "开始")
             thread.join(1)
             self.assertEqual(result["dispatch_state"], "completed")
-            self.assertEqual(received, [{"kind": "count", "text": "第一个"}])
+            self.assertEqual(received, [{"kind": "count", "text": "第一个", "skill_name": "push_up", "turn_id": ""}])
             self.assertIn("QWEN_SKILL_RUNNER_RESULT=", result["stdout"])
 
 

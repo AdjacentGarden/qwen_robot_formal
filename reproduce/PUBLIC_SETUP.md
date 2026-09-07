@@ -2,7 +2,7 @@
 
 本仓库提供代码、Skill、场景、App源码、已收录的模型及示例图片，不提供真实API密钥、人脸数据库、注册照片、个人记忆、米家登录态或现网App凭据。原私密Release和下载入口已移除；不要使用旧链接恢复敏感数据。
 
-1. 按主README准备同类RK3588/aarch64、Ubuntu22.04、ROS2 Humble等环境。克隆 `AdjacentGarden/carrelcopy-formal` 到 `/home/test/Car_real_copy` 并构建；不要仅凭仓库名改变代码期待的路径。
+1. 按主README准备同类RK3588/aarch64、Ubuntu22.04、ROS2 Humble等环境。克隆 `AdjacentGarden/car_real_copy_formal` 到 `/home/test/Car_real_copy` 并构建；不要仅凭仓库名改变代码期待的路径。
 2. 按 `config.example.env`、`robot_skills/config/modelscope.env.example`、`reproduce/config_templates/` 私下设置自己的API、米家和App服务配置；运行时文件已加入忽略规则。
 3. 在 `robot_skills/realtime_information/config.json` 中配置自己的地区、家庭和公司位置；公开版没有预设真实家庭地址或坐标。没有配置前不应把示例或空值当成实时定位。
 4. 配置灯光/投食器设备ID；公开版使用占位符。App也需自行配置Relay地址、机器人身份及匹配令牌，之后再构建APK。

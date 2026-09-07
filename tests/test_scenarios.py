@@ -500,7 +500,7 @@ class ScenarioExecutorTests(unittest.TestCase):
         ScenarioExecutor(self.catalog, invoke).execute("meeting_projection_stop", {})
         self.assertEqual(calls, [("projector_control", "off"), ("head_control", "level")])
 
-    def test_scene_keeps_one_short_start_speech_without_narrating_internal_steps(self):
+    def test_meeting_has_one_arrival_handoff_without_narrating_each_internal_step(self):
         calls: list[tuple[str, dict]] = []
         events: list[dict] = []
 
@@ -521,7 +521,9 @@ class ScenarioExecutorTests(unittest.TestCase):
         )
         self.assertEqual(events[0]["kind"], "acknowledgement")
         self.assertIn("会议", events[0]["text"])
-        self.assertEqual(len(events), 1)
+        self.assertEqual(len(events), 2)
+        self.assertEqual(events[1]["kind"], "progress")
+        self.assertEqual(events[1]["text"], "到地方了，我来准备会议投影。")
 
     def test_rest_acknowledgement_varies_but_always_says_it_will_go_close_the_light(self):
         events: list[dict] = []

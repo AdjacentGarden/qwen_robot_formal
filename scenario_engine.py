@@ -1721,10 +1721,12 @@ class ScenarioExecutor:
         catalog: ScenarioCatalog,
         invoke_atomic: Callable[[str, dict[str, Any]], dict[str, Any]],
         progress_callback: Callable[[dict[str, Any]], None] | None = None,
+        cancellation_requested: Callable[[], bool] | None = None,
     ) -> None:
         self.catalog = catalog
         self.invoke_atomic = invoke_atomic
         self.progress_callback = progress_callback
+        self.cancellation_requested = cancellation_requested or (lambda: False)
         self._lock = threading.Lock()
         self._speech_variant_counts: dict[str, int] = {}
 
@@ -1781,6 +1783,7 @@ class ScenarioExecutor:
         step: dict[str, Any],
         arguments: dict[str, Any],
         index: int,
+        navigation_completed: bool = False,
     ) -> str:
         if index == 0:
             return ""
@@ -1791,8 +1794,12 @@ class ScenarioExecutor:
         # the one meaningful fitness-location handoff are the exceptions.
         fitness_scenarios = {"push_up_companion", "pull_up_companion", "squat_companion"}
         if scenario in fitness_scenarios:
-            if str(step.get("skill") or "") == "head_control" and str(step.get("action") or "") == "up":
+            if navigation_completed and str(step.get("skill") or "") == "head_control" and str(step.get("action") or "") == "up":
                 return "这里比较合适做运动。"
+            return ""
+        if scenario == "meeting_projection":
+            if navigation_completed and step.get("skill") == "head_control" and step.get("action") == "up":
+                return "到地方了，我来准备会议投影。"
             return ""
         if scenario not in {"find_pet", "find_pet_at", "find_pet_here", "find_and_feed_doudou"}:
             return ""
@@ -1968,6 +1975,16 @@ class ScenarioExecutor:
                 )
             records: dict[str, dict[str, Any]] = {}
             for index, step in enumerate(plan["steps"]):
+                cleanup = (
+                    step["skill"] == "head_control" and step["action"] == "level"
+                ) or (step["skill"] == "projector_control" and step["action"] in {"off", "stop"})
+                if self.cancellation_requested() and not cleanup:
+                    records[step["id"]] = {
+                        "id": step["id"], "skill": step["skill"], "action": step["action"],
+                        "finished": True, "succeeded": False, "skipped": True,
+                        "error": "task_cancelled", "skip_reason": "task_cancelled",
+                    }
+                    continue
                 if not self._argument_condition(step.get("enabled_if"), condition_arguments):
                     records[step["id"]] = {
                         "id": step["id"],
@@ -2012,8 +2029,20 @@ class ScenarioExecutor:
                     step,
                     {**condition_arguments, **call_args},
                     index,
+                    navigation_completed=any(
+                        record.get("skill") == "navigation_goto"
+                        and record.get("succeeded")
+                        and not record.get("skipped")
+                        and (record.get("result") or {}).get("executed")
+                        for record in records.values()
+                    ),
                 )
+                if name == "meeting_projection" and not announce:
+                    progress_text = ""
                 if progress_text:
+                    # The formal callback only submits to the existing audio
+                    # worker. Never await TTS/playback here: gate-off and head
+                    # control start immediately, preserving their own ordering.
                     self._emit_progress(
                         name,
                         "progress",
@@ -2029,7 +2058,7 @@ class ScenarioExecutor:
             # however, restore the safe neutral state exactly once.  This is a
             # runtime rollback, not a second authored scene, and it never runs
             # for dry-run validation, navigation failure, or a successful start.
-            if name == "meeting_projection":
+            if name in {"meeting_projection", "movie_projection"}:
                 raised = records.get("head_up") or {}
                 projected = records.get("project") or {}
                 raised_physically = bool(
@@ -2041,7 +2070,7 @@ class ScenarioExecutor:
                     and not projected.get("skipped")
                     and not projected.get("succeeded")
                 )
-                if raised_physically and projector_failed:
+                if raised_physically and (projector_failed or self.cancellation_requested()):
                     off_step = {
                         "id": "runtime_rollback_off",
                         "skill": "projector_control",

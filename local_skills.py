@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any, Callable, Sequence
 
 from intent_policy import is_retrospective_query
+from head_intent import check_head_intent, head_positions
 
 from scenario_engine import (
     SCENARIO_TOOL_NAME,
@@ -462,9 +463,10 @@ def _explicit_head_tasks(user_text: str) -> list[dict[str, Any]]:
                 continue
         found: list[tuple[int, str]] = []
         for action, action_terms in terms.items():
-            if _action_explicitly_negated(clause, action_terms):
+            if not check_head_intent({"action": action}, clause, legacy_evidence=True)[0]:
                 continue
-            position = _term_position(clause, action_terms, -1)
+            positions = head_positions(clause, action)
+            position = positions[0] if positions else _term_position(clause, action_terms, -1)
             if position >= 0:
                 found.append((position, action))
         if found:
@@ -762,6 +764,9 @@ def _task_position(task: dict[str, Any], user_text: str, fallback: int) -> int:
     if name == "feeder_control":
         return _term_position(user_text, ("投食", "喂", "出粮", "狗粮", "份粮", "给豆豆"), fallback)
     if name == "head_control":
+        positions = head_positions(_intent_text(user_text), action)
+        if positions:
+            return positions[0]
         terms = {
             "up": ("抬头", "向上看", "看上方", "看高处", "把头升起", "头升起来"),
             "down": ("低头", "向下看", "看地面", "看下方", "把头降下", "头降下来"),
@@ -923,7 +928,7 @@ def _repair_sequence_tasks(
             position = _task_position(task, user_text, 10**9 + index)
             if task["name"] == "head_control":
                 action = str(task["arguments"].get("action") or "")
-                occurrences = _term_positions(user_text, head_terms.get(action, ()))
+                occurrences = head_positions(text, action) or _term_positions(user_text, head_terms.get(action, ()))
                 occurrence = head_seen.get(action, 0)
                 head_seen[action] = occurrence + 1
                 if occurrence < len(occurrences):
@@ -1206,7 +1211,7 @@ def _atomic_intent_supported(
         "face_registration": ("注册", "登记", "录入", "记住"),
         "feeder_control": ("投食", "喂食", "出粮"),
     }
-    if name in negatable_actions and _action_explicitly_negated(user_text, negatable_actions[name]):
+    if name != "head_control" and name in negatable_actions and _action_explicitly_negated(user_text, negatable_actions[name]):
         return False, "explicitly_negated_action"
 
     general_evidence = {
@@ -1285,7 +1290,7 @@ def _atomic_intent_supported(
     # sentence may provide an omitted object (“这个先停了”).  Context can
     # ground the object, but every action-specific polarity/destination check
     # below still uses only the current user turn.
-    if evidence and not current_evidence and not context_evidence:
+    if name != "head_control" and evidence and not current_evidence and not context_evidence:
         return False, f"missing_{name}_evidence"
 
     if name == "light_control":
@@ -1389,8 +1394,12 @@ def _atomic_intent_supported(
             "level": ("平视", "放平", "回正", "摆正", "看正前方", "回到水平", "回到平视", "恢复水平", "恢复到水平", "恢复正常角度"),
             "angle": ("角度",),
         }.get(action, ())
-        if action_evidence and not structured_evidence and not _intent_evidence(text, action_evidence, head_terms):
-            return False, "head_action_conflict"
+        supported, reason = check_head_intent(
+            arguments, user_text,
+            legacy_evidence=bool(action_evidence and _intent_evidence(text, action_evidence, head_terms)),
+        )
+        if not supported:
+            return False, reason
 
     if name == "projector_control":
         action = str(arguments.get("action") or "").strip().lower()
@@ -1986,6 +1995,8 @@ class LocalSkillBridge:
         self.unavailable: dict[str, str] = {}
         self._processes: set[subprocess.Popen[str]] = set()
         self._process_lock = threading.Lock()
+        self._execution_context = threading.local()
+        self._cancel_generation = 0
 
         requested = [str(item).strip() for item in (enabled_skills or []) if str(item).strip()]
         if requested:
@@ -2024,6 +2035,7 @@ class LocalSkillBridge:
                     announce=False,
                 ),
                 progress_callback=self._emit_speech_event,
+                cancellation_requested=self.execution_cancelled,
             )
         self._turn_scenario_results: dict[tuple[str, str], dict[str, Any]] = {}
         self.current_turn_id = ""
@@ -2209,7 +2221,26 @@ class LocalSkillBridge:
             "arguments": {"scenario": scenario},
         }
 
-    def invoke(
+    def invoke(self, name, arguments, user_text="", turn_id="", prior_assistant_text="",
+               trusted_scenario=False, announce_scenario=True):
+        context = self._execution_context
+        outermost = not hasattr(context, "generation")
+        if outermost:
+            context.generation = self._cancel_generation
+            context.turn_id = str(turn_id or self.current_turn_id)
+        try:
+            return self._invoke_scoped(name, arguments, user_text, turn_id,
+                                       prior_assistant_text, trusted_scenario, announce_scenario)
+        finally:
+            if outermost:
+                del context.generation
+                del context.turn_id
+
+    def execution_cancelled(self):
+        generation = getattr(self._execution_context, "generation", self._cancel_generation)
+        return generation != self._cancel_generation
+
+    def _invoke_scoped(
         self,
         name: str,
         arguments: dict[str, Any],
@@ -2628,6 +2659,8 @@ class LocalSkillBridge:
             return
         value = dict(event)
         value.setdefault("skill_name", SEQUENCE_TOOL_NAME)
+        value.setdefault("turn_id", getattr(getattr(self, "_execution_context", None), "turn_id",
+                                           getattr(self, "current_turn_id", "")))
         self.event_callback(value)
 
     def _sequence_child_names(self) -> set[str]:
@@ -2704,7 +2737,7 @@ class LocalSkillBridge:
             # directly in ``name`` even though the schema asks for the wrapper.
             # Canonicalize that harmless representation difference locally;
             # the scenario compiler and all of its safety gates still run.
-            if self.scenario_catalog is not None and isinstance(child_arguments, dict):
+            if not trusted_resume and self.scenario_catalog is not None and isinstance(child_arguments, dict):
                 if child_name in self.scenario_catalog.procedures:
                     child_arguments = {**child_arguments, "scenario": child_name}
                     child_name = SCENARIO_TOOL_NAME
@@ -2919,7 +2952,12 @@ class LocalSkillBridge:
         records: list[dict[str, Any]] = []
         stopped = False
         for index, task in enumerate(tasks):
-            if stopped:
+            action = str(task["arguments"].get("action") or task["arguments"].get("direction") or "")
+            resume_cleanup = trusted_resume and (
+                (task["name"] == "head_control" and action == "level") or
+                (task["name"] == "projector_control" and action == "off")
+            )
+            if (stopped or self.execution_cancelled()) and not resume_cleanup:
                 records.append(
                     {
                         "index": index,
@@ -2928,7 +2966,7 @@ class LocalSkillBridge:
                         "finished": False,
                         "succeeded": False,
                         "skipped": True,
-                        "error": "previous_task_failed",
+                        "error": "task_cancelled" if self.execution_cancelled() else "previous_task_failed",
                     }
                 )
                 continue
@@ -2937,7 +2975,7 @@ class LocalSkillBridge:
                 # Successful internal transitions do not need narration; the
                 # user already heard one acknowledgement and will receive one
                 # aggregate result. Only a meaningful exception is announced.
-                if not prior_ok:
+                if not prior_ok and not resume_cleanup:
                     self._emit_speech_event(
                         {
                             "skill_name": SEQUENCE_TOOL_NAME,
@@ -3057,6 +3095,8 @@ class LocalSkillBridge:
             )
         if not supported:
             rejection_speech = {
+                "head_intent_needs_confirmation": "你是想让我抬头、低头，还是恢复平视？",
+                "head_angle_missing_or_invalid": "你想把头部调到多少度？请给我一个 0 到 360 的整数角度。",
                 "navigation_destination_missing": (
                     "我没听清要去哪个位置，所以没有启动导航。你可以说原点、客厅白墙或书房。"
                 ),
@@ -3089,6 +3129,8 @@ class LocalSkillBridge:
                 "mode": "intent_rejected",
                 "error": f"tool_not_supported_by_user_intent:{support_reason}",
                 "clarification_required": support_reason in {
+                    "head_intent_needs_confirmation",
+                    "head_angle_missing_or_invalid",
                     "navigation_destination_missing",
                     "navigation_destination_conflict",
                     "navigation_destination_unknown",
@@ -3204,6 +3246,12 @@ class LocalSkillBridge:
         user_text: str,
         command: list[str],
     ) -> dict[str, Any]:
+        action = str(arguments.get("action") or arguments.get("direction") or "")
+        cleanup = (name == "head_control" and action == "level") or (
+            name == "projector_control" and action in {"off", "stop"}
+        )
+        if self.execution_cancelled() and not cleanup:
+            return {"returncode": None, "stdout": "", "stderr": "", "error": "task_cancelled"}
         if self.backend != "subprocess":
             completed = self._run_host(name, arguments, user_text)
             if completed.get("dispatch_state") == "completed":
@@ -3240,7 +3288,7 @@ class LocalSkillBridge:
                     if value.get("type") == "skill_event":
                         event = value.get("event")
                         if isinstance(event, dict) and self.event_callback is not None:
-                            self.event_callback(dict(event))
+                            self._emit_speech_event({"skill_name": name, **event})
                         continue
                     if value.get("type") == "final":
                         value.pop("type", None)
@@ -3315,6 +3363,7 @@ class LocalSkillBridge:
                 process.kill()
 
     def cancel_all(self) -> None:
+        self._cancel_generation += 1
         if self.backend != "subprocess" and self.host_socket.is_socket():
             request = {
                 "op": "cancel_active",

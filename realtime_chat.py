@@ -31,6 +31,7 @@ from memory_store import MemoryStore
 from intent_policy import enforce_turn_tool_policy, normalize_user_intent
 from skill_runner import running_controller_conflicts
 from skill_event_audio import QwenSkillEventSpeaker
+from task_control import TOOL as TASK_CONTROL_TOOL, immediate_control
 from projection_occlusion_observer import (
     DEFAULT_CONFIG_PATH as DEFAULT_PROJECTION_OCCLUSION_CONFIG,
     ProjectionOcclusionObserver,
@@ -753,7 +754,7 @@ class RealtimeConversation:
             event_turn_id = -1
         event_is_preempted = event_turn_id in self.preempted_turn_ids
         skill_name = str(payload.get("skill_name") or "")
-        if skill_name in {"push_up", "pull_up", "squat", "person_tracking", "pet_tracking"}:
+        if not event_is_preempted and skill_name in {"push_up", "pull_up", "squat", "person_tracking", "pet_tracking"}:
             with self._long_task_progress_lock:
                 if self._long_task_progress.get("skill_name") != skill_name:
                     self._long_task_progress = {
@@ -911,11 +912,23 @@ class RealtimeConversation:
             if isinstance(spec, dict) and "default" in spec:
                 parameters[str(key)] = spec.get("default")
         parameters.update({key: val for key, val in arguments.items() if key != "scenario"})
+        if parameters.get("stay_put"):
+            parameters["navigate"] = False
         location: str | None = None
         resume_prefix: list[TaskAction] = []
-        for step in list(procedure.get("steps") or []):
+        compile_scene = getattr(catalog, "compile", None)
+        steps = (compile_scene(scenario, parameters).get("steps", [])
+                 if callable(compile_scene) else procedure.get("steps", []))
+        for step in list(steps):
             if not isinstance(step, dict):
                 continue
+            enabled = step.get("enabled_if") or {}
+            if enabled:
+                actual = parameters.get(enabled.get("argument"), False)
+                if "equals" in enabled and actual != enabled["equals"]:
+                    continue
+                if "truthy" in enabled and bool(actual) != bool(enabled["truthy"]):
+                    continue
             step_skill = str(step.get("skill") or "")
             step_arguments = self._resolve_procedure_value(
                 dict(step.get("arguments") or {}),
@@ -953,7 +966,7 @@ class RealtimeConversation:
         name = str(value.get("name") or "")
         arguments = RealtimeConversation._call_arguments(value)
         action = str(arguments.get("action") or "").lower()
-        return name in {
+        return (name == "task_control" and action == "stop") or name in {
             "push_up", "pull_up", "squat", "person_tracking", "pet_tracking",
             "navigation_goto",
         } and action in {"stop", "cancel", "off"}
@@ -1020,6 +1033,7 @@ class RealtimeConversation:
                     visit(item)
 
         visit(result.get("structured_result"))
+        visit(result.get("steps"))
         return count, elapsed
 
     def _speak_internal(self, kind: str, text: str, *, event_id: str) -> None:
@@ -1110,6 +1124,12 @@ class RealtimeConversation:
             {"name": action.name, "arguments": dict(action.arguments)}
             for action in executable
         ]
+        # Older task snapshots call this field "direction"; the native Skill
+        # schema uses "action". Do not let filtering silently default to level.
+        for task in tasks:
+            arguments = task["arguments"]
+            if task["name"] == "head_control" and "direction" in arguments and "action" not in arguments:
+                arguments["action"] = arguments.pop("direction")
         if len(tasks) == 1:
             call_name = tasks[0]["name"]
             call_arguments = tasks[0]["arguments"]
@@ -1132,6 +1152,29 @@ class RealtimeConversation:
             assistant_context=self.last_assistant_text,
             received_at=time.time(),
         )
+
+    async def _control_long_task(self, arguments: dict[str, Any]) -> dict[str, Any]:
+        action = arguments.get("action")
+        coordinator = self.task_coordinator
+        ok, message = False, "目前没有可以暂停或继续的长任务。"
+        if action == "status":
+            ok = True
+            message = {"idle": "目前没有长任务在执行。", "running": "任务正在执行。",
+                       "awaiting_resume": "之前的任务已暂停，等待你决定是否继续。"}.get(
+                           coordinator.state, "正在处理任务切换。")
+        elif action == "pause" and coordinator.state in {"interrupting", "awaiting_resume"}:
+            ok, message = True, ""  # The coordinator owns the one pause acknowledgement.
+        elif action == "resume" and coordinator.state == "awaiting_resume":
+            await self._apply_resume_decision(True)
+            ok, message = True, ""
+        elif action == "stop":
+            coordinator.discard()
+            self.resume_prompt_binding = None
+            ok, message = True, "好，这个任务取消了，不会再自动恢复。"
+        return {"ok": ok, "validation_ok": ok, "executed": ok and action != "status",
+                "skill": "task_control", "spoken_summary": message,
+                "structured_result": {"state": coordinator.state, "action": action},
+                "error": None if ok else "no_matching_active_task"}
 
     async def send(self, payload: dict[str, Any]) -> None:
         async with self.send_lock:
@@ -1474,6 +1517,8 @@ class RealtimeConversation:
         tools: list[dict[str, Any]] = []
         if self.skill_bridge is not None:
             tools.extend(self.skill_bridge.tool_schemas)
+            tools.append(TASK_CONTROL_TOOL)
+            instructions += "\n用户暂停长任务时用 task_control(pause)，继续暂停任务用 resume，永久取消用 stop；不要用停止计数代替暂停。媒体暂停仍调用媒体控制。不应将历史查询当成任务控制。"
         if self.memory_store.enabled:
             tools.extend(self.memory_store.tool_schemas)
         await self.send(
@@ -1886,7 +1931,14 @@ class RealtimeConversation:
             call_id = str(value.get("call_id") or "")
             interruption_driver = False
             session_was_active = self.task_coordinator.state == "interruption_session_active"
-            if older and self._call_requests_preemption(value) and self.skill_bridge is not None:
+            # Apply the same history/query policy before cancelling hardware,
+            # not only later when dispatching the replacement call.
+            policy_name, policy_args, _ = enforce_turn_tool_policy(
+                normalize_user_intent(user_text or ""),
+                str(value.get("name") or ""), self._call_arguments(value),
+            )
+            preemption_value = {**value, "name": policy_name, "arguments": policy_args}
+            if older and self._call_requests_preemption(preemption_value) and self.skill_bridge is not None:
                 snapshot = self.task_coordinator.active
                 if snapshot is None and self.task_coordinator.state == "idle":
                     ordered_older = sorted(
@@ -1905,11 +1957,20 @@ class RealtimeConversation:
                                 self.function_call_values.get(old_task, {}).get("call_id") or ""
                             )
                             break
+                if (value.get("name") == "task_control"
+                    and self._call_arguments(value).get("action") == "pause"
+                    and self.task_coordinator.active is None):
+                    return {"ok": False, "skill": "task_control", "error": "task_not_resumable",
+                            "spoken_summary": "这个操作暂时不能保存进度暂停，可以明确取消它。"}
                 if (
                     self._explicitly_stops_active_task(value)
                     and self.task_coordinator.state == "running"
                 ):
                     self.task_coordinator.discard()
+                    self._speak_internal(
+                        "acknowledgement", "好，我先停下当前任务。",
+                        event_id=f"stop-request-{call_id or target_turn_id}",
+                    )
                 elif self.task_coordinator.state == "running" and self.task_coordinator.active is not None:
                     active = self.task_coordinator.active
                     count, elapsed = self._progress_checkpoint(
@@ -1983,6 +2044,14 @@ class RealtimeConversation:
                     completed=len(done),
                     still_running=len(pending),
                 )
+                if pending:
+                    # Native head/gate operations may still be settling. Do not
+                    # start the replacement task over an unfinished cleanup.
+                    _done, pending = await asyncio.wait(pending, timeout=90.0)
+                    if pending:
+                        return {"ok": False, "skill": value.get("name"),
+                                "error": "previous_task_not_stopped",
+                                "spoken_summary": "之前的任务还没有确认停止，我暂时不能开始下一项。"}
             elif session_was_active and call_id:
                 transition, session_kind = self._session_transition(value)
                 if transition == "end" and (
@@ -2007,11 +2076,15 @@ class RealtimeConversation:
             )
             if call_id in self.resume_call_ids and isinstance(result, dict):
                 self.resume_call_ids.discard(call_id)
-                if result.get("ok"):
-                    self.task_coordinator.complete_active()
-                else:
-                    self.task_coordinator.discard()
-                self.coordinator_owner_call_id = ""
+                # A resumed task can itself be interrupted again. Its old
+                # completion must not erase the newly suspended checkpoint.
+                if not result.get("interrupted"):
+                    if result.get("ok"):
+                        self.task_coordinator.complete_active()
+                    else:
+                        self.task_coordinator.discard()
+                if self.coordinator_owner_call_id == call_id:
+                    self.coordinator_owner_call_id = ""
             if (
                 interruption_driver
                 and call_id == self.interruption_driver_call_id
@@ -2041,7 +2114,9 @@ class RealtimeConversation:
                 if ask is not None:
                     self._speak_internal(
                         "attention",
-                        ask.fallback_text,
+                        "已经暂停，想继续时告诉我。" if (
+                            value.get("name") == "task_control" and self._call_arguments(value).get("action") == "pause"
+                        ) else ask.fallback_text,
                         event_id=f"ask-resume-{call_id or target_turn_id}",
                     )
             return result
@@ -2076,6 +2151,8 @@ class RealtimeConversation:
     @staticmethod
     def _call_requests_preemption(value: dict[str, Any]) -> bool:
         name = str(value.get("name") or "")
+        if name == "task_control":
+            return RealtimeConversation._call_arguments(value).get("action") in {"pause", "stop"}
         if name in {
             "navigation_goto", "head_control", "projector_control",
             "welcome_projection", "push_up", "pull_up", "squat",
@@ -2159,6 +2236,8 @@ class RealtimeConversation:
         print(f"[用户] {transcript}", flush=True)
         self.logger.write("input_transcript", text=transcript, turn_id=self.user_turn_id)
 
+        control_plan = immediate_control(transcript, self.task_coordinator.state == "running")
+
         resume_decision: bool | None = None
         if (
             self.task_coordinator.state == "awaiting_resume"
@@ -2189,7 +2268,9 @@ class RealtimeConversation:
                     # latest pet/media/etc clarification. Keep its snapshot
                     # available for a later explicit request to resume it.
                     resume_decision = None
-        if resume_decision is not None:
+        if control_plan is not None:
+            self.turn_recovery_plan = control_plan
+        elif resume_decision is not None:
             self.turn_recovery_plan = {"internal_resume_decision": resume_decision}
         elif normalized_turn_intent.get("domain") == "memory":
             # This is a read-only local recovery path.  It both avoids a
@@ -2254,6 +2335,12 @@ class RealtimeConversation:
                 count=len(stale_deferred),
                 reason="later_transcript_committed",
             )
+        if control_plan is not None:
+            for deferred in ready_deferred:
+                await self._send_discarded_function_output(deferred, reason="local_pause_control")
+            self.turn_recovery_plan = None
+            self.schedule_recovered_plan(control_plan)
+            return []
         if resume_decision is not None:
             for deferred in ready_deferred:
                 await self._send_discarded_function_output(
@@ -2450,6 +2537,8 @@ class RealtimeConversation:
                     "本轮完全相同的工具调用已经处理过。严禁再次调用该工具；"
                     "请直接依据 function_call_output 中的 prior_result 回复用户。"
                 )
+            elif name == "task_control":
+                result = await self._control_long_task(arguments)
             elif self.memory_store.is_tool(name):
                 result = await asyncio.to_thread(self.memory_store.invoke, name, arguments)
             elif self.skill_bridge is None:
@@ -2468,6 +2557,8 @@ class RealtimeConversation:
                     else None
                 )
                 if self.task_coordinator.state == "idle" and call_id not in self.resume_call_ids:
+                    with self._long_task_progress_lock:
+                        self._long_task_progress = {}
                     snapshot = self._snapshot_from_call(
                         {
                             "name": name,
@@ -2494,15 +2585,15 @@ class RealtimeConversation:
                         turn_id=call_turn_id,
                     )
                     async with self.skill_dispatch_lock:
-                        result = await asyncio.to_thread(
-                            self.skill_bridge.invoke,
-                            name,
-                            arguments,
-                            call_user_text,
-                            str(call_turn_id),
-                            call_assistant_context,
-                            bool(value.get("_coordinator_resume")),
-                        )
+                        if call_id in self.preempted_call_ids:
+                            result = {"ok": False, "executed": False, "skill": name,
+                                      "error": "task_cancelled_before_dispatch", "spoken_summary": ""}
+                        else:
+                            result = await asyncio.to_thread(
+                                self.skill_bridge.invoke, name, arguments, call_user_text,
+                                str(call_turn_id), call_assistant_context,
+                                bool(value.get("_coordinator_resume")),
+                            )
                     self.logger.write(
                         "skill_dispatch_completed",
                         skill=name,

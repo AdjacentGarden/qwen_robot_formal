@@ -602,7 +602,7 @@ class InterruptibleTaskCoordinator:
                 }
             )
             try:
-                requested_duration = float(arguments.get("duration") or 0.0)
+                requested_duration = float(snapshot.context.get("requested_duration", arguments.get("duration")) or 0.0)
             except (TypeError, ValueError):
                 requested_duration = 0.0
             if requested_duration > 0.0:
@@ -632,7 +632,16 @@ class InterruptibleTaskCoordinator:
                 ),
             )
         )
-        self.active = replace(snapshot, arguments=arguments)
+        if any(item.name == "head_control" for item in snapshot.resume_prefix):
+            # Restoring only the preparation prefix used to leave a resumed
+            # exercise projected with the head up after its counter returned.
+            actions.extend((
+                TaskAction("restore_context", "projector_control", {"action": "off"}),
+                TaskAction("restore_context", "head_control", {"direction": "level"}),
+            ))
+        context = dict(snapshot.context)
+        context.setdefault("requested_duration", snapshot.arguments.get("duration", 0))
+        self.active = replace(snapshot, arguments=arguments, context=context)
         self.suspended = None
         self.state = "running"
         return tuple(actions)
