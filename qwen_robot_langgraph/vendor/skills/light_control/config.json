@@ -1,0 +1,11 @@
+{
+  "auth_path": "/home/test/Mijia/auth.json",
+  "did": "REPLACE_LIGHT_DEVICE_ID",
+  "siid": 2,
+  "piid": 1,
+  "request_timeout_sec": 8.0,
+  "lock_timeout_sec": 2.0,
+  "idempotent_retries": 1,
+  "retry_delay_sec": 0.25,
+  "refresh_token": false
+}

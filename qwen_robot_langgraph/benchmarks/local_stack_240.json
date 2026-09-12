@@ -1,0 +1,2542 @@
+{
+  "version": 1,
+  "description": "Fixed before evaluation; model-only, production router, simulated graph, and synthetic speech metrics are separate. No test feedback used to modify prompts.",
+  "cases": [
+    {
+      "id": "c001",
+      "category": "head_up",
+      "text": "抬头",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "up"
+        }
+      }
+    },
+    {
+      "id": "c002",
+      "category": "head_up",
+      "text": "请抬头",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "up"
+        }
+      }
+    },
+    {
+      "id": "c003",
+      "category": "head_up",
+      "text": "请把头抬起来",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "up"
+        }
+      }
+    },
+    {
+      "id": "c004",
+      "category": "head_up",
+      "text": "麻烦抬一下头",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "up"
+        }
+      }
+    },
+    {
+      "id": "c005",
+      "category": "head_up",
+      "text": "帮我把头抬起来",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "up"
+        }
+      }
+    },
+    {
+      "id": "c006",
+      "category": "head_up",
+      "text": "把头向上抬",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "up"
+        }
+      }
+    },
+    {
+      "id": "c007",
+      "category": "head_up",
+      "text": "头部向上抬起",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "up"
+        }
+      }
+    },
+    {
+      "id": "c008",
+      "category": "head_up",
+      "text": "现在抬头",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "up"
+        }
+      }
+    },
+    {
+      "id": "c009",
+      "category": "head_up",
+      "text": "机器人，请抬头",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "up"
+        }
+      }
+    },
+    {
+      "id": "c010",
+      "category": "head_up",
+      "text": "请你将头抬起",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "up"
+        }
+      }
+    },
+    {
+      "id": "c011",
+      "category": "head_up",
+      "text": "抬起你的头部",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "up"
+        }
+      }
+    },
+    {
+      "id": "c012",
+      "category": "head_up",
+      "text": "麻烦你把头部向上抬一下",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "up"
+        }
+      }
+    },
+    {
+      "id": "c013",
+      "category": "head_down",
+      "text": "低头",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "down"
+        }
+      }
+    },
+    {
+      "id": "c014",
+      "category": "head_down",
+      "text": "请低头",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "down"
+        }
+      }
+    },
+    {
+      "id": "c015",
+      "category": "head_down",
+      "text": "请把头低下",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "down"
+        }
+      }
+    },
+    {
+      "id": "c016",
+      "category": "head_down",
+      "text": "麻烦低一下头",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "down"
+        }
+      }
+    },
+    {
+      "id": "c017",
+      "category": "head_down",
+      "text": "帮我低头",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "down"
+        }
+      }
+    },
+    {
+      "id": "c018",
+      "category": "head_down",
+      "text": "把头向下低",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "down"
+        }
+      }
+    },
+    {
+      "id": "c019",
+      "category": "head_down",
+      "text": "头部向下低一下",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "down"
+        }
+      }
+    },
+    {
+      "id": "c020",
+      "category": "head_down",
+      "text": "现在低头",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "down"
+        }
+      }
+    },
+    {
+      "id": "c021",
+      "category": "head_down",
+      "text": "机器人，请低头",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "down"
+        }
+      }
+    },
+    {
+      "id": "c022",
+      "category": "head_down",
+      "text": "请你将头低下",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "down"
+        }
+      }
+    },
+    {
+      "id": "c023",
+      "category": "head_down",
+      "text": "让头部向下",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "down"
+        }
+      }
+    },
+    {
+      "id": "c024",
+      "category": "head_down",
+      "text": "麻烦你把头部向下低一点",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "down"
+        }
+      }
+    },
+    {
+      "id": "c025",
+      "category": "head_level",
+      "text": "回正",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "level"
+        }
+      }
+    },
+    {
+      "id": "c026",
+      "category": "head_level",
+      "text": "请回正",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "level"
+        }
+      }
+    },
+    {
+      "id": "c027",
+      "category": "head_level",
+      "text": "麻烦让头部回正",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "level"
+        }
+      }
+    },
+    {
+      "id": "c028",
+      "category": "head_level",
+      "text": "把头摆正",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "level"
+        }
+      }
+    },
+    {
+      "id": "c029",
+      "category": "head_level",
+      "text": "头部归中",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "level"
+        }
+      }
+    },
+    {
+      "id": "c030",
+      "category": "head_level",
+      "text": "让头保持水平",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "level"
+        }
+      }
+    },
+    {
+      "id": "c031",
+      "category": "head_level",
+      "text": "现在把头回正",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "level"
+        }
+      }
+    },
+    {
+      "id": "c032",
+      "category": "head_level",
+      "text": "帮我把头摆正",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "level"
+        }
+      }
+    },
+    {
+      "id": "c033",
+      "category": "head_level",
+      "text": "机器人，头部回正",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "level"
+        }
+      }
+    },
+    {
+      "id": "c034",
+      "category": "head_level",
+      "text": "请将头部恢复水平",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "level"
+        }
+      }
+    },
+    {
+      "id": "c035",
+      "category": "head_level",
+      "text": "请你把头部归中",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "level"
+        }
+      }
+    },
+    {
+      "id": "c036",
+      "category": "head_level",
+      "text": "麻烦把头部摆正一下",
+      "expected": {
+        "type": "action",
+        "kind": "head.move",
+        "args": {
+          "pose": "level"
+        }
+      }
+    },
+    {
+      "id": "c037",
+      "category": "camera_front",
+      "text": "前摄拍照",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "front"
+        }
+      }
+    },
+    {
+      "id": "c038",
+      "category": "camera_front",
+      "text": "请用前摄拍照",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "front"
+        }
+      }
+    },
+    {
+      "id": "c039",
+      "category": "camera_front",
+      "text": "用前面的摄像头拍一张照片",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "front"
+        }
+      }
+    },
+    {
+      "id": "c040",
+      "category": "camera_front",
+      "text": "帮我用前置摄像头拍照",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "front"
+        }
+      }
+    },
+    {
+      "id": "c041",
+      "category": "camera_front",
+      "text": "请前置摄像头拍一张",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "front"
+        }
+      }
+    },
+    {
+      "id": "c042",
+      "category": "camera_front",
+      "text": "打开前摄拍张照片",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "front"
+        }
+      }
+    },
+    {
+      "id": "c043",
+      "category": "camera_front",
+      "text": "用前摄给我拍一张",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "front"
+        }
+      }
+    },
+    {
+      "id": "c044",
+      "category": "camera_front",
+      "text": "现在用前摄拍照",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "front"
+        }
+      }
+    },
+    {
+      "id": "c045",
+      "category": "camera_front",
+      "text": "机器人，用前面的摄像头拍照",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "front"
+        }
+      }
+    },
+    {
+      "id": "c046",
+      "category": "camera_front",
+      "text": "麻烦用前摄拍张照",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "front"
+        }
+      }
+    },
+    {
+      "id": "c047",
+      "category": "camera_front",
+      "text": "前面的摄像头拍张照片吧",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "front"
+        }
+      }
+    },
+    {
+      "id": "c048",
+      "category": "camera_front",
+      "text": "请使用前置相机拍摄照片",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "front"
+        }
+      }
+    },
+    {
+      "id": "c049",
+      "category": "camera_front",
+      "text": "让前摄拍一张照片",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "front"
+        }
+      }
+    },
+    {
+      "id": "c050",
+      "category": "camera_front",
+      "text": "帮忙使用前面的相机拍照",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "front"
+        }
+      }
+    },
+    {
+      "id": "c051",
+      "category": "camera_front",
+      "text": "用前方摄像头拍一张",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "front"
+        }
+      }
+    },
+    {
+      "id": "c052",
+      "category": "camera_front",
+      "text": "请你用前面的摄像头拍个照",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "front"
+        }
+      }
+    },
+    {
+      "id": "c053",
+      "category": "camera_back",
+      "text": "后摄拍照",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "back"
+        }
+      }
+    },
+    {
+      "id": "c054",
+      "category": "camera_back",
+      "text": "请用后摄拍照",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "back"
+        }
+      }
+    },
+    {
+      "id": "c055",
+      "category": "camera_back",
+      "text": "用后面的摄像头拍一张照片",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "back"
+        }
+      }
+    },
+    {
+      "id": "c056",
+      "category": "camera_back",
+      "text": "帮我用后置摄像头拍照",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "back"
+        }
+      }
+    },
+    {
+      "id": "c057",
+      "category": "camera_back",
+      "text": "请后置摄像头拍一张",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "back"
+        }
+      }
+    },
+    {
+      "id": "c058",
+      "category": "camera_back",
+      "text": "打开后摄拍张照片",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "back"
+        }
+      }
+    },
+    {
+      "id": "c059",
+      "category": "camera_back",
+      "text": "用后摄给我拍一张",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "back"
+        }
+      }
+    },
+    {
+      "id": "c060",
+      "category": "camera_back",
+      "text": "现在用后摄拍照",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "back"
+        }
+      }
+    },
+    {
+      "id": "c061",
+      "category": "camera_back",
+      "text": "机器人，用后面的摄像头拍照",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "back"
+        }
+      }
+    },
+    {
+      "id": "c062",
+      "category": "camera_back",
+      "text": "麻烦用后摄拍张照",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "back"
+        }
+      }
+    },
+    {
+      "id": "c063",
+      "category": "camera_back",
+      "text": "后面的摄像头拍张照片吧",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "back"
+        }
+      }
+    },
+    {
+      "id": "c064",
+      "category": "camera_back",
+      "text": "请使用后置相机拍摄照片",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "back"
+        }
+      }
+    },
+    {
+      "id": "c065",
+      "category": "camera_back",
+      "text": "让后摄拍一张照片",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "back"
+        }
+      }
+    },
+    {
+      "id": "c066",
+      "category": "camera_back",
+      "text": "帮忙使用后面的相机拍照",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "back"
+        }
+      }
+    },
+    {
+      "id": "c067",
+      "category": "camera_back",
+      "text": "用后方摄像头拍一张",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "back"
+        }
+      }
+    },
+    {
+      "id": "c068",
+      "category": "camera_back",
+      "text": "请你用后面的摄像头拍个照",
+      "expected": {
+        "type": "action",
+        "kind": "camera.capture",
+        "args": {
+          "camera": "back"
+        }
+      }
+    },
+    {
+      "id": "c069",
+      "category": "time",
+      "text": "现在几点",
+      "expected": {
+        "type": "action",
+        "kind": "system.time",
+        "args": {}
+      }
+    },
+    {
+      "id": "c070",
+      "category": "time",
+      "text": "现在几点了",
+      "expected": {
+        "type": "action",
+        "kind": "system.time",
+        "args": {}
+      }
+    },
+    {
+      "id": "c071",
+      "category": "time",
+      "text": "请告诉我现在的时间",
+      "expected": {
+        "type": "action",
+        "kind": "system.time",
+        "args": {}
+      }
+    },
+    {
+      "id": "c072",
+      "category": "time",
+      "text": "帮我查一下当前时间",
+      "expected": {
+        "type": "action",
+        "kind": "system.time",
+        "args": {}
+      }
+    },
+    {
+      "id": "c073",
+      "category": "time",
+      "text": "现在是什么时间",
+      "expected": {
+        "type": "action",
+        "kind": "system.time",
+        "args": {}
+      }
+    },
+    {
+      "id": "c074",
+      "category": "time",
+      "text": "报一下现在几点钟",
+      "expected": {
+        "type": "action",
+        "kind": "system.time",
+        "args": {}
+      }
+    },
+    {
+      "id": "c075",
+      "category": "time",
+      "text": "告诉我当前几点几分",
+      "expected": {
+        "type": "action",
+        "kind": "system.time",
+        "args": {}
+      }
+    },
+    {
+      "id": "c076",
+      "category": "time",
+      "text": "麻烦查询一下时间",
+      "expected": {
+        "type": "action",
+        "kind": "system.time",
+        "args": {}
+      }
+    },
+    {
+      "id": "c077",
+      "category": "time",
+      "text": "机器人，报时",
+      "expected": {
+        "type": "action",
+        "kind": "system.time",
+        "args": {}
+      }
+    },
+    {
+      "id": "c078",
+      "category": "time",
+      "text": "请报一下时间",
+      "expected": {
+        "type": "action",
+        "kind": "system.time",
+        "args": {}
+      }
+    },
+    {
+      "id": "c079",
+      "category": "time",
+      "text": "我想知道现在几点",
+      "expected": {
+        "type": "action",
+        "kind": "system.time",
+        "args": {}
+      }
+    },
+    {
+      "id": "c080",
+      "category": "time",
+      "text": "查询当前时间",
+      "expected": {
+        "type": "action",
+        "kind": "system.time",
+        "args": {}
+      }
+    },
+    {
+      "id": "c081",
+      "category": "time",
+      "text": "请告诉我北京时间",
+      "expected": {
+        "type": "action",
+        "kind": "system.time",
+        "args": {}
+      }
+    },
+    {
+      "id": "c082",
+      "category": "time",
+      "text": "现在北京时间几点",
+      "expected": {
+        "type": "action",
+        "kind": "system.time",
+        "args": {}
+      }
+    },
+    {
+      "id": "c083",
+      "category": "time",
+      "text": "当前时间是多少",
+      "expected": {
+        "type": "action",
+        "kind": "system.time",
+        "args": {}
+      }
+    },
+    {
+      "id": "c084",
+      "category": "time",
+      "text": "给我报个时",
+      "expected": {
+        "type": "action",
+        "kind": "system.time",
+        "args": {}
+      }
+    },
+    {
+      "id": "c085",
+      "category": "status",
+      "text": "设备状态",
+      "expected": {
+        "type": "action",
+        "kind": "system.status",
+        "args": {}
+      }
+    },
+    {
+      "id": "c086",
+      "category": "status",
+      "text": "查询设备状态",
+      "expected": {
+        "type": "action",
+        "kind": "system.status",
+        "args": {}
+      }
+    },
+    {
+      "id": "c087",
+      "category": "status",
+      "text": "查看机器人状态",
+      "expected": {
+        "type": "action",
+        "kind": "system.status",
+        "args": {}
+      }
+    },
+    {
+      "id": "c088",
+      "category": "status",
+      "text": "请检查一下设备状态",
+      "expected": {
+        "type": "action",
+        "kind": "system.status",
+        "args": {}
+      }
+    },
+    {
+      "id": "c089",
+      "category": "status",
+      "text": "机器人现在状态怎么样",
+      "expected": {
+        "type": "action",
+        "kind": "system.status",
+        "args": {}
+      }
+    },
+    {
+      "id": "c090",
+      "category": "status",
+      "text": "帮我查一下机器人状态",
+      "expected": {
+        "type": "action",
+        "kind": "system.status",
+        "args": {}
+      }
+    },
+    {
+      "id": "c091",
+      "category": "status",
+      "text": "当前设备状态是什么",
+      "expected": {
+        "type": "action",
+        "kind": "system.status",
+        "args": {}
+      }
+    },
+    {
+      "id": "c092",
+      "category": "status",
+      "text": "请报告设备状态",
+      "expected": {
+        "type": "action",
+        "kind": "system.status",
+        "args": {}
+      }
+    },
+    {
+      "id": "c093",
+      "category": "status",
+      "text": "查看当前系统状态",
+      "expected": {
+        "type": "action",
+        "kind": "system.status",
+        "args": {}
+      }
+    },
+    {
+      "id": "c094",
+      "category": "status",
+      "text": "麻烦检查机器人当前状态",
+      "expected": {
+        "type": "action",
+        "kind": "system.status",
+        "args": {}
+      }
+    },
+    {
+      "id": "c095",
+      "category": "status",
+      "text": "告诉我机器人当前状态",
+      "expected": {
+        "type": "action",
+        "kind": "system.status",
+        "args": {}
+      }
+    },
+    {
+      "id": "c096",
+      "category": "status",
+      "text": "查询系统运行状态",
+      "expected": {
+        "type": "action",
+        "kind": "system.status",
+        "args": {}
+      }
+    },
+    {
+      "id": "c097",
+      "category": "status",
+      "text": "机器人，报告你的状态",
+      "expected": {
+        "type": "action",
+        "kind": "system.status",
+        "args": {}
+      }
+    },
+    {
+      "id": "c098",
+      "category": "status",
+      "text": "现在设备状态如何",
+      "expected": {
+        "type": "action",
+        "kind": "system.status",
+        "args": {}
+      }
+    },
+    {
+      "id": "c099",
+      "category": "status",
+      "text": "帮我看看设备状态",
+      "expected": {
+        "type": "action",
+        "kind": "system.status",
+        "args": {}
+      }
+    },
+    {
+      "id": "c100",
+      "category": "status",
+      "text": "请返回当前机器人状态",
+      "expected": {
+        "type": "action",
+        "kind": "system.status",
+        "args": {}
+      }
+    },
+    {
+      "id": "c101",
+      "category": "light_on",
+      "text": "打开灯",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "c102",
+      "category": "light_on",
+      "text": "请打开灯",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "c103",
+      "category": "light_on",
+      "text": "帮我开灯",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "c104",
+      "category": "light_on",
+      "text": "把灯打开",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "c105",
+      "category": "light_on",
+      "text": "麻烦把灯点亮",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "c106",
+      "category": "light_on",
+      "text": "现在开灯",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "c107",
+      "category": "light_on",
+      "text": "机器人，开灯",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "c108",
+      "category": "light_on",
+      "text": "请让灯亮起来",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "c109",
+      "category": "light_on",
+      "text": "帮我把灯打开吧",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "c110",
+      "category": "light_on",
+      "text": "我要开灯",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "c111",
+      "category": "light_off",
+      "text": "关灯",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": false
+        }
+      }
+    },
+    {
+      "id": "c112",
+      "category": "light_off",
+      "text": "请关闭灯",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": false
+        }
+      }
+    },
+    {
+      "id": "c113",
+      "category": "light_off",
+      "text": "帮我关灯",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": false
+        }
+      }
+    },
+    {
+      "id": "c114",
+      "category": "light_off",
+      "text": "把灯关掉",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": false
+        }
+      }
+    },
+    {
+      "id": "c115",
+      "category": "light_off",
+      "text": "麻烦把灯熄灭",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": false
+        }
+      }
+    },
+    {
+      "id": "c116",
+      "category": "light_off",
+      "text": "现在关灯",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": false
+        }
+      }
+    },
+    {
+      "id": "c117",
+      "category": "light_off",
+      "text": "机器人，关灯",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": false
+        }
+      }
+    },
+    {
+      "id": "c118",
+      "category": "light_off",
+      "text": "请让灯熄灭",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": false
+        }
+      }
+    },
+    {
+      "id": "c119",
+      "category": "light_off",
+      "text": "帮我把灯关闭吧",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": false
+        }
+      }
+    },
+    {
+      "id": "c120",
+      "category": "light_off",
+      "text": "我要关灯",
+      "expected": {
+        "type": "action",
+        "kind": "light.set",
+        "args": {
+          "enabled": false
+        }
+      }
+    },
+    {
+      "id": "c121",
+      "category": "feed",
+      "text": "请投食10克",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 10
+        }
+      }
+    },
+    {
+      "id": "c122",
+      "category": "feed",
+      "text": "给投食机发十克投粮指令",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 10
+        }
+      }
+    },
+    {
+      "id": "c123",
+      "category": "feed",
+      "text": "请投食20克",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 20
+        }
+      }
+    },
+    {
+      "id": "c124",
+      "category": "feed",
+      "text": "给投食机发二十克投粮指令",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 20
+        }
+      }
+    },
+    {
+      "id": "c125",
+      "category": "feed",
+      "text": "请投食30克",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 30
+        }
+      }
+    },
+    {
+      "id": "c126",
+      "category": "feed",
+      "text": "给投食机发三十克投粮指令",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 30
+        }
+      }
+    },
+    {
+      "id": "c127",
+      "category": "feed",
+      "text": "请投食40克",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 40
+        }
+      }
+    },
+    {
+      "id": "c128",
+      "category": "feed",
+      "text": "给投食机发四十克投粮指令",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 40
+        }
+      }
+    },
+    {
+      "id": "c129",
+      "category": "feed",
+      "text": "请投食50克",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 50
+        }
+      }
+    },
+    {
+      "id": "c130",
+      "category": "feed",
+      "text": "给投食机发五十克投粮指令",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 50
+        }
+      }
+    },
+    {
+      "id": "c131",
+      "category": "feed",
+      "text": "请投食60克",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 60
+        }
+      }
+    },
+    {
+      "id": "c132",
+      "category": "feed",
+      "text": "给投食机发六十克投粮指令",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 60
+        }
+      }
+    },
+    {
+      "id": "c133",
+      "category": "feed",
+      "text": "请投食70克",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 70
+        }
+      }
+    },
+    {
+      "id": "c134",
+      "category": "feed",
+      "text": "给投食机发七十克投粮指令",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 70
+        }
+      }
+    },
+    {
+      "id": "c135",
+      "category": "feed",
+      "text": "请投食80克",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 80
+        }
+      }
+    },
+    {
+      "id": "c136",
+      "category": "feed",
+      "text": "给投食机发八十克投粮指令",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 80
+        }
+      }
+    },
+    {
+      "id": "c137",
+      "category": "feed",
+      "text": "请投食90克",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 90
+        }
+      }
+    },
+    {
+      "id": "c138",
+      "category": "feed",
+      "text": "给投食机发九十克投粮指令",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 90
+        }
+      }
+    },
+    {
+      "id": "c139",
+      "category": "feed",
+      "text": "请投食100克",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 100
+        }
+      }
+    },
+    {
+      "id": "c140",
+      "category": "feed",
+      "text": "给投食机发一百克投粮指令",
+      "expected": {
+        "type": "action",
+        "kind": "feeder.feed",
+        "args": {
+          "grams": 100
+        }
+      }
+    },
+    {
+      "id": "c141",
+      "category": "meeting_stationary",
+      "text": "原地会议投影",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting_stationary",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c142",
+      "category": "meeting_stationary",
+      "text": "原地启动会议投影",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting_stationary",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c143",
+      "category": "meeting_stationary",
+      "text": "请在原地开始会议投影",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting_stationary",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c144",
+      "category": "meeting_stationary",
+      "text": "在原地开始会议投影，不要导航",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting_stationary",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c145",
+      "category": "meeting_stationary",
+      "text": "就在这里开始投影",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting_stationary",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c146",
+      "category": "meeting_stationary",
+      "text": "在当前位置启动会议投影",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting_stationary",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c147",
+      "category": "meeting_stationary",
+      "text": "不导航，直接在原地投影",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting_stationary",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c148",
+      "category": "meeting_stationary",
+      "text": "帮我在原地开会投影",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting_stationary",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c149",
+      "category": "meeting_stationary",
+      "text": "请在这里开始会议投影",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting_stationary",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c150",
+      "category": "meeting_stationary",
+      "text": "原地投影",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting_stationary",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c151",
+      "category": "meeting_stationary",
+      "text": "不要移动，在原地开始会议投影",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting_stationary",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c152",
+      "category": "meeting_stationary",
+      "text": "机器人，在当前位置开始会议投影",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting_stationary",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c153",
+      "category": "meeting_navigation",
+      "text": "启动会议投影",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c154",
+      "category": "meeting_navigation",
+      "text": "开始会议投影",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c155",
+      "category": "meeting_navigation",
+      "text": "我要开会了",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c156",
+      "category": "meeting_navigation",
+      "text": "请开始会议投影",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c157",
+      "category": "meeting_navigation",
+      "text": "帮我启动会议场景",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c158",
+      "category": "meeting_navigation",
+      "text": "导航到书房投影点并开始会议",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c159",
+      "category": "meeting_navigation",
+      "text": "去书房投影点开会",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c160",
+      "category": "meeting_navigation",
+      "text": "请带我到书房进行会议投影",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c161",
+      "category": "meeting_navigation",
+      "text": "机器人，开始会议场景",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c162",
+      "category": "meeting_navigation",
+      "text": "准备去书房开会投影",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c163",
+      "category": "meeting_navigation",
+      "text": "请前往书房投影点开始开会",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c164",
+      "category": "meeting_navigation",
+      "text": "启动需要导航的会议投影",
+      "expected": {
+        "type": "workflow",
+        "name": "meeting",
+        "parameters": {}
+      }
+    },
+    {
+      "id": "c165",
+      "category": "exercise",
+      "text": "原地陪我做5个俯卧撑",
+      "expected": {
+        "type": "workflow",
+        "name": "exercise_stationary",
+        "parameters": {
+          "exercise": "push_up",
+          "count": 5
+        }
+      }
+    },
+    {
+      "id": "c166",
+      "category": "exercise",
+      "text": "在原地帮我数五个俯卧撑",
+      "expected": {
+        "type": "workflow",
+        "name": "exercise_stationary",
+        "parameters": {
+          "exercise": "push_up",
+          "count": 5
+        }
+      }
+    },
+    {
+      "id": "c167",
+      "category": "exercise",
+      "text": "原地陪我做10个俯卧撑",
+      "expected": {
+        "type": "workflow",
+        "name": "exercise_stationary",
+        "parameters": {
+          "exercise": "push_up",
+          "count": 10
+        }
+      }
+    },
+    {
+      "id": "c168",
+      "category": "exercise",
+      "text": "在原地帮我数十个俯卧撑",
+      "expected": {
+        "type": "workflow",
+        "name": "exercise_stationary",
+        "parameters": {
+          "exercise": "push_up",
+          "count": 10
+        }
+      }
+    },
+    {
+      "id": "c169",
+      "category": "exercise",
+      "text": "原地陪我做5个深蹲",
+      "expected": {
+        "type": "workflow",
+        "name": "exercise_stationary",
+        "parameters": {
+          "exercise": "squat",
+          "count": 5
+        }
+      }
+    },
+    {
+      "id": "c170",
+      "category": "exercise",
+      "text": "在原地帮我数五个深蹲",
+      "expected": {
+        "type": "workflow",
+        "name": "exercise_stationary",
+        "parameters": {
+          "exercise": "squat",
+          "count": 5
+        }
+      }
+    },
+    {
+      "id": "c171",
+      "category": "exercise",
+      "text": "原地陪我做10个深蹲",
+      "expected": {
+        "type": "workflow",
+        "name": "exercise_stationary",
+        "parameters": {
+          "exercise": "squat",
+          "count": 10
+        }
+      }
+    },
+    {
+      "id": "c172",
+      "category": "exercise",
+      "text": "在原地帮我数十个深蹲",
+      "expected": {
+        "type": "workflow",
+        "name": "exercise_stationary",
+        "parameters": {
+          "exercise": "squat",
+          "count": 10
+        }
+      }
+    },
+    {
+      "id": "c173",
+      "category": "exercise",
+      "text": "原地陪我做5个引体向上",
+      "expected": {
+        "type": "workflow",
+        "name": "exercise_stationary",
+        "parameters": {
+          "exercise": "pull_up",
+          "count": 5
+        }
+      }
+    },
+    {
+      "id": "c174",
+      "category": "exercise",
+      "text": "在原地帮我数五个引体向上",
+      "expected": {
+        "type": "workflow",
+        "name": "exercise_stationary",
+        "parameters": {
+          "exercise": "pull_up",
+          "count": 5
+        }
+      }
+    },
+    {
+      "id": "c175",
+      "category": "exercise",
+      "text": "原地陪我做10个引体向上",
+      "expected": {
+        "type": "workflow",
+        "name": "exercise_stationary",
+        "parameters": {
+          "exercise": "pull_up",
+          "count": 10
+        }
+      }
+    },
+    {
+      "id": "c176",
+      "category": "exercise",
+      "text": "在原地帮我数十个引体向上",
+      "expected": {
+        "type": "workflow",
+        "name": "exercise_stationary",
+        "parameters": {
+          "exercise": "pull_up",
+          "count": 10
+        }
+      }
+    },
+    {
+      "id": "c177",
+      "category": "control_pause",
+      "text": "暂停",
+      "expected": {
+        "type": "control",
+        "command": "pause"
+      }
+    },
+    {
+      "id": "c178",
+      "category": "control_pause",
+      "text": "暂停任务",
+      "expected": {
+        "type": "control",
+        "command": "pause"
+      }
+    },
+    {
+      "id": "c179",
+      "category": "control_pause",
+      "text": "请暂停当前任务",
+      "expected": {
+        "type": "control",
+        "command": "pause"
+      }
+    },
+    {
+      "id": "c180",
+      "category": "control_pause",
+      "text": "先暂停一下",
+      "expected": {
+        "type": "control",
+        "command": "pause"
+      }
+    },
+    {
+      "id": "c181",
+      "category": "control_resume",
+      "text": "继续",
+      "expected": {
+        "type": "control",
+        "command": "resume"
+      }
+    },
+    {
+      "id": "c182",
+      "category": "control_resume",
+      "text": "继续任务",
+      "expected": {
+        "type": "control",
+        "command": "resume"
+      }
+    },
+    {
+      "id": "c183",
+      "category": "control_resume",
+      "text": "请继续当前任务",
+      "expected": {
+        "type": "control",
+        "command": "resume"
+      }
+    },
+    {
+      "id": "c184",
+      "category": "control_resume",
+      "text": "恢复当前任务",
+      "expected": {
+        "type": "control",
+        "command": "resume"
+      }
+    },
+    {
+      "id": "c185",
+      "category": "control_cancel",
+      "text": "取消",
+      "expected": {
+        "type": "control",
+        "command": "cancel"
+      }
+    },
+    {
+      "id": "c186",
+      "category": "control_cancel",
+      "text": "停止",
+      "expected": {
+        "type": "control",
+        "command": "cancel"
+      }
+    },
+    {
+      "id": "c187",
+      "category": "control_cancel",
+      "text": "请结束当前任务",
+      "expected": {
+        "type": "control",
+        "command": "cancel"
+      }
+    },
+    {
+      "id": "c188",
+      "category": "control_cancel",
+      "text": "取消正在执行的任务",
+      "expected": {
+        "type": "control",
+        "command": "cancel"
+      }
+    },
+    {
+      "id": "c189",
+      "category": "negative",
+      "text": "不要抬头",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c190",
+      "category": "negative",
+      "text": "暂时不要开灯",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c191",
+      "category": "negative",
+      "text": "别关闭灯",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c192",
+      "category": "negative",
+      "text": "不要拍照",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c193",
+      "category": "negative",
+      "text": "不用开始会议投影",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c194",
+      "category": "negative",
+      "text": "先别投食",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c195",
+      "category": "negative",
+      "text": "不许移动底轮",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c196",
+      "category": "negative",
+      "text": "不要把头低下",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c197",
+      "category": "negative",
+      "text": "暂时不要回正",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c198",
+      "category": "negative",
+      "text": "不要暂停任务",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c199",
+      "category": "negative",
+      "text": "不用继续了",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c200",
+      "category": "negative",
+      "text": "请不要启动会议",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c201",
+      "category": "negative",
+      "text": "今天先不做深蹲",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c202",
+      "category": "negative",
+      "text": "不要用前摄拍照",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c203",
+      "category": "negative",
+      "text": "别让后摄拍照",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c204",
+      "category": "negative",
+      "text": "不要取消任务",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c205",
+      "category": "negative",
+      "text": "如果我要开会，你会怎么做",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c206",
+      "category": "negative",
+      "text": "假如让你抬头会怎样",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c207",
+      "category": "negative",
+      "text": "要是我要投食应该怎么说",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c208",
+      "category": "negative",
+      "text": "你刚才抬头了吗",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c209",
+      "category": "negative",
+      "text": "昨天有没有开灯",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c210",
+      "category": "negative",
+      "text": "之前拍过照片吗",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c211",
+      "category": "negative",
+      "text": "上次会议结束了吗",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c212",
+      "category": "negative",
+      "text": "为什么需要关雷达",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c213",
+      "category": "negative",
+      "text": "如何启动会议投影",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c214",
+      "category": "negative",
+      "text": "怎么让机器人抬头",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c215",
+      "category": "negative",
+      "text": "你可以直接在原地投影吗",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c216",
+      "category": "negative",
+      "text": "可以用前摄拍照吗",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c217",
+      "category": "negative",
+      "text": "你能开灯吗",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c218",
+      "category": "negative",
+      "text": "你能够抬头吗",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c219",
+      "category": "negative",
+      "text": "假设我说开灯，你会执行吗",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c220",
+      "category": "negative",
+      "text": "我只是在讨论会议投影",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c221",
+      "category": "ambiguous_unsupported",
+      "text": "打开灯然后抬头",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c222",
+      "category": "ambiguous_unsupported",
+      "text": "抬头同时用前摄拍照",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c223",
+      "category": "ambiguous_unsupported",
+      "text": "关灯再抬头",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c224",
+      "category": "ambiguous_unsupported",
+      "text": "先拍照接着投食",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c225",
+      "category": "ambiguous_unsupported",
+      "text": "把头调到一百九十度",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c226",
+      "category": "ambiguous_unsupported",
+      "text": "头部转到190度",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c227",
+      "category": "ambiguous_unsupported",
+      "text": "投食15克",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c228",
+      "category": "ambiguous_unsupported",
+      "text": "投食0克",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c229",
+      "category": "ambiguous_unsupported",
+      "text": "投食200克",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c230",
+      "category": "ambiguous_unsupported",
+      "text": "帮我投食",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c231",
+      "category": "ambiguous_unsupported",
+      "text": "给宠物喂一点",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c232",
+      "category": "ambiguous_unsupported",
+      "text": "拍一张照片",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c233",
+      "category": "ambiguous_unsupported",
+      "text": "把那个打开",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c234",
+      "category": "ambiguous_unsupported",
+      "text": "执行刚才那个操作",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c235",
+      "category": "ambiguous_unsupported",
+      "text": "帮我旋转投影仪",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c236",
+      "category": "ambiguous_unsupported",
+      "text": "把空调调到二十六度",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c237",
+      "category": "ambiguous_unsupported",
+      "text": "请启动扫地机器人",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c238",
+      "category": "ambiguous_unsupported",
+      "text": "给我播放一部电影",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c239",
+      "category": "ambiguous_unsupported",
+      "text": "设置明天早上八点提醒",
+      "expected": {
+        "type": "chat"
+      }
+    },
+    {
+      "id": "c240",
+      "category": "ambiguous_unsupported",
+      "text": "查询明天的天气",
+      "expected": {
+        "type": "chat"
+      }
+    }
+  ]
+}

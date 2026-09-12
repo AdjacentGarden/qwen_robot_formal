@@ -1,0 +1,92 @@
+[
+  {
+    "source": "work/repo_upload_20260907/qwen_robot_formal/robot_skills/head_control/run.py",
+    "copy": "skills/head_control/run.py",
+    "sha256": "47944d39283011ecbcbc407e2b099f1d1fdcedb9e88ed7a1fd18195938e7ff33"
+  },
+  {
+    "source": "work/repo_upload_20260907/qwen_robot_formal/robot_skills/projector_control/run.py",
+    "copy": "skills/projector_control/run.py",
+    "sha256": "3fa3b6de35ba429b20922ed4b5298f0987f9b296d20bef76ccba8aa801ed5290"
+  },
+  {
+    "source": "work/repo_upload_20260907/qwen_robot_formal/robot_skills/projector_control/config.json",
+    "copy": "skills/projector_control/config.json",
+    "sha256": "c0c22334d0da164cfe80d5170f201872024bf259ed5ebd0adbabd4872bf6b81d"
+  },
+  {
+    "source": "work/repo_upload_20260907/qwen_robot_formal/robot_skills/light_control/run.py",
+    "copy": "skills/light_control/run.py",
+    "sha256": "27287a987ae91d5d5377b103f7c7a3b44af10bc5c5c3fc91d89ace10dd4a7d2d"
+  },
+  {
+    "source": "work/repo_upload_20260907/qwen_robot_formal/robot_skills/light_control/config.json",
+    "copy": "skills/light_control/config.json",
+    "sha256": "cd989869ec96fa0985fd9092a6c2d760978ad184b5cf2b261374c9932d98ca31"
+  },
+  {
+    "source": "work/repo_upload_20260907/qwen_robot_formal/robot_skills/feeder_control/run.py",
+    "copy": "skills/feeder_control/run.py",
+    "sha256": "18bdfcbb291b4df15b782e34c5585d08ef511429da6835bbda7b9191b00500c7"
+  },
+  {
+    "source": "work/repo_upload_20260907/qwen_robot_formal/robot_skills/feeder_control/config.json",
+    "copy": "skills/feeder_control/config.json",
+    "sha256": "d67fd663bc78cb48d8745191d5e85f357ae0dff6902332dda6d05614f8dfb0c5"
+  },
+  {
+    "source": "work/repo_upload_20260907/car_real_copy_formal/src/driver/ros_robot_controller/ros_robot_controller/head_settle_policy.py",
+    "copy": "ros_robot_controller/head_settle_policy.py",
+    "sha256": "1e8ecd64252d6c212812b559e3761c12cc617f91926dbb8baa627c8932a9f0a7"
+  },
+  {
+    "source": "work/repo_upload_20260907/car_real_copy_formal/src/driver/ros_robot_controller/ros_robot_controller/__init__.py",
+    "copy": "ros_robot_controller/__init__.py",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "source": "work/repo_upload_20260907/car_real_copy_formal/src/driver/ros_robot_controller/ros_robot_controller/head_attitude_filter.py",
+    "copy": "ros_robot_controller/head_attitude_filter.py",
+    "sha256": "842bde80bcbdebb2bc6963f8027310bc7fb86785220a2b283cfeefe32aec7bb4"
+  },
+  {
+    "source": "work/repo_upload_20260907/car_real_copy_formal/src/driver/ros_robot_controller/ros_robot_controller/ros_robot_controller_sdk.py",
+    "copy": "ros_robot_controller/ros_robot_controller_sdk.py",
+    "sha256": "303198726a23a2cd6d13d93c846669a079a83fcadbd4ae156a5b1df701d91762"
+  },
+  {
+    "source": "work/repo_upload_20260907/car_real_copy_formal/src/driver/ros_robot_controller/ros_robot_controller/ros_robot_controller_node.py",
+    "copy": "ros_robot_controller/ros_robot_controller_node.py",
+    "sha256": "d01ac8f86e15e9585827ee481575f563691a2ed21be63b64289d7823ce5a0e2a"
+  },
+  {
+    "source": "work/repo_upload_20260907/car_real_copy_formal/src/driver/imu_cartographer_publisher/imu_cartographer_publisher/imu_cartographer_publisher.py",
+    "copy": "imu_publisher.py",
+    "sha256": "e0bbf1e9eb8f0592cc5c2acc66450cc06a435dd894213450dc1838dcc16aef0a"
+  },
+  {
+    "source": "/home/test/qwen_edge_cloud_switch_lab_20260904/sensevoice_backend.py",
+    "copy": "local_audio/sensevoice_backend.py",
+    "sha256": "7586c919a5e86db4a75a319c309ed5c9aa96ea4996a3d7864d81689823b6bc05"
+  },
+  {
+    "source": "/home/test/qwen_edge_cloud_switch_lab_20260904/tts_backend.py",
+    "copy": "local_audio/tts_backend.py",
+    "sha256": "705e5316ae8b6ef44010b71f1bd506f283db6c1bc36349e06122ca2fb347d9a6"
+  },
+  {
+    "source": "qwen_robot_formal/robot_skills/_shared/mijia_client.py",
+    "copy": "skills/_shared/mijia_client.py",
+    "sha256": "bc815cc869e6601f36f7642c04a636b98af06c5e041615ecffd219be64b9e77c"
+  },
+  {
+    "source": "qwen_robot_formal/robot_skills/_shared/__init__.py",
+    "copy": "skills/_shared/__init__.py",
+    "sha256": "0a098961d96dba30fd8fc8efcd7bfa80c1d8831459da33f29511087388d675b4"
+  },
+  {
+    "source": "qwen_robot_formal/robot_skills/_shared/camera_skill.py",
+    "copy": "skills/_shared/camera_skill.py",
+    "sha256": "9c1f9452dee35de66838b61f2e58e907c1adada3314a230fb963e5f9f904e6ee"
+  }
+]

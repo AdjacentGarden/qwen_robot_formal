@@ -1,0 +1,55 @@
+{
+  "dian_module_path": "/home/test/dian.py",
+  "fitness_video_start_command": [
+    "sudo",
+    "-n",
+    "/usr/local/sbin/robot-start-exercise-projection"
+  ],
+  "fitness_video_container_path": "/sdcard/Movies/exercise.mp4",
+  "fitness_video_sha256": "de344de64d55a8ebb71bd827abf545c1fe89202d0ae0e8652573ce6e2f65222e",
+  "meeting_presentation_start_command": [
+    "sudo",
+    "-n",
+    "/usr/local/sbin/robot-meeting-projection-v2",
+    "loop-start"
+  ],
+  "meeting_presentation_stop_command": [
+    "sudo",
+    "-n",
+    "/usr/local/sbin/robot-meeting-projection-v2",
+    "loop-stop"
+  ],
+  "meeting_presentation_pause_command": [
+    "sudo",
+    "-n",
+    "/usr/local/sbin/robot-meeting-projection-v2",
+    "loop-pause"
+  ],
+  "meeting_presentation_resume_command": [
+    "sudo",
+    "-n",
+    "/usr/local/sbin/robot-meeting-projection-v2",
+    "loop-resume"
+  ],
+  "meeting_presentation_status_command": [
+    "sudo",
+    "-n",
+    "/usr/local/sbin/robot-meeting-projection-v2",
+    "loop-status"
+  ],
+  "meeting_slide_container_paths": [
+    "/sdcard/Pictures/test-1.jpg",
+    "/sdcard/Pictures/test-2.jpg"
+  ],
+  "meeting_slide_sha256": [
+    "1a15506352fe68dffdf8e61df85703e93e27e370ada8b8db6cf46b5a7880d542",
+    "84ea835ad85b415edf8e228790b9c93fe53c3f2eebba13df7d612745863c8e83"
+  ],
+  "meeting_video_container_path": "/sdcard/Movies/meeting_slides_loop.mp4",
+  "meeting_video_sha256": "e812262a3bf0a93f4b852e5283bba18fda6ed8740b034e677f7b954dc735ec2a",
+  "state_path": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/projector/state.json",
+  "lock_path": "/home/test/qwen_audio_3_realtime_flash_scenarios_resident_test/robot_skills/runtime/projector/control.lock",
+  "i2c_bus": 2,
+  "dlp_addr": "0x1b",
+  "timeout_sec": 20
+}

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qwen-robot-langgraph"
+version = "0.1.0"
+description = "Durable LangGraph robot orchestration with stationary hardware policy"
+requires-python = ">=3.10"
+dependencies = ["langgraph==1.0.10", "langgraph-checkpoint-sqlite==3.1.1", "httpx==0.28.1", "websockets==13.1"]
+
+[project.optional-dependencies]
+test = ["pytest==8.4.2"]
+
+[project.scripts]
+robot-graph = "robot_graph.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -3,6 +3,10 @@
 > **公开源码版（2026-09-04）**：已移除密钥、人脸库、登录态及私密资源包。部署前请按 [公开版配置说明](reproduce/PUBLIC_SETUP.md) 自行配置；不要把真实凭据提交到仓库。此清理不修改机器人现有运行代码。
 > 最新源码同步：2026-09-07，见 [同步与验证记录](SNAPSHOT_2026-09-07.md)。
 
+新的端云协同 LangGraph 架构位于 [`qwen_robot_langgraph/`](qwen_robot_langgraph/README.md)。
+它是独立项目，不覆盖本目录中的原正式系统；机器人部署路径为
+`/home/test/qwen_robot_langgraph`，并在执行层和串口层持续禁止底轮运动。
+
 
 这是从 `/home/test/qwen_audio_3_realtime_flash_test` 创建的独立副本。它不修改、不停止，
 也不在运行时导入 `/home/test/project_0727_fixed_points_home_scenes`；场景目录和已验证的
