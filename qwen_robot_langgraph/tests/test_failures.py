@@ -2,6 +2,10 @@ import json
 import sqlite3
 import threading
 import time
+import socket
+import shutil
+import tempfile
+from pathlib import Path
 
 import pytest
 
@@ -190,6 +194,30 @@ def test_hardware_owner_shared_across_databases(tmp_path):
         with pytest.raises(RuntimeError,match='hardware_already_owned'):
             Runtime(tmp_path/'b',HardwareBackend(tmp_path))
     finally:rt.close()
+
+
+def test_latched_head_fault_blocks_motion_but_allows_recovery():
+    from robot_graph.hardware import HardwareBackend
+    root=Path(tempfile.mkdtemp(prefix='qrf-',dir='/tmp'))
+    runtime=root/'runtime';runtime.mkdir()
+    sock=socket.socket(socket.AF_UNIX)
+    sock.bind(str(runtime/'ros.sock'))
+    (runtime/'head_wire_audit.json').write_text(json.dumps({
+        'pid':__import__('os').getpid(), 'updated_at':time.time(),
+        'wheel_packets_sent':0,
+    }))
+    (runtime/'head_motion_fault.json').write_text(json.dumps({
+        'fault':'head_target_unconfirmed',
+    }))
+    backend=HardwareBackend(root)
+    try:
+        with pytest.raises(Unavailable,match='head_motion_fault_latched'):
+            backend.preflight(Action('head.move',{'pose':'up'}))
+        backend.preflight(Action('head.move',{'pose':'level'}))
+        backend.preflight(Action('sensor.gate',{'enabled':True}))
+    finally:
+        sock.close()
+        shutil.rmtree(root)
 
 
 def test_restart_active_session_is_unknown_not_assumed_paused(tmp_path):

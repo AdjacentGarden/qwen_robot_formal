@@ -31,14 +31,24 @@ try:
         cap=cv2.VideoCapture(device,cv2.CAP_V4L2)
         try:
             cap.set(cv2.CAP_PROP_FRAME_WIDTH,640);cap.set(cv2.CAP_PROP_FRAME_HEIGHT,480)
-            success,frame=cap.read()
-            if not success or frame is None:
+            frames=[]
+            for _ in range(15):
+                success,frame=cap.read()
+                if success and frame is not None:
+                    gray=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+                    frames.append((float(gray.mean()),float(gray.std()),int(gray.max()),frame.copy()))
+            if not frames:
                 raise RuntimeError('camera_read_failed')
+            mean,std,maximum,frame=max(frames,key=lambda item:(item[0]+item[1],item[2]))
+            # A V4L2 read can succeed while the ISP/sensor path supplies a
+            # nearly black frame. Do not report such a capture as usable.
+            if mean < 2.0 or std < 2.0:
+                raise RuntimeError(f'camera_unusable_frame:mean={mean:.2f},std={std:.2f},max={maximum}')
             path=ROOT/'runtime/captures'/f"{args['camera']}_{time.time_ns()}.jpg"
             path.parent.mkdir(parents=True,exist_ok=True)
             if not cv2.imwrite(str(path),frame):
                 raise RuntimeError('camera_write_failed')
-            result={'path':str(path),'shape':list(frame.shape),'sha256':hashlib.sha256(path.read_bytes()).hexdigest()}
+            result={'path':str(path),'shape':list(frame.shape),'mean':mean,'std':std,'max':maximum,'sha256':hashlib.sha256(path.read_bytes()).hexdigest()}
         finally:
             cap.release()
     elif kind=='speaker.test':

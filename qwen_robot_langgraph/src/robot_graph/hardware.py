@@ -56,6 +56,11 @@ class HardwareBackend:
                 raise Unavailable('head_only_driver_not_alive')
             if time.time()-data.get('updated_at',0)>5 or data.get('wheel_packets_sent')!=0:
                 raise Unavailable('head_only_guard_not_fresh')
+            fault=self.root/'runtime/head_motion_fault.json'
+            if action.kind=='head.move' and action.args.get('pose')!='level' and fault.exists():
+                try: reason=json.loads(fault.read_text()).get('fault','unknown')
+                except (OSError,ValueError):reason='unreadable'
+                raise Unavailable('head_motion_fault_latched:'+reason)
         if action.kind in {'light.set','feeder.feed','feeder.status'}:
             cfg = self.root/('config/private_light.json' if action.kind=='light.set' else 'config/private_feeder.json')
             if not cfg.exists():
@@ -69,7 +74,8 @@ class HardwareBackend:
             return {'ok':True,'status':'completed','executed':False,'time':datetime.now(ZoneInfo(self.config.get('timezone','Asia/Shanghai'))).isoformat()}
         if action.kind == 'system.status':
             audit=self.root/'runtime/head_wire_audit.json'
-            return {'ok':True,'status':'completed','executed':False,'base_locked':True,'driver':json.loads(audit.read_text()) if audit.exists() else None,'observed_at':time.time()}
+            fault=self.root/'runtime/head_motion_fault.json'
+            return {'ok':True,'status':'completed','executed':False,'base_locked':True,'driver':json.loads(audit.read_text()) if audit.exists() else None,'head_motion_fault':json.loads(fault.read_text()) if fault.exists() else None,'observed_at':time.time()}
         if action.kind == 'speech.say':
             if self.config.get('speech_backend') == 'local':
                 from .local_audio import speak

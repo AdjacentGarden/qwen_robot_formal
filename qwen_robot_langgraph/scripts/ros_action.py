@@ -3,6 +3,10 @@
 import json
 import sys
 import time
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+HEAD_FAULT = ROOT/'runtime/head_motion_fault.json'
 
 import rclpy
 from rclpy.node import Node
@@ -112,12 +116,24 @@ def execute(kind,args):
             else:
                 raise RuntimeError('head_target_unconfirmed')
             result={'target_command':target,'target_offset_deg':target-185,**observations,'gate_ms':(published-before_gate)*1000,'head_ms':(time.monotonic()-published)*1000}
+            if args['pose'] != 'level' and HEAD_FAULT.exists():
+                HEAD_FAULT.unlink()
             if args['pose']=='level':
                 result['recovery']=gate(True)
         else:
             raise RuntimeError('unsupported_ros_action')
         return {'ok':True,'status':'completed','executed':True,'result':result}
     except Exception as exc:
+        if kind == 'head.move' and str(exc) == 'head_target_unconfirmed':
+            payload = {
+                'fault':'head_target_unconfirmed',
+                'pose':args.get('pose'),
+                'observed_at':time.time(),
+                'observations':dict(observations),
+            }
+            temp=HEAD_FAULT.with_suffix('.tmp')
+            temp.write_text(json.dumps(payload,ensure_ascii=False,indent=2))
+            temp.replace(HEAD_FAULT)
         return {'ok':False,'status':'failed','executed':None,'error':str(exc),'observations':dict(observations)}
 
 
@@ -127,8 +143,7 @@ if __name__=='__main__':
             print(json.dumps(execute(sys.argv[1],json.loads(sys.argv[2]))))
         else:
             import os, socket, struct, signal
-            from pathlib import Path
-            path=Path(__file__).resolve().parents[1]/'runtime/ros.sock'
+            path=ROOT/'runtime/ros.sock'
             if path.exists():
                 with socket.socket(socket.AF_UNIX) as probe:
                     try:probe.connect(str(path))

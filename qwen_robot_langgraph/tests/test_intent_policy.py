@@ -9,6 +9,7 @@ from robot_graph.intent_policy import validate_current_turn
  ('你刚才抬头了吗',{'type':'action','kind':'head.move','args':{'pose':'up'}}),
  ('你可以直接在原地投影吗',{'type':'workflow','name':'meeting_stationary'}),
  ('开灯然后抬头',{'type':'action','kind':'head.move','args':{'pose':'up'}}),
+ ('抬头、低头再回正',{'type':'action','kind':'head.move','args':{'pose':'level'}}),
  ('开个会',{'type':'workflow','name':'meeting_stationary'}),
  ('我只是试试',{'type':'control','command':'cancel'}),
  ('抬头',{'type':'action','kind':'feeder.feed','args':{'grams':10}}),
@@ -20,6 +21,8 @@ def test_bad_proposals_are_rejected(text,intent):
  ('请把头抬起来',{'type':'action','kind':'head.move','args':{'pose':'up'}}),
  ('帮我打开灯',{'type':'action','kind':'light.set','args':{'enabled':True}}),
  ('在原地开始会议投影，不要导航',{'type':'workflow','name':'meeting_stationary'}),
+ ('请投三十克',{'type':'action','kind':'feeder.feed','args':{'grams':30}}),
+ ('圆就做八个俯卧撑',{'type':'workflow','name':'exercise_stationary','parameters':{'exercise':'push_up','count':8}}),
 ])
 def test_grounded_request(text,intent):validate_current_turn(text,intent)
 

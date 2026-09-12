@@ -11,3 +11,18 @@ def validate_head_packet(func, data, motor_function):
     if not math.isfinite(speed) or abs(speed) > 40:
         raise PermissionError("head_speed_out_of_bounds")
     return payload
+
+
+def validate_zero_wheel_stop(left, right):
+    """Accept only an exact, finite zero-speed chassis initialization request."""
+    if isinstance(left, bool) or isinstance(right, bool):
+        raise PermissionError("wheel_locked_command_rejected")
+    try:
+        left_value, right_value = float(left), float(right)
+    except (TypeError, ValueError):
+        raise PermissionError("wheel_locked_command_rejected")
+    if not math.isfinite(left_value) or not math.isfinite(right_value):
+        raise PermissionError("wheel_locked_command_rejected")
+    if left_value != 0.0 or right_value != 0.0:
+        raise PermissionError("wheel_locked_command_rejected")
+    return left_value, right_value

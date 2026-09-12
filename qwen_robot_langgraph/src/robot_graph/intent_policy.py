@@ -16,7 +16,7 @@ def request_needs_clarification(text):
         normalized = re.sub(r'(?:不要|不用|别|不)(?:导航|移动|动底轮)', '', normalized)
     if re.search(r'如果|假如|假设|要是|刚才|之前|上次|昨天|不要|别|不用|不许|不能|暂时不|先不|暂不|不做|不想|记住|复述|翻译', normalized):
         return True
-    if re.search(r'然后|接着|之后|随后|同时|并且|顺便|以及|还要|再(?:把|帮|抬|开|关|拍)', normalized):
+    if re.search(r'然后|接着|之后|随后|同时|并且|顺便|以及|还要|再(?:把|帮|抬|低|回|开|关|拍)', normalized):
         return True
     if re.search(r'(可以|能够|能不能|能否|能).*吗[？?。]*$', normalized) and not re.search(r'帮我|请(?:你)?(?:抬|低|开|关|拍|投|启动|暂停|继续)', normalized):
         return True
@@ -50,7 +50,7 @@ def validate_current_turn(text,intent):
             raise PolicyError('control_not_grounded')
     elif kind=='workflow':
         name=intent.get('name','')
-        if 'stationary' in name and not requests_stationary(text):
+        if name == 'meeting_stationary' and not requests_stationary(text):
             raise PolicyError('stationary_workflow_not_explicit')
         if name == 'meeting' and requests_stationary(text):
             raise PolicyError('stationary_meeting_routed_to_navigation')
@@ -78,7 +78,7 @@ def validate_current_turn(text,intent):
             if cue not in text or not re.search('拍|照',text):raise PolicyError('camera_not_grounded')
 
         if action=='feeder.feed':
-            if not re.search('喂|投粮|投食|出粮',text) or not quantity_matches(text,args.get('grams'),'克'):
+            if not re.search(r'喂|投粮|投食|出粮|投(?=[零一二三四五六七八九十百两\d])',normalized) or not quantity_matches(text,args.get('grams'),'克'):
                 raise PolicyError('feeding_amount_not_grounded')
 
 

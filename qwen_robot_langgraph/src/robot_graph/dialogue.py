@@ -21,7 +21,7 @@ type只能是action、workflow、control、chat。禁止把具体动作名写进
 前置拍照：{"type":"action","kind":"camera.capture","args":{"camera":"front"}}
 后置、后面、后摄拍照camera必须为back；前置、前面、前摄必须为front。未说明前后应澄清，不能自行选择front。
 开灯：{"type":"action","kind":"light.set","args":{"enabled":true}}
-关灯enabled为false。
+关灯enabled为false。“关闭灯”“请关闭灯”“能帮我关闭灯”都必须是light.set且enabled为false，不能返回cancel。
 查询时间：{"type":"action","kind":"system.time","args":{}}
 查询设备状态：{"type":"action","kind":"system.status","args":{}}
 投食二十克：{"type":"action","kind":"feeder.feed","args":{"grams":20}}
@@ -35,6 +35,10 @@ type只能是action、workflow、control、chat。禁止把具体动作名写进
 俯卧撑exercise为push_up，引体向上为pull_up；数量1到200，“十个”输出count为10，不明确数量应返回chat，不能输出null或None。
 暂停任务：{"type":"control","command":"pause"}
 继续任务command为resume，取消/结束任务command为cancel。关闭/关掉投影、结束/关闭会议也表示cancel。
+单独说“暂停”“继续”“取消”也是当前任务控制；但目标不明的“关掉它”“停掉那个”必须返回chat。
+“能否关闭会议投影”“可以取消任务吗”等能力询问必须返回chat，即使句中包含关闭、取消等控制词。
+“能帮我/能不能帮我”后接一个参数完整的动作是委婉执行指令；“能否/是否/可以……吗/你会不会”才是能力询问。
+“能帮我抬头”必须返回head.move且pose为up；“能不能帮我低一下头”必须返回head.move且pose为down。这两句不是能力询问。
 多动作、否定、假设、过去记录、能力询问、参数不明、未列出的功能都返回chat，不要选相反动作或编造参数。
 例如“不要开灯”“如果开会会怎样”“你能抬头吗”输出：{"type":"chat","reply":"请明确是否要执行一个具体操作。"}
 普通聊天也返回chat及简短中文reply。不要声称硬件已经完成。'''
