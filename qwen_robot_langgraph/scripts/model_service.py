@@ -33,7 +33,10 @@ if __name__=='__main__':
             proc=subprocess.Popen(command,stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,start_new_session=True,env={**os.environ,'RKLLM_LOG_LEVEL':'1'})
         data={'pid':proc.pid,'start_ticks':Path(f'/proc/{proc.pid}/stat').read_text().split()[21],'port':PORT}
         STATE.write_text(json.dumps(data));start=time.monotonic()
-        while time.monotonic()-start<75 and proc.poll() is None:
+        # A cold RKNN load can exceed a minute after the transfer service was
+        # restarted.  Keep the single owned process alive while its health
+        # endpoint comes up instead of killing a healthy load at 75 seconds.
+        while time.monotonic()-start<240 and proc.poll() is None:
             try:
                 with urllib.request.urlopen(f'http://127.0.0.1:{PORT}/health',timeout=2) as response:
                     if response.status==200:

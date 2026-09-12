@@ -8,6 +8,11 @@ class Model:
         if isinstance(self.value,Exception):raise self.value
         return self.value
 
+class ReviewingModel(Model):
+    def review(self,text,candidate,reason):
+        self.review_context=(text,candidate,reason)
+        return self.classify(text)
+
 UP={'type':'action','kind':'head.move','args':{'pose':'up'}}
 CHAT={'type':'chat','reply':'请明确请求。'}
 
@@ -17,16 +22,24 @@ def test_valid_local_never_calls_cloud():
     assert model.last_route['route']=='local'
 
 @pytest.mark.parametrize('proposal',[ValueError('invalid JSON'),{'type':'action','kind':'head.move','args':{'pose':'bad'}},UP])
-def test_negative_local_is_terminal_without_cloud(proposal):
+def test_invalid_local_proposal_uses_cloud(proposal):
     cloud=Model(CHAT);model=HybridIntentModel(Model(proposal),cloud)
-    assert model.classify('不要抬头')['type']=='chat' and cloud.calls==0
-    assert model.last_route['route']=='policy_clarify'
+    assert model.classify('不要抬头')['type']=='chat' and cloud.calls==1
+    assert model.last_route['route']=='cloud'
 
 
 def test_malformed_valid_local_still_falls_back_to_cloud():
     cloud=Model(UP);model=HybridIntentModel(Model(ValueError('invalid JSON')),cloud)
     assert model.classify('请抬头')==UP and cloud.calls==1
     assert model.last_route['route']=='cloud'
+
+def test_cloud_review_receives_rejected_candidate_and_reason():
+    rejected={'type':'action','kind':'head.move','args':{'pose':'level'}}
+    cloud=ReviewingModel(UP);model=HybridIntentModel(Model(rejected),cloud)
+    assert model.classify('请抬头')==UP
+    assert cloud.review_context[0]=='请抬头'
+    assert cloud.review_context[1]==rejected
+    assert 'head_pose_not_grounded' in cloud.review_context[2]
 
 
 @pytest.mark.parametrize('text',[
@@ -37,15 +50,15 @@ def test_malformed_valid_local_still_falls_back_to_cloud():
     '原地做几个深蹲',
     '把头抬高30度',
 ])
-def test_non_executable_requests_do_not_spend_cloud_budget(text):
+def test_non_executable_requests_are_decided_by_cloud_after_local_rejection(text):
     cloud=Model(CHAT);model=HybridIntentModel(Model(ValueError('invalid JSON')),cloud)
-    assert model.classify(text)['type']=='chat' and cloud.calls==0
-    assert model.last_route['route']=='policy_clarify'
+    assert model.classify(text)['type']=='chat' and cloud.calls==1
+    assert model.last_route['route']=='cloud'
 
 def test_invalid_cloud_never_returns_physical_proposal():
     model=HybridIntentModel(Model(UP),Model(UP))
     assert model.classify('不要抬头')['type']=='chat'
-    assert model.last_route['route']=='policy_clarify'
+    assert model.last_route['route']=='clarify'
 
 def test_budget_failure_returns_clarification_without_retry():
     cloud=Model(RuntimeError('budget_exhausted'));model=HybridIntentModel(Model(ValueError('parse')),cloud)
@@ -64,9 +77,10 @@ def test_navigation_intent_is_preserved_for_final_base_guard():
     '不要导航，开始会议投影',
     '地投影会议 p p t',
 ])
-def test_stationary_meeting_is_canonicalized_after_model_proposal(text):
+def test_stationary_text_does_not_locally_rewrite_navigation_proposal(text):
     proposal={'type':'workflow','name':'meeting','parameters':{'action':'start','content':'PPT'}}
-    assert validate_proposal(text,proposal)=={'type':'workflow','name':'meeting_stationary','parameters':{}}
+    with pytest.raises(Exception,match='stationary_meeting_routed_to_navigation'):
+        validate_proposal(text,proposal)
 
 
 def test_model_invented_stationary_meeting_parameters_are_removed():
@@ -86,27 +100,31 @@ def test_nonstationary_meeting_is_not_silently_changed():
 
 def test_model_stationary_guess_without_stationary_cue_stays_navigation():
     proposal={'type':'workflow','name':'meeting_stationary'}
-    assert validate_proposal('帮我启动会议场景',proposal)=={'type':'workflow','name':'meeting','parameters':{}}
+    with pytest.raises(Exception,match='stationary_workflow_not_explicit'):
+        validate_proposal('帮我启动会议场景',proposal)
 
 
-def test_explicit_camera_side_corrects_model_proposal():
+def test_wrong_camera_side_is_rejected_instead_of_locally_rewritten():
     proposal={'type':'action','kind':'camera.capture','args':{'camera':'front'}}
-    assert validate_proposal('请你用后面的摄像头拍个照',proposal)=={'type':'action','kind':'camera.capture','args':{'camera':'back'}}
+    with pytest.raises(Exception,match='camera_not_grounded'):
+        validate_proposal('请你用后面的摄像头拍个照',proposal)
 
 
-def test_explicit_head_pose_corrects_model_proposal():
+def test_wrong_head_pose_is_rejected_instead_of_locally_rewritten():
     proposal={'type':'action','kind':'head.move','args':{'pose':'down'}}
-    assert validate_proposal('请抬头',proposal)=={'type':'action','kind':'head.move','args':{'pose':'up'}}
+    with pytest.raises(Exception,match='head_pose_not_grounded'):
+        validate_proposal('请抬头',proposal)
 
 
-def test_exercise_parameters_are_grounded_after_model_proposal():
+def test_wrong_exercise_parameters_are_rejected_instead_of_locally_rewritten():
     proposal={'type':'workflow','name':'exercise_stationary','parameters':{'exercise':'pull_up','count':None}}
-    assert validate_proposal('在原地帮我数十个深蹲',proposal)=={'type':'workflow','name':'exercise_stationary','parameters':{'exercise':'squat','count':10}}
+    with pytest.raises(Exception,match='invalid_count|exercise_parameters_not_grounded'):
+        validate_proposal('在原地帮我数十个深蹲',proposal)
 
 
 def test_capability_question_does_not_dispatch_light():
     proposal={'type':'action','kind':'light.set','args':{'enabled':True}}
-    cloud=Model(proposal);model=HybridIntentModel(Model(proposal),cloud)
+    cloud=Model(CHAT);model=HybridIntentModel(Model(proposal),cloud)
     assert model.classify('你能开灯吗')['type']=='chat'
-    assert model.last_route['route']=='policy_clarify'
-    assert cloud.calls==0
+    assert model.last_route['route']=='cloud'
+    assert cloud.calls==1

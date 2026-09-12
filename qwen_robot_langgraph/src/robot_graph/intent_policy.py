@@ -52,6 +52,8 @@ def validate_current_turn(text,intent):
         name=intent.get('name','')
         if 'stationary' in name and not requests_stationary(text):
             raise PolicyError('stationary_workflow_not_explicit')
+        if name == 'meeting' and requests_stationary(text):
+            raise PolicyError('stationary_meeting_routed_to_navigation')
         if name.startswith('meeting') and not re.search('会议|开会|投影',text):
             raise PolicyError('meeting_not_grounded')
         if name == 'exercise_stationary':

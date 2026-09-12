@@ -81,11 +81,11 @@ python3 scripts/model_service.py stop
 python3 scripts/hardware_services.py stop
 ```
 
-默认模式为 **端云协同**：本地 Qwen3-4B → 必要时云端 Qwen → 当前指令/参数/硬件限制校验 → LangGraph 执行。`app_service.py` 默认关闭关键词、正则和固定指令等本地意图匹配；模型之后的参数核对、硬件安全校验和底轮锁仍然生效。ASR 使用本机 SenseVoice，TTS 使用本机 Matcha。云端参与文本意图推理，不承担默认录音或播报。
+默认模式为 **端云协同**：本地 Qwen3-4B 提案 → 当前指令/参数/硬件限制校验 → 必要时云端 Qwen 二次审核 → 再次校验 → LangGraph 执行。`app_service.py` 默认关闭关键词、正则和固定指令等模型前意图匹配。系统也不会再用本地规则改写模型选择的头部方向、摄像头、运动参数或会议位置；本地提案与原话不一致时只会被拒绝并交给云端。参数范围、JSON 契约、资源锁和底轮锁仍然生效。ASR 使用本机 SenseVoice，TTS 使用本机 Matcha。云端参与文本意图推理，不承担默认录音或播报。
 
-本地实际型号为 **Qwen3-4B**，上下文设置 4096，独立端口 18087。`model_service.py` 拒绝与已有 `rkllm3-server` 竞争。启动器支持 `start hybrid`（默认）、`start local`（仅本地、无云端回退）和 `start cloud`（原云端意图模式）。`/health` 显示当前模型、TTS、ASR 和预算，`runtime/hybrid_routes.jsonl` 记录本地/云端/澄清路由。模型权重、旧项目和旧提示词保持不变。
+本地实际型号为 **Qwen3-4B**，上下文设置 4096，独立端口 18087。`model_service.py` 拒绝与已有 `rkllm3-server` 竞争，并允许 RKNN 冷启动最多等待 240 秒。启动器支持 `start hybrid`（默认）、`start local`（仅本地、无云端回退）和 `start cloud`（原云端意图模式）。`/health` 显示当前模型、TTS、ASR 和预算，`runtime/hybrid_routes.jsonl` 记录本地/云端/澄清路由。模型权重、旧项目和旧提示词保持不变。
 
-云端失败或达到本轮累计预算上限后，本地和精确规则仍可用，需要回退的请求会澄清。能够通过结构校验的语义错误仍可能漏过，这套回退机制不等于已经获得可靠的模型置信度判定。
+云端失败或达到本轮累计预算上限后，已通过校验的本地结果仍可用，需要回退的请求会安全澄清。云端二次审核会收到被拒候选和拒绝原因，避免简单重复本地错误；任何云端结果仍需通过同一组校验。
 
 ## 测试与记录
 
