@@ -113,6 +113,18 @@ def execute(kind,args):
                 stable_since=(stable_since or time.monotonic()) if stable else None
                 if stable_since and time.monotonic()-stable_since>.5:
                     break
+                # The controller's own deadline has already stopped the motor.
+                # Once that latched timeout and a fresh zero command are both
+                # observed, more passive waiting cannot turn this request into
+                # a confirmed success.
+                controller_timed_out=(
+                    observations.get('status_at',0)>published
+                    and str(observations.get('controller_status','')).startswith('timeout;')
+                    and observations.get('motor_at',0)>published
+                    and abs(observations.get('motor',99))<.1
+                )
+                if controller_timed_out:
+                    raise RuntimeError('head_target_unconfirmed')
             else:
                 raise RuntimeError('head_target_unconfirmed')
             result={'target_command':target,'target_offset_deg':target-185,**observations,'gate_ms':(published-before_gate)*1000,'head_ms':(time.monotonic()-published)*1000}

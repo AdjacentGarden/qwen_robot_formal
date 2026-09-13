@@ -21,10 +21,15 @@ and confirm a fresh lidar scan afterward.
 
 ## 2026-09-12 observation
 
-Three bounded `pose=up` attempts stopped at the controller's 18 second motor
-deadline and were observed for about 36 seconds total per request. The last
-attempt wrote 242 nonzero motor ID 3 packets at up to speed 30 while the angle
-remained near -1.8 degrees. The head was then confirmed level, the motor command
+Four bounded `pose=up` attempts stopped at the controller's 18 second motor
+deadline and were observed for about 36 seconds total per request. The latest
+attempt wrote 244 nonzero motor ID 3 packets at up to speed 30 while the angle
+remained near -1.9 degrees. The head was then confirmed level, the motor command
 was zero, and fresh lidar scans resumed. This places the unresolved fault after
 the serial write boundary, in the controller output, actuator power/driver, or
 wiring path. No chassis motion packet was sent.
+
+The ROS adapter now returns as soon as it observes both the controller's
+latched timeout status and a fresh zero motor command. A first failure therefore
+does not spend the former extra passive observation window; subsequent requests
+remain blocked by preflight until maintenance validation succeeds.
