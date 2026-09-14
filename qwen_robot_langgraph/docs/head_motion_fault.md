@@ -67,3 +67,20 @@ displacement was only 0.025 degrees before the eight-second timeout. The level
 cleanup succeeded and the guard recorded zero chassis packets. This rules out
 the LangGraph orchestration and its copied controller code as the cause of the
 missing motion.
+
+A bounded `pose=down` test also failed after sending the opposite motor
+direction. The controller reported `target=160; error=-23.13` after 18 seconds,
+while the measured angle remained near -1.87 degrees. Both motor polarities are
+therefore affected; this is not an up-direction limit or one-sided software
+sign error. The IMU stream remained fresh and stable.
+
+The Linux UART and control-board link are live. `/dev/ttyS0` remained configured
+for 115200 baud, 8 data bits, no parity and one stop bit. During an idle two
+second sample its receive counter increased from 852046 to 854672 bytes, and no
+serial write exception or kernel UART error was observed. The controller
+protocol does not return position, current, fault, or acknowledgement telemetry
+for motor ID 3, so remote software cannot distinguish the remaining downstream
+causes. Inspect the head-motor power rail and driver enable/fault state first,
+then reseat the controller-to-head cable, check the motor and mechanical
+transmission for an open circuit or jam, and finally verify that the head IMU is
+physically attached to the moving assembly.
