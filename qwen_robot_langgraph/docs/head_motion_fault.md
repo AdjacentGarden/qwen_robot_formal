@@ -59,3 +59,11 @@ process calibrated at level, one `pose=up` request sent 261 nonzero commands at
 a maximum magnitude of 30. The measured angle remained near -1.88 degrees and
 the controller timed out after 18 seconds. Level confirmation and fresh lidar
 recovery both succeeded afterward, and the chassis packet count remained zero.
+
+An isolated comparison using the controller and serial SDK directly from
+`/home/test/Car_real_copy` produced the same result. Its guarded test sent 140
+nonzero head commands at a maximum magnitude of 30, but the maximum measured
+displacement was only 0.025 degrees before the eight-second timeout. The level
+cleanup succeeded and the guard recorded zero chassis packets. This rules out
+the LangGraph orchestration and its copied controller code as the cause of the
+missing motion.
