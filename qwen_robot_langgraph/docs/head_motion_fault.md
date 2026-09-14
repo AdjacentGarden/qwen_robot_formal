@@ -53,3 +53,9 @@ Do not raise the persistent speed profile until the actuator power, driver,
 wiring, and physical attachment of the head IMU have been checked. Once motion
 is restored, repeat a measured 15 versus 20 degrees-per-second comparison and
 keep the faster profile only if both up and level arrivals remain stable.
+
+A full robot reboot on 2026-09-14 did not restore motion. After the new head
+process calibrated at level, one `pose=up` request sent 261 nonzero commands at
+a maximum magnitude of 30. The measured angle remained near -1.88 degrees and
+the controller timed out after 18 seconds. Level confirmation and fresh lidar
+recovery both succeeded afterward, and the chassis packet count remained zero.
